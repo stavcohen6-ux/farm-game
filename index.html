@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Farm Game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&family=Quicksand:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="grove-sky" aria-hidden="true"></div>
+  <div id="app">
+    <div id="game-text" class="game-text" aria-live="polite"></div>
+    <div id="grove-stage" class="grove-stage">
+      <div id="dragon-temple" class="dragon-temple"></div>
+      <div id="farm-board" class="farm-board">
+        <div id="shrine-frog" class="shrine shrine--top-left"></div>
+        <div id="shrine-monkey" class="shrine shrine--top-right"></div>
+        <div id="farm-grid" class="farm-grid"></div>
+        <div id="shrine-fox" class="shrine shrine--bottom-left"></div>
+        <div id="shrine-tiger" class="shrine shrine--bottom-right"></div>
+      </div>
+    </div>
+    <div id="bottom-dock" class="bottom-dock">
+      <div id="player-desk" class="player-desk">
+        <aside id="inventory" class="inventory" aria-label="Inventory"></aside>
+        <div class="player-desk__work">
+          <aside id="alchemy" class="alchemy" aria-label="Alchemy station"></aside>
+        </div>
+        <button
+          type="button"
+          id="discovery-log"
+          class="discovery-log-btn"
+          aria-label="Discovery Log"
+        ></button>
+      </div>
+      <button type="button" id="reset-game" class="reset-game">Reset</button>
+    </div>
+  </div>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

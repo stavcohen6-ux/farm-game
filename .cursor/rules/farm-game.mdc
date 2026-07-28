@@ -1,0 +1,206 @@
+---
+description: Rules for developing the Farm Game
+alwaysApply: true
+---
+
+# Project Philosophy
+
+This project is an indie casual farming game.
+
+The priority is creating a polished, maintainable game rather than adding many features quickly.
+
+Always prefer simple solutions over complex ones.
+
+Avoid premature optimization.
+
+---
+
+# Technology Stack
+
+- Language: JavaScript (ES modules)
+- UI: plain HTML and CSS
+- No game engine, no build step, no package dependencies
+- Target: modern web browsers (desktop first, mobile compatible)
+
+Do not introduce frameworks, libraries, build tools, or dependencies unless explicitly approved.
+
+---
+
+# Development Principles
+
+Implement only the requested feature.
+
+Do not add extra mechanics that were not requested.
+
+Do not invent gameplay systems.
+
+Do not redesign existing systems unless explicitly asked.
+
+Never remove existing functionality without instruction.
+
+Do not make design decisions that are not described in `docs/GAME_DESIGN.md`.
+
+If requirements are unclear, ask for clarification instead of guessing.
+
+If multiple approaches are possible, prefer the simplest one suitable for a solo indie project.
+
+---
+
+# Locked desk art and Discovery Log hotspot
+
+The player desk painting and Discovery Log click target are **locked**.
+
+Do **not** change any of the following unless the user explicitly asks:
+
+- `assets/scene/player_desk.png` (replace, crop, re-export, or move painted elements)
+- `.player-desk` backdrop layout: `background-size`, `background-position`,
+  padding (`--desk-pad-x` / `--desk-pad-y` and related), `min-height`,
+  `width` / `--grove-outer-width` coupling that would shift the painted book
+- `.discovery-log-btn` hit box: `right`, `bottom`, `width`, `height`
+  (calibrated over the painted book; current lock:
+  `right: 4.85rem; bottom: 0; width: 7rem; height: 4.75rem`)
+
+Changing inventory/alchemy DOM chrome is fine when requested, but do not
+reposition desk art or the log hotspot as a side effect. If a task seems
+to require moving them, stop and ask.
+
+---
+
+# Architecture
+
+Write modular, readable code.
+
+Keep gameplay logic separate from rendering and UI.
+
+Avoid large files.
+
+Prefer small reusable modules with a single responsibility.
+
+Prefer composition over inheritance.
+
+Avoid unnecessary abstractions and premature abstraction.
+
+Do not create systems "for future use."
+
+Future features will be added later.
+
+Optimize for long-term maintainability, not enterprise patterns.
+
+---
+
+# Data
+
+Keep game content data-driven whenever practical.
+
+Avoid hardcoding values such as crops, growth times, unlock requirements, and similar configurable content.
+
+Store configurable content in dedicated data files (for example `src/data/`).
+
+---
+
+# Game State
+
+Keep game state deterministic.
+
+Avoid hidden side effects.
+
+Changes to game state should happen in one place.
+
+Avoid scattering mutable game state across modules.
+
+---
+
+# UI
+
+Keep the UI minimal.
+
+Avoid unnecessary animations.
+
+Avoid modal overload.
+
+The farm should remain the primary screen whenever possible.
+
+---
+
+# Code Style
+
+Prefer readability over cleverness.
+
+Use descriptive names.
+
+Avoid duplicate logic.
+
+Comment only when the intent is not obvious.
+
+Keep functions focused on a single responsibility.
+
+Remove dead code instead of commenting it out.
+
+---
+
+# Working Rules
+
+Only modify files required for the current task.
+
+Do not refactor unrelated code.
+
+Do not rename files, modules, or functions unless necessary.
+
+Preserve existing behavior unless explicitly instructed otherwise.
+
+If a request requires a larger architectural change, explain why before implementing it.
+
+Before writing new code:
+1. Check whether a similar system already exists.
+2. Reuse existing code whenever reasonable.
+3. Avoid creating duplicate systems or utilities.
+
+---
+
+# Scope
+
+This project is developed iteratively.
+
+Each prompt represents one milestone.
+
+Do not implement future milestones.
+
+Only build what has been requested.
+
+---
+
+# When Unsure
+
+If a requested feature conflicts with previous architecture,
+suggest the smallest possible change.
+
+Never perform large refactors without asking first.
+
+---
+
+# Preserve Existing Behavior
+
+When modifying existing code, preserve all current behavior unless the requested task explicitly changes it.
+
+Avoid accidental regressions.
+
+If a change requires modifying existing functionality, explain why before making the change.
+
+---
+
+# Do Not Guess
+
+If information required for implementation is missing,
+do not invent behavior.
+
+Instead, ask for clarification or implement only the portion that is fully specified.
+
+---
+
+# Prefer Iteration
+
+Implement features in the smallest complete version first.
+
+Do not build expandable systems unless requested.
+
+Always prioritize a working MVP before extensibility.

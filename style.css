@@ -1,0 +1,2096 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  --moss: #5f9a72;
+  --moss-deep: #3d7a52;
+  --canopy: #d4f0dc;
+  --soil: #5f4634;
+  --soil-light: #6e5540;
+  --soil-dark: #453428;
+  --frame: #6a7a68;
+  --frame-deep: #3d4a42;
+  --parchment: #f4faf4;
+  --linen: #f7fcf7;
+  --honey: #e6c65a;
+  --honey-glow: #f0d878;
+  --ink: #2a3d30;
+  --muted: #5f7466;
+  --ember: #a86f4a;
+  --ember-deep: #8a5538;
+  --moon: #c8b8f0;
+  --moon-soft: #e8e0f8;
+  --panel-border: #9ec9aa;
+  --sky-mist: #c8e4f0;
+  --shadow: rgba(42, 90, 60, 0.16);
+
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Nunito', system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 0%, #e8fff0 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 85% 10%, rgba(200, 228, 240, 0.55) 0%, transparent 45%),
+    radial-gradient(ellipse 80% 60% at 15% 100%, #b8e0c4 0%, transparent 50%),
+    radial-gradient(ellipse 70% 50% at 90% 95%, #a8d4b8 0%, transparent 45%),
+    linear-gradient(180deg, #d8f0e0 0%, #b8dcc8 50%, #9ecab0 100%);
+  color: var(--ink);
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+  position: relative;
+}
+
+.grove-sky {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.45) 0%, transparent 30%),
+    radial-gradient(circle at 78% 12%, rgba(200, 228, 240, 0.35) 0%, transparent 26%),
+    radial-gradient(circle at 88% 28%, rgba(200, 184, 240, 0.1) 0%, transparent 18%);
+  z-index: 0;
+}
+
+/* App stage — soft shell; grove is the visual place */
+
+#app {
+  --stage-pad: 1.1rem;
+  --gap: 0.5rem;
+  --tile: 4rem;
+  --tile-font: 1.5rem;
+  --radius: 0.75rem;
+  --dock-pad: 0.75rem;
+  --inventory-slots-inner: calc(6 * var(--tile) + 5 * var(--gap));
+  /* Farm board content width (grid + shrine columns); matches game-text */
+  --farm-band-width: calc(
+    140px + 1rem + (4 * var(--tile) + 3 * 8px + 2 * 8px) + 1rem + 140px
+  );
+  /* Grove stage outer width including --grove-pad-x on each side */
+  --grove-outer-width: calc(var(--farm-band-width) + 2 * 1.25rem);
+  --temple-meters-height: 1.65rem;
+  --temple-burn-height: 2.6rem;
+  --temple-dock-height: calc(var(--temple-meters-height) + var(--temple-burn-height));
+
+  position: relative;
+  z-index: 1;
+  width: fit-content;
+  max-width: calc(100vw - 1rem);
+  max-height: calc(100dvh - 1rem);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: var(--stage-pad);
+  overflow: auto;
+  overflow-anchor: none;
+
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Scenic grove: temple + farm + shrines in one clearing */
+
+.grove-stage {
+  --grove-pad-x: 1.25rem;
+  --grove-pad-y: 1rem;
+  position: relative;
+  z-index: 0;
+  flex: 0 0 auto;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  padding: var(--grove-pad-y) var(--grove-pad-x) 1.35rem;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  background-color: #c8ddd0;
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(232, 245, 236, 0.55) 0%,
+      rgba(200, 221, 208, 0.2) 42%,
+      rgba(168, 196, 168, 0.45) 100%
+    ),
+    url('assets/scene/grove_clearing.png');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  box-shadow:
+    0 2px 0 rgba(61, 122, 82, 0.22),
+    0 16px 40px rgba(42, 90, 60, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.grove-stage::before {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 90% 55% at 50% 0%, rgba(255, 255, 255, 0.35) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 40% at 50% 100%, rgba(90, 140, 100, 0.28) 0%, transparent 60%);
+  z-index: 0;
+}
+
+.grove-stage > * {
+  position: relative;
+  z-index: 1;
+}
+
+.game-icon {
+  width: 1.55em;
+  height: 1.55em;
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+.game-icon--shrine {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+
+.game-icon--shrine-object {
+  width: 7.5rem;
+  height: 7.5rem;
+}
+
+.game-icon--temple-object {
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  aspect-ratio: 1536 / 993;
+  object-fit: contain;
+}
+
+.game-icon--discovery-log {
+  width: 4.75rem;
+  height: 4.75rem;
+}
+
+.game-icon--shrine-detail {
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+.game-icon--inline {
+  width: 1.35rem;
+  height: 1.35rem;
+  display: inline-block;
+  vertical-align: -0.25rem;
+}
+
+.game-icon--sm {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.game-icon--tiny {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+/* Game text — full farm-board width, fixed three-line height */
+
+.game-text {
+  width: var(--farm-band-width);
+  max-width: 100%;
+  flex: 0 0 auto;
+  align-self: center;
+  box-sizing: border-box;
+  --game-text-line-height: 1.4;
+  height: calc(3 * 0.75rem * var(--game-text-line-height) + 2 * 0.55rem + 2px);
+  padding: 0.55rem 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Quicksand', 'Nunito', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: var(--game-text-line-height);
+  text-align: center;
+  overflow-x: hidden;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: rgba(247, 252, 247, 0.92);
+  border: 2px solid var(--panel-border);
+  border-radius: var(--radius);
+  color: var(--muted);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 6px 18px rgba(42, 90, 60, 0.12);
+}
+
+/* Dragon Temple — meters above, wall slots on art, Burn below (no reflow) */
+
+.dragon-temple {
+  width: calc(4 * var(--tile) + 3 * 8px + 2 * 8px);
+  max-width: 100%;
+  flex: 0 0 auto;
+  align-self: center;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  user-select: none;
+}
+
+.dragon-temple__meters {
+  width: 100%;
+  min-height: var(--temple-meters-height);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.28rem;
+  padding: 0 0.15rem;
+}
+
+.dragon-temple__meters--placeholder {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.dragon-temple__timer-track,
+.dragon-temple__progress-track {
+  width: 100%;
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(30, 40, 34, 0.22);
+  border: 1px solid rgba(90, 110, 96, 0.4);
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(20, 28, 24, 0.25);
+}
+
+.dragon-temple__timer-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--ember), #c88858);
+  transition: width 0.35s linear;
+}
+
+.dragon-temple__progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #7a9e88, #c8b06a);
+  transition: width 0.2s ease;
+}
+
+.dragon-temple__stage {
+  position: relative;
+  width: 100%;
+  line-height: 0;
+}
+
+.dragon-temple__figure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  filter: drop-shadow(0 6px 12px rgba(42, 90, 60, 0.22));
+  transition: filter 0.15s ease;
+}
+
+.dragon-temple--active .dragon-temple__figure {
+  filter: drop-shadow(0 6px 12px rgba(42, 90, 60, 0.22))
+    drop-shadow(0 0 10px rgba(240, 168, 96, 0.28));
+}
+
+.dragon-temple--drag-over .dragon-temple__figure {
+  filter: drop-shadow(0 6px 14px rgba(168, 111, 74, 0.35))
+    drop-shadow(0 0 0 2px rgba(168, 111, 74, 0.55));
+}
+
+/* Overlay slots on the shrine front-wall niches */
+.dragon-temple__slots {
+  position: absolute;
+  left: 50%;
+  bottom: 12%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.22rem;
+  width: 78%;
+  max-width: 100%;
+  flex-wrap: nowrap;
+  line-height: normal;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.dragon-temple__slot {
+  box-sizing: border-box;
+  width: calc(var(--tile) * 0.78);
+  height: calc(var(--tile) * 0.78);
+  flex-shrink: 0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--tile-font) * 0.72);
+  user-select: none;
+  background: rgba(58, 52, 44, 0.55);
+  box-shadow:
+    inset 0 2px 4px rgba(16, 14, 10, 0.45),
+    inset 0 -1px 0 rgba(220, 200, 160, 0.12);
+  transition: transform 0.12s ease, background 0.12s ease, opacity 0.12s ease;
+  pointer-events: auto;
+}
+
+.dragon-temple__slot--empty {
+  border: 1.5px dashed rgba(200, 180, 140, 0.45);
+  color: rgba(247, 236, 210, 0.85);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.dragon-temple__slot--faded {
+  opacity: 0.38;
+  pointer-events: none;
+  border-style: solid;
+  border-color: rgba(120, 110, 95, 0.35);
+  background: rgba(40, 36, 32, 0.35);
+}
+
+.dragon-temple__slot--filled {
+  border: 1.5px solid rgba(212, 192, 160, 0.75);
+  background: rgba(247, 244, 236, 0.92);
+  color: var(--ink);
+  cursor: pointer;
+  position: relative;
+  opacity: 1;
+}
+
+.dragon-temple__slot--filled:hover {
+  transform: translateY(-2px) scale(1.04);
+}
+
+.dragon-temple__slot--burning {
+  cursor: default;
+}
+
+.dragon-temple__fire {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35em;
+  pointer-events: none;
+  animation-name: dragon-temple-fire-pulse;
+  animation-timing-function: ease-in-out;
+}
+
+.dragon-temple__fire .game-icon {
+  width: 1.4em;
+  height: 1.4em;
+}
+
+@keyframes dragon-temple-fire-pulse {
+  0%,
+  100% {
+    transform: scale(0.85);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 1;
+  }
+}
+
+.dragon-temple__slot--drag-over {
+  border-color: var(--ember);
+  background: rgba(248, 240, 234, 0.95);
+}
+
+.dragon-temple__burn-slot {
+  width: 100%;
+  min-height: var(--temple-burn-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dragon-temple__burn-slot--placeholder {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.dragon-temple__burn {
+  border: none;
+  border-radius: 10px;
+  padding: 0.45rem 1.15rem;
+  background: linear-gradient(180deg, #c88858, var(--ember));
+  color: #fff8f0;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 2px 0 var(--ember-deep);
+  transition: filter 0.12s ease;
+}
+
+.dragon-temple__burn:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.dragon-temple__burn--faded,
+.dragon-temple__burn:disabled {
+  background: #c5bba8;
+  color: #f7f4ec;
+  cursor: default;
+  opacity: 0.65;
+  box-shadow: none;
+  filter: none;
+}
+
+/* Playfield: farm flanked by shrines hugging corners */
+
+.farm-board {
+  flex: 0 0 auto;
+  align-self: center;
+  display: grid;
+  grid-template-columns: auto auto auto;
+  grid-template-rows: auto auto auto;
+  gap: 0.25rem 0.35rem;
+  align-items: center;
+  justify-content: center;
+  /* Soft moss ground plane under farm + corner shrines */
+  padding: 0.55rem 0.35rem 0.65rem;
+  border-radius: 1.1rem;
+  background:
+    linear-gradient(180deg, rgba(247, 252, 247, 0.22), rgba(168, 196, 168, 0.35));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.farm-board .farm-grid {
+  grid-column: 2;
+  grid-row: 1 / -1;
+  justify-self: center;
+  align-self: center;
+}
+
+.farm-board .shrine--top-left {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: end;
+  align-self: start;
+  margin-right: -0.65rem;
+  margin-bottom: -0.35rem;
+}
+
+.farm-board .shrine--top-right {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: start;
+  align-self: start;
+  margin-left: -0.65rem;
+  margin-bottom: -0.35rem;
+}
+
+.farm-board .shrine--bottom-left {
+  grid-column: 1;
+  grid-row: 3;
+  justify-self: end;
+  align-self: end;
+  margin-right: -0.65rem;
+  margin-top: -0.35rem;
+}
+
+.farm-board .shrine--bottom-right {
+  grid-column: 3;
+  grid-row: 3;
+  justify-self: start;
+  align-self: end;
+  margin-left: -0.65rem;
+  margin-top: -0.35rem;
+}
+
+/* Shrines — full figurine props + soft plaque */
+
+.shrine {
+  width: 140px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.shrine--frog,
+.shrine--monkey,
+.shrine--fox,
+.shrine--tiger {
+  border: none;
+  background: transparent;
+}
+
+.shrine--maxed {
+  opacity: 0.88;
+  border-style: none;
+}
+
+.shrine--maxed .shrine__plaque {
+  border-style: dashed;
+}
+
+.shrine--drag-over {
+  outline: none;
+}
+
+.shrine--drag-over .shrine__figure {
+  filter: drop-shadow(0 0 8px rgba(95, 154, 114, 0.75));
+}
+
+.shrine--drag-over .shrine__plaque {
+  outline: 2px solid var(--moss);
+  outline-offset: 2px;
+}
+
+.shrine__figure {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  min-height: 7.5rem;
+  filter: drop-shadow(0 6px 10px rgba(42, 90, 60, 0.22));
+  transition: filter 0.14s ease;
+}
+
+.shrine__icon {
+  font-size: 1.75rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.shrine__icon--reward-pulse {
+  animation-name: shrine-reward-pulse;
+  animation-timing-function: ease-in-out;
+}
+
+@keyframes shrine-reward-pulse {
+  0%,
+  100% {
+    transform: scale(0.85);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 1;
+  }
+}
+
+.shrine__plaque {
+  width: 100%;
+  max-width: 6.5rem;
+  box-sizing: border-box;
+  padding: 0.2rem 0.35rem;
+  border-radius: 999px;
+  background: rgba(244, 250, 244, 0.88);
+  border: 2px solid var(--panel-border);
+  box-shadow: 0 1px 0 rgba(61, 122, 82, 0.18);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.shrine--frog .shrine__plaque {
+  border-color: #6a9e7a;
+}
+
+.shrine--monkey .shrine__plaque {
+  border-color: #b8956c;
+}
+
+.shrine--fox .shrine__plaque {
+  border-color: #c47a4a;
+}
+
+.shrine--tiger .shrine__plaque {
+  border-color: #c9a03a;
+}
+
+.shrine__progress-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(47, 59, 42, 0.12);
+  overflow: hidden;
+  margin-top: 0;
+}
+
+.shrine__progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--moss), #7aaa72);
+}
+
+/* Shrine detail modal */
+
+.shrine-detail-overlay,
+.discovery-log-overlay,
+.reset-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(47, 59, 42, 0.38);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  backdrop-filter: blur(2px);
+}
+
+.shrine-detail,
+.discovery-log,
+.reset-confirm {
+  background: var(--linen);
+  border: 3px solid var(--frame);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow:
+    0 2px 0 var(--frame-deep),
+    0 18px 40px rgba(42, 90, 60, 0.24);
+}
+
+.shrine-detail {
+  min-width: 280px;
+  max-width: 360px;
+  width: 90%;
+  max-height: min(80dvh, 32rem);
+  overflow-y: auto;
+}
+
+.shrine-detail__title {
+  font-family: 'Quicksand', 'Nunito', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.shrine-detail__prefers {
+  margin: 0 0 1rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.shrine-detail__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.shrine-detail__tier {
+  padding: 0.75rem;
+  border-radius: 10px;
+  background: var(--parchment);
+  border: 1px solid rgba(196, 176, 137, 0.55);
+  text-align: left;
+}
+
+.shrine-detail__tier--locked {
+  opacity: 0.45;
+}
+
+.shrine-detail__tier-name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 0.2rem;
+}
+
+.shrine-detail__tier-effect {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 0.45rem;
+}
+
+.shrine-detail__progress-track {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(47, 59, 42, 0.12);
+  overflow: hidden;
+}
+
+.shrine-detail__progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--moss), #7aaa72);
+}
+
+.shrine-detail__progress-label {
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
+/* Farm grid — painterly mossy stone frame + dirt/locked tile textures */
+
+.farm-grid {
+  display: grid;
+  gap: 8px;
+  background-color: #6a7368;
+  background-image: url('assets/icons/farm_frame.png');
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding: 14px;
+  border-radius: 14px;
+  border: 3px solid #3a443c;
+  box-shadow:
+    inset 0 2px 0 rgba(220, 230, 200, 0.28),
+    inset 0 -6px 14px rgba(20, 28, 22, 0.28),
+    0 4px 0 #2e3830,
+    0 12px 24px rgba(22, 36, 28, 0.22);
+}
+
+.plot {
+  width: var(--tile);
+  height: var(--tile);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-size: var(--tile-font);
+  background-color: var(--soil);
+  background-image: url('assets/icons/plot_soil.png');
+  background-size: cover;
+  background-position: center;
+  box-shadow:
+    inset 0 3px 6px rgba(20, 12, 8, 0.4),
+    inset 0 -2px 0 rgba(180, 150, 110, 0.15),
+    0 2px 0 rgba(30, 40, 28, 0.28);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+}
+
+/* Soft depth by row — lighting only, same tap size */
+.plot[data-row='0'] {
+  filter: brightness(0.94);
+}
+
+.plot[data-row='1'] {
+  filter: brightness(0.97);
+}
+
+.plot[data-row='4'] {
+  filter: brightness(1.03);
+}
+
+.plot--locked {
+  background-color: #8a9298;
+  background-image: url('assets/icons/plot_locked.png');
+  background-size: cover;
+  background-position: center;
+  opacity: 1;
+  font-size: 1rem;
+  border: 1.5px solid rgba(70, 78, 84, 0.55);
+  filter: none;
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.18),
+    inset 0 -2px 4px rgba(30, 36, 40, 0.3),
+    0 2px 0 rgba(40, 48, 52, 0.28);
+}
+
+.plot--locked[data-row] {
+  filter: none;
+}
+
+.plot--locked .game-icon {
+  width: 1.55em;
+  height: 1.55em;
+  opacity: 1;
+  filter: drop-shadow(0 1px 1px rgba(26, 36, 32, 0.4));
+}
+
+.plot--unlocking {
+  pointer-events: none;
+}
+
+.plot--unlocking::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: #8a9298;
+  background-image: url('assets/icons/plot_locked.png');
+  background-size: cover;
+  background-position: center;
+  animation: plot-unlock-fade 0.6s ease-out forwards;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes plot-unlock-fade {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.plot--empty {
+  cursor: pointer;
+}
+
+.plot--empty:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow:
+    inset 0 2px 5px rgba(20, 12, 8, 0.32),
+    inset 0 -2px 0 rgba(200, 170, 130, 0.2),
+    0 4px 10px rgba(22, 36, 28, 0.18);
+}
+
+.plot--flowered {
+  background-image: url('assets/icons/plot_soil_flowered.png');
+}
+
+.plot--drag-over {
+  outline: 2px solid var(--moss-deep);
+  outline-offset: 2px;
+}
+
+.plot--growing {
+  cursor: default;
+}
+
+.plot--needs-water {
+  cursor: pointer;
+}
+
+.plot--needs-water:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow:
+    inset 0 2px 5px rgba(20, 12, 8, 0.32),
+    inset 0 -2px 0 rgba(160, 140, 100, 0.25),
+    0 4px 10px rgba(22, 36, 28, 0.18);
+}
+
+.plot--has-critter {
+  cursor: pointer;
+}
+
+.plot--has-critter:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow:
+    inset 0 2px 5px rgba(20, 12, 8, 0.32),
+    inset 0 -2px 0 rgba(160, 140, 100, 0.25),
+    0 4px 10px rgba(22, 36, 28, 0.18);
+}
+
+.plot__critter {
+  position: absolute;
+  top: 4%;
+  right: 6%;
+  z-index: 3;
+  pointer-events: none;
+  font-size: 1.05rem;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(22, 36, 28, 0.28));
+  animation: plot-critter-bob 2.4s ease-in-out infinite;
+}
+
+.plot__critter .game-icon--critter {
+  width: 1.15em;
+  height: 1.15em;
+}
+
+.plot--critter-flying {
+  pointer-events: none;
+  cursor: default;
+}
+
+.plot--critter-flying:hover {
+  transform: none;
+}
+
+.critter-fly {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 40;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+  font-size: 1.25rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(22, 36, 28, 0.3));
+}
+
+.critter-fly .game-icon--critter-fly {
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes plot-critter-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.plot__dry-patch {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 78%;
+  height: 78%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background-image: url('assets/icons/plot_soil_dry.png');
+  background-size: cover;
+  background-position: center;
+  /* Tone down bright dry earth so it sits closer to moist soil */
+  filter: brightness(0.72) saturate(0.88) contrast(1.05);
+  pointer-events: none;
+  z-index: 0;
+  -webkit-mask-image: radial-gradient(circle, #000 42%, transparent 72%);
+  mask-image: radial-gradient(circle, #000 42%, transparent 72%);
+}
+
+.plot--watering {
+  pointer-events: none;
+  cursor: default;
+  animation: plot-watering-soil 1.625s ease-out;
+}
+
+.plot--watering:hover {
+  transform: none;
+}
+
+.plot__water-sprinkle {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Soft mist from above — supports the rain without a blue smear. */
+.plot__water-sprinkle::before {
+  content: '';
+  position: absolute;
+  left: 5%;
+  top: -12%;
+  width: 90%;
+  height: 55%;
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(150, 205, 240, 0.38),
+    rgba(110, 175, 220, 0.14) 45%,
+    transparent 70%
+  );
+  filter: blur(3px);
+  animation: plot-watering-wash 1.625s ease-out;
+}
+
+.plot__water-sprinkle-drop {
+  position: absolute;
+  top: -8%;
+  left: 40%;
+  width: 1.15rem;
+  height: 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform-origin: center center;
+  animation: plot-watering-drop 0.75s ease-in forwards;
+  filter: drop-shadow(0 1px 1px rgba(40, 90, 130, 0.2));
+}
+
+.plot__water-sprinkle-drop .game-icon--water-drop {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Rain from across the top of the plot */
+.plot__water-sprinkle-drop:nth-child(1) {
+  left: 12%;
+  width: 1.35rem;
+  height: 1.35rem;
+  animation-delay: 0.04s;
+}
+
+.plot__water-sprinkle-drop:nth-child(2) {
+  left: 28%;
+  width: 1rem;
+  height: 1rem;
+  animation-delay: 0.12s;
+}
+
+.plot__water-sprinkle-drop:nth-child(3) {
+  left: 48%;
+  width: 1.2rem;
+  height: 1.2rem;
+  animation-delay: 0.2s;
+}
+
+.plot__water-sprinkle-drop:nth-child(4) {
+  left: 68%;
+  width: 1.4rem;
+  height: 1.4rem;
+  animation-delay: 0.28s;
+}
+
+.plot__water-sprinkle-drop:nth-child(5) {
+  left: 20%;
+  width: 1.05rem;
+  height: 1.05rem;
+  animation-delay: 0.4s;
+}
+
+.plot__water-sprinkle-drop:nth-child(6) {
+  left: 55%;
+  width: 1.15rem;
+  height: 1.15rem;
+  animation-delay: 0.52s;
+}
+
+.plot__water-sprinkle-drop:nth-child(7) {
+  left: 38%;
+  width: 1.3rem;
+  height: 1.3rem;
+  animation-delay: 0.64s;
+}
+
+.plot__water-sprinkle-drop:nth-child(8) {
+  left: 75%;
+  width: 1rem;
+  height: 1rem;
+  animation-delay: 0.76s;
+}
+
+.plot__water-sprinkle-drop:nth-child(9) {
+  left: 15%;
+  width: 1.2rem;
+  height: 1.2rem;
+  animation-delay: 0.9s;
+}
+
+.plot__water-sprinkle-drop:nth-child(10) {
+  left: 42%;
+  width: 1.25rem;
+  height: 1.25rem;
+  animation-delay: 1.05s;
+}
+
+.plot__water-sprinkle-drop:nth-child(11) {
+  left: 62%;
+  width: 1.05rem;
+  height: 1.05rem;
+  animation-delay: 1.18s;
+}
+
+.plot__water-sprinkle-drop:nth-child(12) {
+  left: 32%;
+  width: 0.95rem;
+  height: 0.95rem;
+  animation-delay: 1.3s;
+}
+
+@keyframes plot-watering-soil {
+  0% {
+    filter: brightness(1.02) saturate(0.95);
+  }
+  25% {
+    filter: brightness(1.06) saturate(1.06);
+  }
+  55% {
+    filter: brightness(1.07) saturate(1.08);
+  }
+  100% {
+    filter: brightness(1);
+  }
+}
+
+@keyframes plot-watering-wash {
+  0% {
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Top-to-bottom rain fall across the plot. */
+@keyframes plot-watering-drop {
+  0% {
+    transform: translateY(0) scale(0.7);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  60% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateY(72px) scale(0.9);
+    opacity: 0;
+  }
+}
+
+.plot--growing .plot__icon {
+  opacity: 0.55;
+}
+
+.plot--needs-water .plot__icon {
+  position: relative;
+  z-index: 1;
+  opacity: 1;
+}
+
+.plot--ready {
+  cursor: pointer;
+  box-shadow:
+    0 0 0 3px var(--honey),
+    0 0 14px rgba(230, 198, 90, 0.5),
+    inset 0 3px 6px rgba(20, 12, 8, 0.35),
+    inset 0 -2px 0 rgba(240, 220, 160, 0.22);
+}
+
+.plot--ready:hover {
+  transform: translateY(-2px) scale(1.05);
+}
+
+@keyframes ready-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.28);
+  }
+}
+
+.plot--ready .plot__icon {
+  animation: ready-pulse 2.4s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.plot__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.plot__progress-track {
+  position: absolute;
+  left: 5px;
+  right: 5px;
+  bottom: 5px;
+  height: 5px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: rgba(47, 59, 42, 0.25);
+  z-index: 1;
+}
+
+.plot__progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--honey-glow), #eef3e6);
+}
+
+/* Bottom dock: player desk (separate from grove), centered */
+
+.bottom-dock {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap);
+  min-height: 0;
+}
+
+/* Soft watercolor desk — painted workstation, same width as grove stage */
+.player-desk {
+  /* LOCKED desk art placement — do not change background-size/position,
+     padding, or min-height unless the user explicitly asks (book hotspot
+     is calibrated to this). See docs/GAME_DESIGN.md + farm-game.mdc. */
+  --desk-pad-x: 1.1rem;
+  --desk-pad-y: 1rem;
+  position: relative;
+  box-sizing: border-box;
+  width: var(--grove-outer-width);
+  max-width: 100%;
+  min-height: 11.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.85rem;
+  padding: var(--desk-pad-y) var(--desk-pad-x) 1.15rem;
+  border-radius: 18px;
+  border: 2px solid rgba(158, 201, 170, 0.75);
+  overflow: hidden;
+  background-color: #d8e8d8;
+  background-image: url('assets/scene/player_desk.png');
+  background-size: cover;
+  /* Bias toward the painted shelf ledge under inventory */
+  background-position: center 28%;
+  background-repeat: no-repeat;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 2px 0 rgba(61, 122, 82, 0.16),
+    0 10px 22px rgba(42, 90, 60, 0.1);
+}
+
+.player-desk::before {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(
+      ellipse 85% 50% at 50% 0%,
+      rgba(255, 255, 255, 0.28) 0%,
+      transparent 55%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(247, 252, 247, 0.22) 0%,
+      rgba(232, 245, 236, 0.12) 45%,
+      rgba(200, 221, 208, 0.2) 100%
+    );
+  z-index: 0;
+}
+
+.player-desk > * {
+  position: relative;
+  z-index: 1;
+}
+
+.inventory {
+  box-sizing: border-box;
+  width: fit-content;
+  max-width: 100%;
+  align-self: center;
+  margin-top: 0.15rem;
+  padding: 0.45rem 0.55rem;
+  border-radius: 12px;
+  background: rgba(247, 252, 247, 0.38);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 rgba(158, 201, 170, 0.35);
+}
+
+.player-desk__work {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 0 0.35rem 0.15rem;
+}
+
+.alchemy {
+  flex: 0 0 auto;
+  box-sizing: border-box;
+}
+
+.inventory--full-shake {
+  animation: inventory-full-shake 0.35s ease-out;
+}
+
+@keyframes inventory-full-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+.inventory__list {
+  list-style: none;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--gap);
+  width: var(--inventory-slots-inner);
+  justify-content: flex-start;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.inventory__item {
+  width: var(--tile);
+  height: var(--tile);
+  flex-shrink: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(244, 250, 244, 0.9);
+  border: 1.5px solid rgba(181, 217, 192, 0.85);
+  border-radius: 12px;
+  font-size: var(--tile-font);
+  cursor: grab;
+  user-select: none;
+  box-shadow: inset 0 1px 2px rgba(47, 59, 42, 0.05);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.inventory__item--empty {
+  border: 1.5px dashed rgba(158, 201, 170, 0.7);
+  background: rgba(244, 250, 244, 0.45);
+  cursor: default;
+  box-shadow: none;
+}
+
+.inventory__item--empty:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.inventory__item:not(.inventory__item--empty):hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow:
+    inset 0 1px 2px rgba(47, 59, 42, 0.06),
+    0 4px 10px rgba(47, 59, 42, 0.14);
+}
+
+.inventory__item:not(.inventory__item--empty):active {
+  cursor: grabbing;
+}
+
+.inventory__item--dragging {
+  opacity: 0.55;
+}
+
+.inventory__item--received {
+  animation: inventory-receive-pulse 0.4s ease-out;
+}
+
+.inventory__item.crop-decay--warn,
+.alchemy__slot.crop-decay--warn,
+.dragon-temple__slot.crop-decay--warn {
+  background: #f3e4c4;
+}
+
+.inventory__item.crop-decay--critical,
+.alchemy__slot.crop-decay--critical,
+.dragon-temple__slot.crop-decay--critical {
+  background: #e8c89a;
+}
+
+.crop-decay__wilt {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  font-size: 0.65rem;
+  line-height: 1;
+  pointer-events: none;
+  display: flex;
+}
+
+@keyframes inventory-receive-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.12);
+  }
+}
+
+.inventory__icon,
+.alchemy__slot-icon,
+.dragon-temple__slot-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.inventory__count {
+  position: absolute;
+  right: 4px;
+  bottom: 2px;
+  font-size: 0.75rem;
+  line-height: 1;
+  color: var(--ink);
+  font-weight: 700;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* Harvest crop fly */
+
+.bonus-crop-fly {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #4d8258;
+  font-size: var(--tile-font);
+  pointer-events: none;
+  overflow: visible;
+  transition: background-color 0.18s ease;
+  box-shadow: 0 0 0 2px var(--honey);
+}
+
+.bonus-crop-fly--landed {
+  background: var(--parchment);
+  box-shadow: none;
+}
+
+.bonus-crop-fly__icon {
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bonus-crop-spark {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.temple-reward-spark {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.discovery-log-btn {
+  position: absolute;
+  z-index: 2;
+  /* LOCKED hit target over the painted Discovery Log book — do not nudge
+     right/bottom/width/height unless the user explicitly asks. */
+  right: 4.85rem;
+  bottom: 0;
+  width: 7rem;
+  height: 4.75rem;
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  box-shadow: none;
+}
+
+/* Quiet idle cue over the painted book — not a hover glow */
+.discovery-log-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0.35rem 0.45rem 0.45rem 0.55rem;
+  border-radius: 8px;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 50% 45%,
+    rgba(230, 198, 90, 0.16) 0%,
+    rgba(95, 154, 114, 0.08) 45%,
+    transparent 72%
+  );
+  opacity: 0.55;
+  animation: discovery-log-idle 4.5s ease-in-out infinite;
+}
+
+@keyframes discovery-log-idle {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.discovery-log-btn:hover,
+.discovery-log-btn:focus-visible {
+  outline: none;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+  filter: none;
+}
+
+.discovery-log-btn:focus-visible {
+  /* Keyboard only: thin soft ring so focus remains reachable */
+  outline: 2px solid rgba(95, 154, 114, 0.45);
+  outline-offset: 2px;
+}
+
+.discovery-log {
+  min-width: 280px;
+  max-width: min(90vw, 28rem);
+  max-height: min(80dvh, 32rem);
+  overflow-y: auto;
+}
+
+.discovery-log__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.discovery-log__figure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  filter: drop-shadow(0 3px 6px rgba(42, 90, 60, 0.18));
+}
+
+.discovery-log__title,
+.reset-confirm__message {
+  font-family: 'Quicksand', 'Nunito', system-ui, sans-serif;
+  font-weight: 700;
+}
+
+.discovery-log__title {
+  font-size: 1rem;
+  margin: 0;
+  text-align: center;
+}
+
+.discovery-log__progress {
+  margin: 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.discovery-log__empty {
+  margin: 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.discovery-log__section + .discovery-log__section {
+  margin-top: 0.85rem;
+}
+
+.discovery-log__section-title {
+  margin: 0 0 0.4rem;
+  font-family: 'Quicksand', 'Nunito', system-ui, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+.discovery-log__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.discovery-log__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  background: var(--parchment);
+  border: 1px solid rgba(196, 176, 137, 0.5);
+}
+
+.discovery-log__icon {
+  font-size: 3.25rem;
+  line-height: 1;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.discovery-log__icon .game-icon {
+  width: 3.25rem;
+  height: 3.25rem;
+}
+
+.discovery-log__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.discovery-log__name {
+  font-size: 1rem;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.discovery-log__rarity {
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 0.03em;
+}
+
+.discovery-log__description {
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
+.discovery-log__shrines {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.5rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+}
+
+.discovery-log__shrine-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  line-height: 1;
+}
+
+.discovery-log__shrine-value--preferred {
+  color: #b8862a;
+  gap: 0.25rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 8px;
+  background: rgba(230, 198, 90, 0.22);
+  border: 1px solid rgba(230, 198, 90, 0.55);
+}
+
+.discovery-log__shrine-value--preferred .discovery-log__shrine-amount {
+  font-weight: 700;
+}
+
+.discovery-log__shrine-value--preferred .game-icon--log-shrine {
+  width: 1.45rem;
+  height: 1.45rem;
+}
+
+.discovery-log__shrine-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.game-icon--log-shrine {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+.discovery-log__shrine-amount {
+  font-variant-numeric: tabular-nums;
+}
+
+.discovery-log__origin {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.1rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.discovery-log__origin-label {
+  font-weight: 600;
+}
+
+.discovery-log__origin-ingredients {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.discovery-log__origin-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.discovery-log__recipe-op {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.game-icon--log-harvest,
+.game-icon--log-ingredient {
+  width: 1.45rem;
+  height: 1.45rem;
+}
+
+.alchemy--drag-over {
+  outline: 2px solid rgba(95, 154, 114, 0.75);
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+
+.alchemy__row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+}
+
+.alchemy__slot {
+  box-sizing: border-box;
+  width: var(--tile);
+  height: var(--tile);
+  flex-shrink: 0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--tile-font);
+  user-select: none;
+  background: rgba(244, 250, 244, 0.72);
+  box-shadow: inset 0 1px 2px rgba(47, 59, 42, 0.05);
+  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+}
+
+.alchemy__slot--empty {
+  border: 1.5px dashed rgba(158, 201, 170, 0.65);
+  color: rgba(95, 116, 102, 0.7);
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.alchemy__slot--filled {
+  border: 1.5px solid rgba(181, 217, 192, 0.9);
+  background: rgba(244, 250, 244, 0.95);
+  color: var(--ink);
+  cursor: pointer;
+  position: relative;
+}
+
+.alchemy__slot--filled:hover {
+  transform: translateY(-2px) scale(1.04);
+}
+
+.alchemy__slot--drag-over {
+  border-color: var(--moss);
+  background: rgba(238, 245, 234, 0.95);
+}
+
+.alchemy__mix {
+  border: none;
+  border-radius: 12px;
+  min-width: 4.25rem;
+  min-height: calc(var(--tile) * 0.85);
+  padding: 0.6rem 1.1rem;
+  background: linear-gradient(180deg, #8ec484, var(--moss));
+  color: #f7fff4;
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow:
+    0 3px 0 var(--moss-deep),
+    0 4px 10px rgba(63, 106, 72, 0.28);
+  transition: transform 0.12s ease, filter 0.12s ease, background 0.12s ease,
+    box-shadow 0.12s ease, opacity 0.12s ease;
+}
+
+.alchemy__mix:hover:not(:disabled) {
+  filter: brightness(1.06);
+  transform: translateY(-2px);
+}
+
+.alchemy__mix--faded,
+.alchemy__mix:disabled {
+  background: rgba(232, 236, 228, 0.85);
+  color: rgba(95, 116, 102, 0.55);
+  cursor: default;
+  opacity: 0.85;
+  box-shadow: inset 0 1px 2px rgba(47, 59, 42, 0.06);
+  transform: none;
+  filter: none;
+}
+
+.alchemy__result {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  min-height: var(--tile);
+  border: 1.5px solid rgba(181, 217, 192, 0.9);
+  border-radius: 12px;
+  padding: 0.65rem 0.85rem;
+  background: rgba(244, 250, 244, 0.92);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.alchemy__result:hover {
+  background: rgba(226, 242, 230, 0.95);
+  transform: translateY(-1px);
+}
+
+.reset-game {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.reset-game:hover {
+  color: var(--ink);
+}
+
+/* Radial crop picker — thin SVG donut anchored to the clicked plot */
+
+.crop-picker-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(47, 59, 42, 0.22);
+  z-index: 20;
+}
+
+.crop-picker {
+  position: fixed;
+  width: 180px;
+  height: 180px;
+  pointer-events: none;
+  filter: drop-shadow(0 8px 18px rgba(42, 90, 60, 0.18));
+}
+
+.crop-picker__disc {
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.crop-picker__slice {
+  fill: var(--parchment);
+  stroke: var(--frame);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  pointer-events: auto;
+  transition: fill 0.12s ease;
+  cursor: default;
+}
+
+.crop-picker__slice--unlocked {
+  cursor: pointer;
+}
+
+.crop-picker__slice--unlocked:hover,
+.crop-picker__slice--unlocked:focus,
+.crop-picker__slice--hover {
+  fill: #e2f2e6;
+  outline: none;
+}
+
+.crop-picker__slice--locked {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.crop-picker__hub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 68px;
+  height: 68px;
+  margin: -34px 0 0 -34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
+  font-family: 'Quicksand', 'Nunito', system-ui, sans-serif;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.crop-picker__hub-time {
+  height: 1em;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  color: var(--ink);
+  text-shadow:
+    0 0 4px var(--linen),
+    0 0 8px var(--linen),
+    0 1px 2px rgba(247, 252, 247, 0.9);
+}
+
+.crop-picker__icon {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  font-size: 1.85rem;
+  line-height: 1;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.crop-picker__icon--locked {
+  opacity: 0.45;
+}
+
+.crop-picker__icon .game-icon {
+  width: 1.85rem;
+  height: 1.85rem;
+}
+
+.reset-confirm {
+  min-width: 260px;
+  max-width: 90vw;
+}
+
+.reset-confirm__message {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.reset-confirm__actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.reset-confirm__btn {
+  border: 2px solid #b5d9c0;
+  border-radius: 10px;
+  padding: 0.5rem 1.25rem;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--parchment);
+  color: var(--ink);
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.reset-confirm__btn:hover {
+  background: #e2f2e6;
+  transform: translateY(-1px);
+}
+
+.reset-confirm__btn--yes {
+  background: linear-gradient(180deg, #dce8c8, #c8d9ae);
+  border-color: #a8c088;
+}
+
+.reset-confirm__btn--yes:hover {
+  background: linear-gradient(180deg, #d2e0bc, #bdd1a2);
+}

@@ -1,0 +1,107 @@
+import { getShrine } from '../data/shrines.js';
+import { isShrineMaxed } from '../state/gameState.js';
+import { setIcon, shrineIconSrc } from './icon.js';
+
+const CROP_DRAG_TYPE = 'text/plain';
+const CROP_DRAG_PREFIX = 'farm-crop:';
+
+export { CROP_DRAG_TYPE, CROP_DRAG_PREFIX };
+
+// Renders the four corner shrines and wires click + drop targets for offerings.
+export function renderShrines(boardEl, state, onOffer, onShrineClick) {
+  for (const shrine of [
+    getShrine('frog'),
+    getShrine('monkey'),
+    getShrine('fox'),
+    getShrine('tiger'),
+  ]) {
+    if (!shrine) continue;
+    const container = boardEl.querySelector(`#shrine-${shrine.id}`);
+    if (!container) continue;
+    renderShrine(container, shrine, state, onOffer, onShrineClick);
+  }
+}
+
+function parseCropDragData(raw) {
+  if (!raw || !raw.startsWith(CROP_DRAG_PREFIX)) return null;
+  return raw.slice(CROP_DRAG_PREFIX.length);
+}
+
+function renderShrine(container, shrine, state, onOffer, onShrineClick) {
+  const progress = state.shrines[shrine.id];
+  const maxed = isShrineMaxed(state, shrine.id);
+  const currentTier = progress.tier;
+  const nextTierDef = shrine.tiers[currentTier];
+
+  const required = maxed ? 1 : nextTierDef.progressRequired;
+  const current = maxed ? 1 : progress.progress;
+  const percent = maxed ? 100 : Math.min(100, (current / required) * 100);
+
+  container.className = `shrine shrine--${shrine.corner} shrine--${shrine.id}`;
+  if (maxed) {
+    container.classList.add('shrine--maxed');
+  }
+  container.innerHTML = '';
+
+  const figure = document.createElement('div');
+  figure.className = 'shrine__figure';
+
+  const icon = document.createElement('div');
+  icon.className = 'shrine__icon';
+  setIcon(icon, {
+    src: shrineIconSrc(shrine.id),
+    emoji: shrine.icon,
+    alt: shrine.name,
+    imgClass: 'game-icon game-icon--shrine-object',
+  });
+  figure.appendChild(icon);
+  container.appendChild(figure);
+
+  const plaque = document.createElement('div');
+  plaque.className = 'shrine__plaque';
+
+  const track = document.createElement('div');
+  track.className = 'shrine__progress-track';
+  const fill = document.createElement('div');
+  fill.className = 'shrine__progress-fill';
+  fill.style.width = `${percent}%`;
+  track.appendChild(fill);
+  plaque.appendChild(track);
+
+  container.appendChild(plaque);
+
+  let suppressClick = false;
+  container.onclick = () => {
+    if (suppressClick) {
+      suppressClick = false;
+      return;
+    }
+    onShrineClick(shrine.id);
+  };
+
+  if (maxed) {
+    container.ondragover = null;
+    container.ondrop = null;
+    container.ondragleave = null;
+    return;
+  }
+
+  container.ondragover = (event) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    container.classList.add('shrine--drag-over');
+  };
+
+  container.ondragleave = () => {
+    container.classList.remove('shrine--drag-over');
+  };
+
+  container.ondrop = (event) => {
+    event.preventDefault();
+    container.classList.remove('shrine--drag-over');
+    const cropId = parseCropDragData(event.dataTransfer.getData(CROP_DRAG_TYPE));
+    if (!cropId) return;
+    suppressClick = true;
+    onOffer(shrine.id, cropId);
+  };
+}

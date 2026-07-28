@@ -1,0 +1,94 @@
+// Renders crop/UI icons as images when an asset path exists, else emoji text.
+// Keeps emoji as fallback so missing assets never break the UI.
+
+const ICON_BASE = 'assets/icons';
+
+// Richer illustrated PNGs (Cozy Lofi Grove / Fresh Moss).
+const PNG_CROPS = new Set([
+  'wheat',
+  'turnip',
+  'blueberry',
+  'moonflower',
+  'golden_pumpkin',
+  'sunfruit',
+  'harvest_tonic',
+  'forest_bread',
+  'moonlit_grain',
+  'golden_champignon',
+  'sunblessed_shroom',
+  'wildroot_mix',
+  'moonroot_essence',
+  'harvest_root',
+  'sunroot_essence',
+  'mystic_berry',
+  'enchanted_jam',
+  'radiant_berry',
+  'celestial_seed',
+  'solar_bloom',
+  'divine_harvest',
+]);
+
+export function cropIconSrc(cropId) {
+  if (!cropId) return null;
+  const ext = PNG_CROPS.has(cropId) ? 'png' : 'svg';
+  return `${ICON_BASE}/${cropId}.${ext}`;
+}
+
+export function shrineIconSrc(shrineId) {
+  if (!shrineId) return null;
+  return `${ICON_BASE}/shrine_${shrineId}.png`;
+}
+
+// Compact Discovery Log shrine-value faces (emoji-sized).
+export function logShrineIconSrc(shrineId) {
+  if (!shrineId) return null;
+  return `${ICON_BASE}/log_${shrineId}.png`;
+}
+
+export const UI_ICONS = {
+  discoveryLog: `${ICON_BASE}/discovery_log.png`,
+  dragonRest: `${ICON_BASE}/dragon_temple_rest.png`,
+  dragonAwake: `${ICON_BASE}/dragon_temple_awake.png`,
+  fire: `${ICON_BASE}/fire.png`,
+  harvest: `${ICON_BASE}/harvest.png`,
+  spark: `${ICON_BASE}/spark.png`,
+  lock: `${ICON_BASE}/lock.svg`,
+  wilt: `${ICON_BASE}/wilt.svg`,
+  waterDrop: `${ICON_BASE}/water_drop.png`,
+  butterfly: `${ICON_BASE}/butterfly.png`,
+};
+
+/**
+ * Fill a container with an icon image (preferred) or emoji fallback.
+ * @param {HTMLElement} container
+ * @param {{ src?: string|null, emoji?: string, alt?: string, imgClass?: string }} opts
+ */
+export function setIcon(container, { src = null, emoji = '', alt = '', imgClass = 'game-icon' } = {}) {
+  container.replaceChildren();
+  if (src) {
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = alt;
+    img.draggable = false;
+    img.className = imgClass;
+    container.appendChild(img);
+    return;
+  }
+  if (emoji) {
+    container.textContent = emoji;
+  }
+}
+
+/** Convenience: set crop icon from a crop def (or id + emoji). */
+export function setCropIcon(container, crop, imgClass = 'game-icon') {
+  if (!crop) {
+    container.replaceChildren();
+    return;
+  }
+  setIcon(container, {
+    src: cropIconSrc(crop.id),
+    emoji: crop.icon,
+    alt: crop.name ?? '',
+    imgClass,
+  });
+}
