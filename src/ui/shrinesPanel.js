@@ -106,7 +106,7 @@ function renderShrine(
   track.className = 'shrine__progress-track';
   const fill = document.createElement('div');
   fill.className = 'shrine__progress-fill';
-  fill.style.width = `${percent}%`;
+  fill.style.height = `${percent}%`;
   track.appendChild(fill);
   plaque.appendChild(track);
 

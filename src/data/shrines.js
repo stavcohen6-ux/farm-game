@@ -92,14 +92,14 @@ export const SHRINES = [
         name: 'Forest Fox',
         progressRequired: 15,
         acceptedCropIds: ['turnip', 'root_loaf'],
-        plotsToUnlock: 4,
+        plotsToUnlock: 2,
         tooltip: 'More land',
       },
       {
         name: 'Valley Fox',
         progressRequired: 25,
         acceptedCropIds: ['blueberry', 'forest_bread', 'wildroot'],
-        plotsToUnlock: 4,
+        plotsToUnlock: 2,
         tooltip: 'More land',
       },
       {

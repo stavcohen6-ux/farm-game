@@ -2,16 +2,30 @@ import { getCrop } from '../data/crops.js';
 import { areAdjacentPlots, isReady } from '../state/gameState.js';
 import { findAlchemyResult } from '../data/alchemyRecipes.js';
 import { setCropIcon } from './icon.js';
+import {
+  UPROOT_HOLD_MS,
+  UPROOT_MOVE_THRESHOLD_PX,
+  showUprootHoldRing,
+  clearUprootHoldRing,
+  suppressNextClick,
+} from './plotUprootHold.js';
 
-const DRAG_THRESHOLD_PX = 8;
+export const DRAG_THRESHOLD_PX = UPROOT_MOVE_THRESHOLD_PX;
 
 let session = null;
 
 /**
  * Pointer drag for ready crops (mouse + touch). Replaces HTML5 DnD for plots.
  * `onDrop` receives `{ cropId, fromPlotId, clientX, clientY }`.
+ * `onLongPress(plotId)` fires after a still hold (~500ms) instead of drag.
  */
-export function wireReadyCropPointerDrag(container, state, now, onDrop) {
+export function wireReadyCropPointerDrag(
+  container,
+  state,
+  now,
+  onDrop,
+  onLongPress = null,
+) {
   for (const el of container.querySelectorAll('[data-plot-id]')) {
     const plotId = Number(el.dataset.plotId);
     const plot = state.plots.find((p) => p.id === plotId);
@@ -34,15 +48,32 @@ export function wireReadyCropPointerDrag(container, state, now, onDrop) {
     el.style.touchAction = 'none';
     el.onpointerdown = (event) => {
       if (event.button != null && event.button !== 0) return;
-      beginDrag(event, el, { plotId, cropId }, container, state, now, onDrop);
+      beginDrag(
+        event,
+        el,
+        { plotId, cropId },
+        container,
+        state,
+        now,
+        onDrop,
+        onLongPress,
+      );
     };
   }
 }
 
-function beginDrag(event, sourceEl, drag, container, state, now, onDrop) {
+function beginDrag(
+  event,
+  sourceEl,
+  drag,
+  container,
+  state,
+  now,
+  onDrop,
+  onLongPress,
+) {
   if (session) endDrag(false);
 
-  const crop = getCrop(drag.cropId);
   session = {
     drag,
     sourceEl,
@@ -50,10 +81,13 @@ function beginDrag(event, sourceEl, drag, container, state, now, onDrop) {
     state,
     now,
     onDrop,
+    onLongPress,
     pointerId: event.pointerId,
     startX: event.clientX,
     startY: event.clientY,
     moved: false,
+    longPressed: false,
+    holdTimer: null,
     ghost: null,
     highlighted: null,
   };
@@ -63,15 +97,34 @@ function beginDrag(event, sourceEl, drag, container, state, now, onDrop) {
   sourceEl.addEventListener('pointerup', onPointerUp);
   sourceEl.addEventListener('pointercancel', onPointerCancel);
   event.preventDefault();
+
+  if (onLongPress) {
+    showUprootHoldRing(sourceEl);
+    session.holdTimer = window.setTimeout(() => {
+      if (!session || session.moved || session.longPressed) return;
+      session.longPressed = true;
+      clearHoldTimer();
+      clearUprootHoldRing(session.sourceEl);
+    }, UPROOT_HOLD_MS);
+  }
+}
+
+function clearHoldTimer() {
+  if (!session?.holdTimer) return;
+  window.clearTimeout(session.holdTimer);
+  session.holdTimer = null;
 }
 
 function onPointerMove(event) {
   if (!session || event.pointerId !== session.pointerId) return;
+  if (session.longPressed) return;
   const dx = event.clientX - session.startX;
   const dy = event.clientY - session.startY;
   if (!session.moved) {
     if (dx * dx + dy * dy < DRAG_THRESHOLD_PX * DRAG_THRESHOLD_PX) return;
     session.moved = true;
+    clearHoldTimer();
+    clearUprootHoldRing(session.sourceEl);
     session.sourceEl.classList.add('plot--dragging');
     session.ghost = createGhost(session.drag.cropId, session.sourceEl);
   }
@@ -81,26 +134,20 @@ function onPointerMove(event) {
 
 function onPointerUp(event) {
   if (!session || event.pointerId !== session.pointerId) return;
-  const { moved, drag, onDrop } = session;
+  const { moved, longPressed, drag, onDrop, onLongPress } = session;
   const x = event.clientX;
   const y = event.clientY;
+  const plotId = drag.plotId;
   endDrag(true);
+  if (longPressed) {
+    suppressNextClick();
+    onLongPress?.(plotId);
+    return;
+  }
   if (moved) {
     suppressNextClick();
     onDrop?.({ cropId: drag.cropId, fromPlotId: drag.plotId, clientX: x, clientY: y });
   }
-}
-
-function suppressNextClick() {
-  const swallow = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    document.removeEventListener('click', swallow, true);
-  };
-  document.addEventListener('click', swallow, true);
-  window.setTimeout(() => {
-    document.removeEventListener('click', swallow, true);
-  }, 400);
 }
 
 function onPointerCancel(event) {
@@ -111,6 +158,8 @@ function onPointerCancel(event) {
 function endDrag(release) {
   if (!session) return;
   const { sourceEl, pointerId, ghost, highlighted, container } = session;
+  clearHoldTimer();
+  clearUprootHoldRing(sourceEl);
   sourceEl.removeEventListener('pointermove', onPointerMove);
   sourceEl.removeEventListener('pointerup', onPointerUp);
   sourceEl.removeEventListener('pointercancel', onPointerCancel);

@@ -70,18 +70,18 @@ body {
   --gap: 0.35rem;
   --tile: 4rem;
   --tile-font: 1.5rem;
-  --shrine-figure: 7.5rem;
-  --shrine-col: 8.75rem;
+  --shrine-figure: 5.5rem;
+  --shrine-col: 5.75rem;
   --plot-gap: 8px;
   --frame-pad: 14px;
+  --grove-pad-x: 0.75rem;
+  --grove-pad-y: 0.55rem;
   --radius: 0.75rem;
   --dock-pad: 0.75rem;
   --inventory-slots-inner: calc(6 * var(--tile) + 5 * var(--gap));
-  /* Farm board content width (grid + shrine columns) */
+  /* Farm board content width (4 columns; shrines foot on corners and overflow) */
   --farm-band-width: calc(
-    var(--shrine-col) + 0.5rem +
-      (4 * var(--tile) + 3 * var(--plot-gap) + 2 * var(--frame-pad)) + 0.5rem +
-      var(--shrine-col)
+    4 * var(--tile) + 3 * var(--plot-gap) + 2 * var(--frame-pad)
   );
   /* Grove stage outer width including --grove-pad-x on each side */
   --grove-outer-width: calc(var(--farm-band-width) + 2 * var(--grove-pad-x, 0.75rem));
@@ -111,9 +111,7 @@ body {
 /* Scenic grove: temple + farm + shrines in one clearing */
 
 .grove-stage {
-  --grove-pad-x: 0.75rem;
-  --grove-pad-y: 0.55rem;
-  /* Tight temple→farm so shrine base reads flush on the board */
+  /* Clearance between temple tribute row and farm board */
   position: relative;
   z-index: 0;
   flex: 1 1 auto;
@@ -125,10 +123,10 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.1rem;
-  padding: var(--grove-pad-y) var(--grove-pad-x) 0.75rem;
+  gap: 0.65rem;
+  padding: var(--grove-pad-y, 0.55rem) var(--grove-pad-x, 0.75rem) 0.75rem;
   border-radius: 1.25rem;
-  overflow: hidden;
+  overflow: visible;
   background-color: #c8ddd0;
   background-image:
     linear-gradient(
@@ -319,7 +317,7 @@ body {
   flex: 0 0 auto;
   align-self: center;
   padding: 0;
-  margin-bottom: 0.1rem;
+  margin-bottom: 0;
   background: transparent;
   border: none;
   box-shadow: none;
@@ -697,81 +695,145 @@ body {
   filter: none;
 }
 
-/* Playfield: farm flanked by shrines hugging corners */
+/* Playfield: framed 4×4 board; corner cells are shrine footings */
 
 .farm-board {
+  position: relative;
   flex: 0 1 auto;
   min-height: 0;
   align-self: center;
-  display: grid;
-  grid-template-columns: auto auto auto;
-  grid-template-rows: auto auto auto;
-  gap: 0.15rem 0.25rem;
-  align-items: start;
-  justify-content: center;
-  padding: 0.25rem 0.15rem 0.35rem;
+  width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: block;
+  padding: var(--frame-pad);
+  overflow: visible;
+  background-color: #6a7368;
+  background-image: url('assets/icons/farm_frame.png');
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 14px;
+  border: 3px solid #3a443c;
+  box-shadow:
+    inset 0 2px 0 rgba(220, 230, 200, 0.28),
+    inset 0 -6px 14px rgba(20, 28, 22, 0.28),
+    0 4px 0 #2e3830,
+    0 12px 24px rgba(22, 36, 28, 0.22);
 }
 
 .farm-board .farm-grid {
-  grid-column: 2;
-  grid-row: 1 / -1;
-  justify-self: center;
-  align-self: start;
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, var(--tile));
+  grid-template-rows: repeat(4, var(--tile));
+  gap: var(--plot-gap);
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Shrines sit on corner cells (no plot / no filler tile); figure overflows the frame */
+.farm-board .shrine {
+  --shrine-bar-width: 8px;
+  --shrine-bar-gap: 0.28rem;
+  position: absolute;
+  z-index: 2;
+  width: auto;
+  margin: 0;
+  min-height: 0;
+  gap: var(--shrine-bar-gap);
+  align-items: center;
+}
+
+/* Corner cell anchors: (0,0) (0,3) (3,0) (3,3).
+   Vertical progress tracks sit on the outer left/right of each figure.
+   Figure stays centered on the footing; bar sticks out equally on both sides. */
+.farm-board .shrine--top-left,
+.farm-board .shrine--bottom-left {
+  /* DOM is figure then plaque → row-reverse puts track on the left */
+  flex-direction: row-reverse;
+}
+
+.farm-board .shrine--top-right,
+.farm-board .shrine--bottom-right {
+  flex-direction: row;
 }
 
 .farm-board .shrine--top-left {
-  grid-column: 1;
-  grid-row: 1;
-  justify-self: end;
-  align-self: start;
-  margin-right: -0.65rem;
-  margin-bottom: -0.35rem;
+  top: var(--frame-pad);
+  left: var(--frame-pad);
+  transform: translate(
+    calc(
+      (var(--tile) - var(--shrine-col)) / 2 - var(--shrine-bar-width) -
+        var(--shrine-bar-gap)
+    ),
+    calc((var(--tile) - var(--shrine-figure)) / 2 - 18px)
+  );
 }
 
 .farm-board .shrine--top-right {
-  grid-column: 3;
-  grid-row: 1;
-  justify-self: start;
-  align-self: start;
-  margin-left: -0.65rem;
-  margin-bottom: -0.35rem;
+  top: var(--frame-pad);
+  left: calc(
+    var(--frame-pad) + 3 * (var(--tile) + var(--plot-gap))
+  );
+  right: auto;
+  transform: translate(
+    calc((var(--tile) - var(--shrine-col)) / 2),
+    calc((var(--tile) - var(--shrine-figure)) / 2 - 18px)
+  );
 }
 
 .farm-board .shrine--bottom-left {
-  grid-column: 1;
-  grid-row: 3;
-  justify-self: end;
-  align-self: end;
-  margin-right: -0.65rem;
-  margin-top: -0.35rem;
+  top: calc(
+    var(--frame-pad) + 3 * (var(--tile) + var(--plot-gap))
+  );
+  left: var(--frame-pad);
+  bottom: auto;
+  transform: translate(
+    calc(
+      (var(--tile) - var(--shrine-col)) / 2 - var(--shrine-bar-width) -
+        var(--shrine-bar-gap)
+    ),
+    calc((var(--tile) - var(--shrine-figure)) / 2 + 10px)
+  );
 }
 
 .farm-board .shrine--bottom-right {
-  grid-column: 3;
-  grid-row: 3;
-  justify-self: start;
-  align-self: end;
-  margin-left: -0.65rem;
-  margin-top: -0.35rem;
+  top: calc(
+    var(--frame-pad) + 3 * (var(--tile) + var(--plot-gap))
+  );
+  left: calc(
+    var(--frame-pad) + 3 * (var(--tile) + var(--plot-gap))
+  );
+  bottom: auto;
+  right: auto;
+  transform: translate(
+    calc((var(--tile) - var(--shrine-col)) / 2),
+    calc((var(--tile) - var(--shrine-figure)) / 2 + 10px)
+  );
 }
 
-/* Shrines — full figurine props + soft plaque */
+/* Shrines — figurine + slim vertical outer progress track */
 
 .shrine {
-  width: var(--shrine-col);
+  --shrine-bar-width: 8px;
+  --shrine-bar-gap: 0.28rem;
+  width: auto;
   padding: 0;
   border: none;
   border-radius: 0;
   background: transparent;
   text-align: center;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 0.25rem;
+  gap: var(--shrine-bar-gap);
   cursor: pointer;
   box-shadow: none;
-  /* Easier finger targets on the figurine */
-  min-height: calc(var(--shrine-figure) + 1.25rem);
 }
 
 .shrine--frog,
@@ -787,8 +849,9 @@ body {
   border-style: none;
 }
 
-.shrine--maxed .shrine__plaque {
-  border-style: dashed;
+.shrine--maxed .shrine__progress-track {
+  outline: 1px dashed rgba(90, 110, 96, 0.55);
+  outline-offset: 1px;
 }
 
 .shrine--drag-over {
@@ -799,7 +862,7 @@ body {
   filter: drop-shadow(0 0 8px rgba(95, 154, 114, 0.75));
 }
 
-.shrine--drag-over .shrine__plaque {
+.shrine--drag-over .shrine__progress-track {
   outline: 2px solid var(--moss);
   outline-offset: 2px;
 }
@@ -808,7 +871,8 @@ body {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  width: 100%;
+  width: var(--shrine-col);
+  flex-shrink: 0;
   min-height: var(--shrine-figure);
   filter: drop-shadow(0 6px 10px rgba(42, 90, 60, 0.22));
   transition: filter 0.14s ease;
@@ -843,59 +907,69 @@ body {
   min-height: 0;
 }
 
+/* Slim vertical progress track on the outer side of each shrine. */
 .shrine__plaque {
   position: relative;
   z-index: 1;
-  width: 100%;
-  max-width: 6.5rem;
+  width: auto;
+  max-width: none;
+  flex-shrink: 0;
   box-sizing: border-box;
-  padding: 0.2rem 0.35rem;
-  border-radius: 999px;
-  background: rgba(244, 250, 244, 0.88);
-  border: 2px solid var(--panel-border);
-  box-shadow: 0 1px 0 rgba(61, 122, 82, 0.18);
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-end;
   gap: 0;
-}
-
-.shrine--frog .shrine__plaque {
-  border-color: #6a9e7a;
-}
-
-.shrine--monkey .shrine__plaque {
-  border-color: #b8956c;
-}
-
-.shrine--fox .shrine__plaque {
-  border-color: #c47a4a;
-}
-
-.shrine--tiger .shrine__plaque {
-  border-color: #c9a03a;
+  align-self: center;
 }
 
 .shrine__progress-track {
-  width: 100%;
-  height: 6px;
+  width: var(--shrine-bar-width, 8px);
+  height: calc(var(--shrine-figure) * 0.7);
   border-radius: 999px;
-  background: rgba(47, 59, 42, 0.12);
+  background: rgba(30, 40, 34, 0.28);
+  border: 1px solid rgba(90, 110, 96, 0.35);
   overflow: hidden;
-  margin-top: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  box-shadow: inset 0 1px 1px rgba(20, 28, 24, 0.2);
+}
+
+.shrine--frog .shrine__progress-fill {
+  background: linear-gradient(180deg, #7aaa72, #5a8e6a);
+}
+
+.shrine--monkey .shrine__progress-fill {
+  background: linear-gradient(180deg, #c4a078, #a07a52);
+}
+
+.shrine--fox .shrine__progress-fill {
+  background: linear-gradient(180deg, #d49058, #b8683a);
+}
+
+.shrine--tiger .shrine__progress-fill {
+  background: linear-gradient(180deg, #d4b050, #b89030);
 }
 
 .shrine__progress-fill {
-  height: 100%;
+  width: 100%;
+  height: 0;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--moss), #7aaa72);
+  background: linear-gradient(180deg, #7aaa72, var(--moss));
 }
 
 /* Shrine detail modal */
 
 .shrine-detail-overlay,
 .discovery-log-overlay,
-.reset-confirm-overlay {
+.reset-confirm-overlay,
+.uproot-confirm-overlay {
   position: fixed;
   inset: 0;
   background: rgba(47, 59, 42, 0.38);
@@ -908,7 +982,8 @@ body {
 
 .shrine-detail,
 .discovery-log,
-.reset-confirm {
+.reset-confirm,
+.uproot-confirm {
   background: var(--linen);
   border: 3px solid var(--frame);
   border-radius: 16px;
@@ -1035,24 +1110,11 @@ body {
   margin-top: 0.25rem;
 }
 
-/* Farm grid — painterly mossy stone frame + dirt/locked tile textures */
+/* Farm grid — 4×4 plot tracks inside the framed board (corners empty for shrines) */
 
 .farm-grid {
   display: grid;
   gap: var(--plot-gap);
-  background-color: #6a7368;
-  background-image: url('assets/icons/farm_frame.png');
-  background-size: 100% 100%;
-  background-position: center;
-  background-repeat: no-repeat;
-  padding: var(--frame-pad);
-  border-radius: 14px;
-  border: 3px solid #3a443c;
-  box-shadow:
-    inset 0 2px 0 rgba(220, 230, 200, 0.28),
-    inset 0 -6px 14px rgba(20, 28, 22, 0.28),
-    0 4px 0 #2e3830,
-    0 12px 24px rgba(22, 36, 28, 0.22);
 }
 
 .plot {
@@ -1085,7 +1147,7 @@ body {
   filter: brightness(0.97);
 }
 
-.plot[data-row='4'] {
+.plot[data-row='3'] {
   filter: brightness(1.03);
 }
 
@@ -2692,4 +2754,83 @@ body {
 
 .reset-confirm__btn--yes:hover {
   background: linear-gradient(180deg, #d2e0bc, #bdd1a2);
+}
+
+.uproot-confirm-overlay {
+  display: block;
+}
+
+.uproot-confirm {
+  position: fixed;
+  min-width: 200px;
+  max-width: min(280px, calc(100vw - 16px));
+  padding: 1.25rem 1.35rem;
+  z-index: 21;
+}
+
+.uproot-confirm__message {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0 0 1rem;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.uproot-confirm__actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.uproot-confirm__btn {
+  border: 2px solid #b5d9c0;
+  border-radius: 10px;
+  padding: 0.65rem 1.35rem;
+  min-height: 44px;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--parchment);
+  color: var(--ink);
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.uproot-confirm__btn:hover {
+  background: #e2f2e6;
+  transform: translateY(-1px);
+}
+
+.uproot-confirm__btn--yes {
+  background: linear-gradient(180deg, #dce8c8, #c8d9ae);
+  border-color: #a8c088;
+}
+
+.uproot-confirm__btn--yes:hover {
+  background: linear-gradient(180deg, #d2e0bc, #bdd1a2);
+}
+
+.plot--uproot-hold {
+  position: relative;
+}
+
+.plot__uproot-ring {
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 3;
+  border: 3px solid rgba(212, 176, 80, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(255, 248, 220, 0.35);
+  opacity: 0.4;
+  transform: scale(0.88);
+  animation: uproot-hold-ring 500ms linear forwards;
+}
+
+@keyframes uproot-hold-ring {
+  to {
+    opacity: 1;
+    transform: scale(1);
+    border-color: rgba(212, 176, 80, 0.95);
+  }
 }

@@ -1,7 +1,10 @@
 import { getCrop, getGrowthMs } from '../data/crops.js';
 import {
-  GRID_ROWS,
-  GRID_COLS,
+  BOARD_COLS,
+  BOARD_ROWS,
+  getPlotLayout,
+} from '../data/farmLayout.js';
+import {
   isReady,
   needsWater,
   hasCritterVisit,
@@ -9,6 +12,7 @@ import {
 } from '../state/gameState.js';
 import { CROP_DRAG_TYPE, parseCropDragData } from './shrinesPanel.js';
 import { wireReadyCropPointerDrag } from './plotPointerDrag.js';
+import { wireGrowingPlotUprootHold } from './plotUprootHold.js';
 import { setCropIcon, setIcon, UI_ICONS } from './icon.js';
 import { setTanukiIcon } from './tanukiNap.js';
 import { breathTiming } from './breathTiming.js';
@@ -36,6 +40,7 @@ let suppressPlotClickAfterDrag = false;
 //
 // `onFlowerPlot(plotId, cropId)` — drop a plantable on an empty plot to flower it.
 // `onPlotCropDrop({ cropId, fromPlotId, clientX, clientY })` — pointer drag end.
+// `onUprootHold(plotId)` — long-press on an occupied plot (confirm separately).
 export function renderGrid(
   container,
   state,
@@ -49,9 +54,10 @@ export function renderGrid(
   tanukiArrivingPlotIds = new Set(),
   tanukiLeavingPlotIds = new Set(),
   onPlotCropDrop = null,
+  onUprootHold = null,
 ) {
-  container.style.gridTemplateColumns = `repeat(${GRID_COLS}, 1fr)`;
-  container.style.gridTemplateRows = `repeat(${GRID_ROWS}, 1fr)`;
+  container.style.gridTemplateColumns = `repeat(${BOARD_COLS}, var(--tile))`;
+  container.style.gridTemplateRows = `repeat(${BOARD_ROWS}, var(--tile))`;
 
   const existingById = new Map();
   for (const child of container.children) {
@@ -78,7 +84,7 @@ export function renderGrid(
     );
     const existing = existingById.get(plot.id);
     if (existing && existing.dataset.plotKey === key) {
-      existing.dataset.row = String(Math.floor(plot.id / GRID_COLS));
+      applyPlotPlacement(existing, plot.id);
       if (key.startsWith('growing:')) {
         updateProgress(existing, plot, now);
       }
@@ -115,10 +121,25 @@ export function renderGrid(
   };
 
   wireFlowerDrop(container, state, onFlowerPlot);
-  wireReadyCropPointerDrag(container, state, now, (payload) => {
-    suppressPlotClickAfterDrag = true;
-    onPlotCropDrop?.(payload);
-  });
+  wireReadyCropPointerDrag(
+    container,
+    state,
+    now,
+    (payload) => {
+      suppressPlotClickAfterDrag = true;
+      onPlotCropDrop?.(payload);
+    },
+    onUprootHold,
+  );
+  wireGrowingPlotUprootHold(container, state, now, onUprootHold);
+}
+
+function applyPlotPlacement(el, plotId) {
+  const layout = getPlotLayout(plotId);
+  if (!layout) return;
+  el.dataset.row = String(layout.row);
+  el.style.gridRow = String(layout.row + 1);
+  el.style.gridColumn = String(layout.col + 1);
 }
 
 function wireFlowerDrop(container, state, onFlowerPlot) {
@@ -324,7 +345,7 @@ function renderPlot(
   const el = document.createElement('div');
   el.dataset.plotId = plot.id;
   el.dataset.plotKey = key;
-  el.dataset.row = String(Math.floor(plot.id / GRID_COLS));
+  applyPlotPlacement(el, plot.id);
   el.className = 'plot';
 
   // Unlocking: soil base + fading locked overlay (no lock icon).

@@ -8,6 +8,12 @@ of an explicit decision.
 Cozy, relaxing farming game. Not an action or skill-based game — no
 reflexes required. (confirmed)
 
+## Platform
+Target is **desktop and mobile** (portrait phone). Every feature must
+work well on touch phones: readable targets, no hover-only actions, no
+desktop-only gestures. Pointer/mouse remains supported; mobile is not
+secondary. (confirmed)
+
 ## Core fantasy
 "Earn the favor of the old gods and cultivate a legendary farm. Restore
 harmony between the land and its guardians." The game should feel peaceful,
@@ -65,8 +71,9 @@ direction is intentionally revised.
   title **Field Notes**. Whole plank is a button that opens Field Notes.
 - Grove stage (`#grove-stage`): in-game scenic backdrop
   (`assets/scene/grove_clearing.png`) — misty canopy, empty clearing, moss
-  foreground; no baked shrine alcoves (icons sit on top). Farm + corner
-  shrines sit on a deeper moss ground plane under the Dragon Temple
+  foreground; no baked shrine alcoves (icons sit on top). Farm board with
+  corner shrine footings sits on a deeper moss ground plane under the Dragon
+  Temple
 - Farm board: soft moss ground plane (quiet chrome) under the grid; painterly
   mossy-stone frame texture (`farm_frame.png`) and plot textures
   (`plot_soil.png`, circular `plot_soil_dry.png` patch when a plant asks for
@@ -84,10 +91,13 @@ direction is intentionally revised.
   button on the main screen.
 - Modals: cream linen inside sage / frame borders (Field Notes, shrine
   detail, reset confirm)
-- Shrines: simplified painterly guardian icons on small altars, hugging farm
-  corners; frog/monkey tops align with the top of the farm tiles; main view
-  shows figure + progress bar only (name / tier in the click detail modal);
-  no hover lift/scale on shrines
+- Shrines: simplified painterly guardian icons on small altars. Each corner
+  cell of the 4×4 board is a shrine **footing** (no plot); the figure is
+  **larger than a farm tile** and overflows past the farm frame border
+  (sits on the farm frame art — no filler tile behind). Main view shows
+  figure + a slim **vertical** progress track on the outer side of each
+  shrine (left of frog/fox, right of monkey/tiger); name / tier in the
+  click detail modal; no hover lift/scale on shrines
 - Dragon Temple: simplified Lofi Ghibli painterly roof dragon sitting above a
   1×4 holy farm-style tribute board (`dragon_temple_rest.png` /
   `dragon_temple_awake.png`; locked copies in `assets/mood/locked_shrines/`).
@@ -143,9 +153,18 @@ Inventory shelf, desk alchemy Mix row, desk fireflies, and flowering are
 **parked** (art kept; not in the live loop).
 
 ## Farm
-- Grid of 16 total plots, laid out 4 rows by 4 columns.
-- 4 plots start unlocked; 12 are visible but locked. (confirmed)
-- Fox Shrine unlocks more plots (see Shrines).
+- Board is 4 rows by 4 columns. Corner cells are shrine footings (no plots).
+- 12 plantable plots (`src/data/farmLayout.js`). 4 start unlocked (bottom-
+  center 2×2); 8 are visible but locked. (confirmed)
+- Fox Shrine unlocks more plots (see Shrines). Layout (numbers = Fox unlock
+  tier; `0` = start unlocked):
+
+```text
+  Frog     4      4     Monkey
+    3      2      2       3
+    1      0      0       1
+   Fox     0      0     Tiger
+```
 
 ## Crops
 6 plantable crop types (`src/data/crops.js`): wheat, turnip, blueberry,
@@ -285,9 +304,9 @@ welcome clears with no shrine progress.
 - Has critter visit when: not welcomed, `critterVisitAt` is set,
   `now >= critterVisitAt`,   and the crop is not yet ready. Cue: small butterfly on the plot
   (`assets/icons/butterfly.png`; emoji fallback `🦋`).
-- Click priority on a growing plot: needing water → water; else waiting
-  critter → welcome; else no-op. Ready still harvests; empty still opens the
-  picker.
+- Short-tap priority on a growing plot: needing water → water; else waiting
+  critter → welcome; else no-op. Ready short-tap does nothing (drag to move;
+  long-press to uproot — see Uproot). Empty still opens the picker.
 - Click a needing-water plot → soft rain sprinkle (~1.625s) falling top-to-bottom
   over the dry patch using water-drop sprites (`assets/icons/water_drop.png`),
   then the patch clears and soil reads as normal brown (or ready honey-glow if
@@ -301,8 +320,8 @@ welcome clears with no shrine progress.
   tier-up occurs (then the normal shrine upgrade text applies). If all shrines
   are already maxed, welcome clears the visit with no progress and no message.
 - Ignore water or critter → full normal growth / no shrine gift. Offline: if
-  still growing and still asking on return, cues wait; if already ready, just
-  harvest.
+  still growing and still asking on return, cues wait; if already ready, the
+  crop sits ready for drag / uproot as usual.
 
 ## Harvesting / moving ready crops
 Ready crops stay on the plot. Clicking a ready plot does nothing.
@@ -314,7 +333,29 @@ Drag a ready crop to:
   a recipe, mix immediately: source plot clears, result sits ready on the
   target plot; invalid pairs snap back with no change
 
+To discard a ready crop instead of offering or mixing, long-press to
+**Uproot** (see Uproot).
+
 Legacy `harvestPlot` / fly-to-inventory path is unused in the live UI.
+
+## Uproot
+Players can clear an unwanted crop from the farm without offering it.
+
+- **Who:** Any occupied unlocked plot — growing plantables, ready plantables,
+  and ready alchemy-mix results. Locked, napped, or mid-animation plots are
+  ignored.
+- **Gesture:** Press and hold on the plot (~500ms). If the pointer moves past
+  the existing ready-crop drag threshold (~8px), cancel the hold; ready crops
+  keep press-and-move drag as today.
+- **Confirm:** Plot-anchored confirm overlay: **Uproot?** with confirm /
+  cancel. Large touch-friendly targets. No tool mode, no trash dock.
+  Optional subtle hold progress ring for discoverability (not hover-only).
+- **On confirm:** Clear the plot immediately. Free. No inventory grant, no
+  wrath, no shrine/temple progress, discovery unchanged. Cancel leaves the
+  crop as-is.
+- **Care cues:** Short tap still waters / welcomes first. Long-press is still
+  allowed so a plant can be cleared without waiting out growth.
+- Copy uses **Uproot** (not delete / sell / trash).
 
 ## Inventory
 **Parked:** the inventory shelf UI is removed with the player desk. State may
@@ -490,13 +531,13 @@ apex: Moonberry)
 3. Wise Monkey — Research Level +3 → level 4 — moonflower, moonlit_loaf,
    moonroot, moonberry
 
-**Fox — Expansion** (`plotsToUnlock` 4 / 4 / 2 / 2; unlocks bottom-up by
-row, left-to-right within a row — so the top row opens left pair then right
-pair; 15 / 25 / 35 / 50 = 125; apex: Wildroot)
-1. Forest Fox — More land (4) — turnip, root_loaf
-2. Valley Fox — More land (4) — blueberry, forest_bread, wildroot
-3. Mountain Fox — More land (2, top-row left) — moonflower, moonroot, moonberry
-4. Guardian Fox — Final land unlock (2, top-row right) — golden_pumpkin,
+**Fox — Expansion** (`plotsToUnlock` 2 / 2 / 2 / 2; unlock order from
+`farmLayout.js` by unlock tier — see Farm sketch; 15 / 25 / 35 / 50 = 125;
+apex: Wildroot)
+1. Forest Fox — More land (2) — turnip, root_loaf
+2. Valley Fox — More land (2) — blueberry, forest_bread, wildroot
+3. Mountain Fox — More land (2) — moonflower, moonroot, moonberry
+4. Guardian Fox — Final land unlock (2) — golden_pumpkin,
    golden_root, enchanted_jam, sunberry
 
 **Tiger — Fortune** (+1 offering chance when dragging a ready crop to a
@@ -549,8 +590,8 @@ does not weight the tribute). Total burn animation ≈
 `burnPulseMs × burnPulseCount` (currently 3.6s).
 
 ### Layout
-- Lives inside `#grove-stage` directly above `#farm-board` (tight grove gap
-  so the tribute board reads flush on the farm). Info band (Field Notes
+- Lives inside `#grove-stage` directly above `#farm-board` with a small
+  gap between the temple tribute row and the farm board. Info band (Field Notes
   game-text plank) sits below the grove stage.
 - Object width matches a 4-plot farm row including frame padding (shrines not
   counted). Soft drop-shadow on the roof figure like corner shrines.
@@ -683,8 +724,8 @@ Per-shrine revoke (only the lost tier’s blessing):
 - Frog — growth speed blessing steps down one tier (live via
   `getActiveBlessing`); at tier 0, new plants use base growth. Crops
   already growing keep their baked `growthMs`.
-- Fox — re-lock the lost tier’s `plotsToUnlock` plots (4 / 4 / 2 / 2;
-  reverse of unlock order: top-row right-to-left, then lower rows).
+- Fox — re-lock the lost tier’s `plotsToUnlock` plots (2 / 2 / 2 / 2;
+  reverse of unlock order from `farmLayout.js`).
   Destroy crops on those re-locked plots (not returned to inventory).
   Tier-0 bar clear locks nothing.
 - Tiger — bonus harvest chance steps down one tier (live blessing); at
@@ -735,22 +776,27 @@ pendingClose, pendingReward, triggerChance }`
 ## Screens
 Main farm in a scenic grove stage + info band (Field Notes game-text plank) +
 Dragon Temple. Overlays: radial crop picker (anchored to the clicked plot),
-shrine detail, Field Notes modal, reset confirm. No separate menus. Reset
-is at the bottom of Field Notes.
+uproot confirm (anchored to the held plot), shrine detail, Field Notes modal,
+reset confirm. No separate menus. Reset is at the bottom of Field Notes.
 
 ### Layout (current)
-- Target: desktop and portrait phone. Main screen (grove + temple + farm +
-  shrines + text plank) fits in `100dvh` **without vertical
-  scrolling**; tile/shrine sizes scale via `stageFit.js`.
+- Target: desktop and portrait phone (see **Platform** — every feature must
+  work well on touch). Main screen (grove + temple + farm + shrines + text
+  plank) fits in `100dvh` **without vertical scrolling**; tile/shrine sizes
+  scale via `stageFit.js`.
 - Bands: scenic grove stage on top (`#grove-stage` holds Dragon Temple above
-  the 4×4 plot grid with shrines hugging farm corners; frog/monkey tops
-  align with farm tile tops); info band below (`#info-band`: two-line
+  the framed 4×4 farm board with a small temple↔farm gap; corner cells are
+  shrine footings with oversized figures overflowing the frame and slim
+  vertical outer progress tracks (left of frog/fox, right of monkey/tiger);
+  board width drives nearly full phone width);
+  info band below (`#info-band`: two-line
   game-text plank with permanent **Field Notes** title; click opens the
   modal). No bottom Reset dock.
 - Farm stays primary inside the grove. Dragon Temple height is reserved for
   the active dock even while resting so the clearing does not jump.
 - Ready crops stay on plots; click does nothing. Drag with **pointer events**
   (mouse + touch) to shrines / temple / adjacent ready crops to mix.
+  Long-press (mouse + touch) opens Uproot confirm on occupied plots.
 - **Reset** lives at the bottom of the Field Notes modal (confirm overlay
   unchanged).
 
@@ -888,7 +934,7 @@ Then run the usual normalizers. Ready crops on plots are marked discovered
 (`markReadyCropsDiscovered`). Missing `discoveredCropIds` seeded from crops
 currently on plots / held slots; missing `discoveredAlchemyResultIds`
 backfilled to `[]`. Missing or invalid `gameText` backfilled to `null`.
-Plot count must match `TOTAL_PLOTS` (16) or the save is replaced.
+Plot count must match `TOTAL_PLOTS` (12) or the save is replaced.
 
 No server. Player can wipe progress via Reset (confirm required). On Yes,
 state is replaced with a fresh `createInitialState()` (including an empty

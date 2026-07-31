@@ -25,11 +25,22 @@ import {
   getPlotNapperDelayMs,
   getPlotNapMs,
 } from '../data/plotNapper.js';
+import {
+  BOARD_COLS,
+  BOARD_ROWS,
+  FARM_PLOTS,
+  TOTAL_FARM_PLOTS,
+  getLockOrderedPlotIds,
+  getPlotLayout,
+  getUnlockOrderedPlotIds,
+} from '../data/farmLayout.js';
 
-export const GRID_ROWS = 4;
-export const GRID_COLS = 4;
-export const TOTAL_PLOTS = GRID_ROWS * GRID_COLS;
-export const UNLOCKED_PLOTS_AT_START = 4;
+export const GRID_ROWS = BOARD_ROWS;
+export const GRID_COLS = BOARD_COLS;
+export const TOTAL_PLOTS = TOTAL_FARM_PLOTS;
+export const UNLOCKED_PLOTS_AT_START = FARM_PLOTS.filter(
+  (plot) => plot.unlockTier === 0,
+).length;
 export const STARTING_RESEARCH_LEVEL = 1;
 // Fixed inventory slot row; also the max number of visual stacks.
 export const INVENTORY_SLOT_COUNT = 6;
@@ -79,15 +90,12 @@ export function createInitialDragonTemple() {
 // The single game state object. All mutations must go through the functions
 // below — nothing else should modify plots/inventory/shrines directly.
 export function createInitialState() {
-  const plots = [];
-  for (let id = 0; id < TOTAL_PLOTS; id++) {
-    plots.push({
-      id,
-      locked: id < TOTAL_PLOTS - UNLOCKED_PLOTS_AT_START,
-      crop: null,
-      flowered: false,
-    });
-  }
+  const plots = FARM_PLOTS.map((layout) => ({
+    id: layout.id,
+    locked: layout.unlockTier > 0,
+    crop: null,
+    flowered: false,
+  }));
   return {
     saveVersion: 2,
     plots,
@@ -236,18 +244,17 @@ export function areAdjacentPlots(plotIdA, plotIdB) {
   if (
     typeof plotIdA !== 'number' ||
     typeof plotIdB !== 'number' ||
-    plotIdA === plotIdB ||
-    plotIdA < 0 ||
-    plotIdB < 0 ||
-    plotIdA >= TOTAL_PLOTS ||
-    plotIdB >= TOTAL_PLOTS
+    plotIdA === plotIdB
   ) {
     return false;
   }
-  const rowA = Math.floor(plotIdA / GRID_COLS);
-  const colA = plotIdA % GRID_COLS;
-  const rowB = Math.floor(plotIdB / GRID_COLS);
-  const colB = plotIdB % GRID_COLS;
+  const layoutA = getPlotLayout(plotIdA);
+  const layoutB = getPlotLayout(plotIdB);
+  if (!layoutA || !layoutB) return false;
+  const rowA = layoutA.row;
+  const colA = layoutA.col;
+  const rowB = layoutB.row;
+  const colB = layoutB.col;
   return Math.abs(rowA - rowB) + Math.abs(colA - colB) === 1;
 }
 
@@ -267,6 +274,19 @@ export function takeReadyCropFromPlot(state, plotId, now = Date.now()) {
   plot.crop = null;
   plot.flowered = false;
   return { cropId, plotId };
+}
+
+/**
+ * Clear any crop from a plot (growing or ready). Free discard — no inventory,
+ * wrath, shrine/temple progress, or discovery changes.
+ */
+export function uprootCrop(state, plotId) {
+  const plot = state.plots.find((p) => p.id === plotId);
+  if (!plot?.crop || plot.locked) return false;
+  if (isPlotNapped(state, plotId)) return false;
+  plot.crop = null;
+  plot.flowered = false;
+  return true;
 }
 
 /** Place a crop on a plot as already-ready (alchemy result / temple return). */
@@ -967,43 +987,32 @@ function canAcceptCrop(state, cropId, amount = 1) {
   );
 }
 
-// Unlock bottom-up by row; within a row, left to right (so partial top-row
-// unlocks open the left pair before the right pair).
+// Unlock next fox-expanded plots in sketch tier order (2 per Fox tier).
 function unlockPlots(state, count) {
-  const locked = state.plots.filter((plot) => plot.locked).sort((a, b) => {
-    const rowA = Math.floor(a.id / GRID_COLS);
-    const rowB = Math.floor(b.id / GRID_COLS);
-    if (rowA !== rowB) return rowB - rowA;
-    return a.id - b.id;
-  });
-
+  const byId = new Map(state.plots.map((plot) => [plot.id, plot]));
   const unlockedPlotIds = [];
-  for (let i = 0; i < count && i < locked.length; i++) {
-    locked[i].locked = false;
-    unlockedPlotIds.push(locked[i].id);
+  for (const plotId of getUnlockOrderedPlotIds()) {
+    if (unlockedPlotIds.length >= count) break;
+    const plot = byId.get(plotId);
+    if (!plot || !plot.locked) continue;
+    plot.locked = false;
+    unlockedPlotIds.push(plot.id);
   }
   return unlockedPlotIds;
 }
 
-// Re-lock fox-expanded plots in reverse unlock order (top row right-to-left,
-// then lower rows).
+// Re-lock fox-expanded plots in reverse unlock order.
 function lockPlots(state, count) {
-  const firstExpandableId = TOTAL_PLOTS - UNLOCKED_PLOTS_AT_START;
-  const unlocked = state.plots
-    .filter((plot) => !plot.locked && plot.id < firstExpandableId)
-    .sort((a, b) => {
-      const rowA = Math.floor(a.id / GRID_COLS);
-      const rowB = Math.floor(b.id / GRID_COLS);
-      if (rowA !== rowB) return rowA - rowB;
-      return b.id - a.id;
-    });
-
+  const byId = new Map(state.plots.map((plot) => [plot.id, plot]));
   const lockedPlotIds = [];
-  for (let i = 0; i < count && i < unlocked.length; i++) {
-    unlocked[i].locked = true;
-    unlocked[i].crop = null;
-    unlocked[i].flowered = false;
-    lockedPlotIds.push(unlocked[i].id);
+  for (const plotId of getLockOrderedPlotIds()) {
+    if (lockedPlotIds.length >= count) break;
+    const plot = byId.get(plotId);
+    if (!plot || plot.locked) continue;
+    plot.locked = true;
+    plot.crop = null;
+    plot.flowered = false;
+    lockedPlotIds.push(plot.id);
   }
   if (
     state.plotNapper &&

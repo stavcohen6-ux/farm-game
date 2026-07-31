@@ -21,6 +21,7 @@ import {
   getDragonBonusOfferings,
   markReadyCropsDiscovered,
   resetState,
+  uprootCrop,
 } from './state/gameState.js';
 import { load, save } from './state/persistence.js';
 import { getCrop } from './data/crops.js';
@@ -36,6 +37,7 @@ import { renderGameTextPanel } from './ui/gameTextPanel.js';
 import { openCropPicker } from './ui/cropPicker.js';
 import { openShrineDetail } from './ui/shrineDetail.js';
 import { openResetConfirm } from './ui/resetConfirm.js';
+import { openUprootConfirm } from './ui/uprootConfirm.js';
 import { openDiscoveryLog } from './ui/discoveryLog.js';
 import { playHarvestCropFly } from './ui/bonusCropFly.js';
 import {
@@ -88,6 +90,7 @@ function renderFarm() {
     tanukiArrivingPlotIds,
     tanukiLeavingPlotIds,
     handlePlotCropDrop,
+    handleUprootHold,
   );
 }
 
@@ -177,6 +180,23 @@ function handlePlotClick(plotId) {
       },
     });
   }
+}
+
+function handleUprootHold(plotId) {
+  const plot = state.plots.find((p) => p.id === plotId);
+  if (!plot?.crop || plot.locked || unlockingPlotIds.has(plotId)) return;
+  if (wateringPlotIds.has(plotId)) return;
+  if (critterFlyingPlotIds.has(plotId)) return;
+  if (tanukiArrivingPlotIds.has(plotId)) return;
+  if (tanukiLeavingPlotIds.has(plotId)) return;
+  if (isPlotNapped(state, plotId)) return;
+
+  const plotEl = gridEl.querySelector(`[data-plot-id="${plotId}"]`);
+  openUprootConfirm(plotEl, () => {
+    if (!uprootCrop(state, plotId)) return;
+    save(state);
+    render();
+  });
 }
 
 function handleUnlockAnimationEnd() {
