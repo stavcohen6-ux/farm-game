@@ -217,44 +217,51 @@ body {
   height: 0.85rem;
 }
 
-/* Game text + Discovery Log — below the grove, side by side */
+/* Game text plank (Field Notes) — below the grove */
 
 .info-band {
   display: flex;
   flex-direction: row;
   align-items: stretch;
   justify-content: center;
-  gap: 0.45rem;
   flex: 0 0 auto;
   align-self: stretch;
   width: 100%;
-  max-width: calc(var(--grove-outer-width));
+  max-width: 100%;
   box-sizing: border-box;
 }
 
 .game-text {
   flex: 1 1 auto;
+  width: 100%;
   min-width: 0;
   box-sizing: border-box;
   --game-text-font-size: 0.875rem;
   --game-text-line-height: 1.4;
+  --game-text-title-size: 0.75rem;
   height: calc(
-    2 * var(--game-text-font-size) * var(--game-text-line-height) + 2 * 0.55rem +
+    var(--game-text-font-size) * var(--game-text-line-height) +
+      var(--game-text-title-size) * var(--game-text-line-height) + 2 * 0.55rem +
       2px
   );
   padding: 0.55rem 0.85rem;
+  margin: 0;
   font-family: 'Quicksand', 'Nunito', system-ui, sans-serif;
   font-size: var(--game-text-font-size);
   font-weight: 600;
   line-height: var(--game-text-line-height);
   text-align: center;
   overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  white-space: normal;
-  word-break: break-word;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  cursor: pointer;
+  touch-action: manipulation;
   background-color: #b9a882;
   background-image:
     linear-gradient(
@@ -272,6 +279,36 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.28),
     0 2px 0 rgba(90, 70, 40, 0.18),
     0 6px 18px rgba(42, 90, 60, 0.12);
+}
+
+.game-text__message {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  word-break: normal;
+}
+
+.game-text__title {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  font-size: var(--game-text-title-size);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(42, 58, 44, 0.72);
+  text-shadow: 0 1px 0 rgba(247, 252, 247, 0.35);
+}
+
+.game-text:hover {
+  filter: brightness(1.03);
+}
+
+.game-text:focus-visible {
+  outline: 2px solid rgba(95, 154, 114, 0.45);
+  outline-offset: 2px;
 }
 
 /* Dragon Temple — meters, roof dragon, 1×4 holy farm row (flush on farm) */
@@ -363,7 +400,7 @@ body {
 .dragon-temple__board {
   box-sizing: border-box;
   width: 100%;
-  padding: 14px;
+  padding: var(--frame-pad);
   border-radius: 14px;
   border: 3px solid #5a5040;
   background-color: #8a8270;
@@ -384,7 +421,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--plot-gap);
   width: 100%;
   flex-wrap: nowrap;
 }
@@ -772,7 +809,7 @@ body {
   align-items: flex-end;
   justify-content: center;
   width: 100%;
-  min-height: 7.5rem;
+  min-height: var(--shrine-figure);
   filter: drop-shadow(0 6px 10px rgba(42, 90, 60, 0.22));
   transition: filter 0.14s ease;
 }
@@ -1981,83 +2018,6 @@ body {
   font-size: 1.25rem;
   line-height: 1;
   pointer-events: none;
-}
-
-.discovery-log-btn {
-  position: relative;
-  z-index: 2;
-  flex: 0 0 auto;
-  align-self: stretch;
-  width: max(4.75rem, 12vw);
-  min-width: 4.25rem;
-  min-height: 4.25rem;
-  padding: 0.2rem;
-  border: none;
-  border-radius: var(--radius);
-  background: transparent;
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  box-shadow: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  touch-action: manipulation;
-}
-
-.discovery-log-btn .game-icon--discovery-log {
-  width: 100%;
-  height: 100%;
-  max-width: 4.5rem;
-  max-height: 4.5rem;
-}
-
-/* Quiet idle cue on the standalone book */
-.discovery-log-btn::before {
-  content: '';
-  position: absolute;
-  inset: 0.2rem;
-  z-index: 0;
-  border-radius: 8px;
-  pointer-events: none;
-  background: radial-gradient(
-    ellipse at 50% 45%,
-    rgba(230, 198, 90, 0.16) 0%,
-    rgba(95, 154, 114, 0.08) 45%,
-    transparent 72%
-  );
-  opacity: 0.55;
-  animation: discovery-log-idle 4.5s ease-in-out infinite;
-}
-
-.discovery-log-btn > * {
-  position: relative;
-  z-index: 1;
-}
-
-@keyframes discovery-log-idle {
-  0%,
-  100% {
-    opacity: 0.4;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
-.discovery-log-btn:hover,
-.discovery-log-btn:focus-visible {
-  outline: none;
-  background: transparent;
-  box-shadow: none;
-  transform: none;
-  filter: none;
-}
-
-.discovery-log-btn:focus-visible {
-  /* Keyboard only: thin soft ring so focus remains reachable */
-  outline: 2px solid rgba(95, 154, 114, 0.45);
-  outline-offset: 2px;
 }
 
 .discovery-log {

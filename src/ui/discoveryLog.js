@@ -1,6 +1,7 @@
 import { CROPS, getCrop } from '../data/crops.js';
 import { getAlchemyRecipeByResultId } from '../data/alchemyRecipes.js';
 import { SHRINES } from '../data/shrines.js';
+import { FIELD_NOTES_TITLE } from './gameTextPanel.js';
 import { logShrineIconSrc, setCropIcon, setIcon, UI_ICONS } from './icon.js';
 
 // Opens a modal listing discovered crops with shrine values and origin.
@@ -20,14 +21,14 @@ export function openDiscoveryLog(state, onReset = null) {
   setIcon(figure, {
     src: UI_ICONS.discoveryLog,
     emoji: '📖',
-    alt: 'Discovery Log',
+    alt: FIELD_NOTES_TITLE,
     imgClass: 'game-icon game-icon--discovery-log',
   });
   header.appendChild(figure);
 
   const title = document.createElement('h2');
   title.className = 'discovery-log__title';
-  title.textContent = 'Discovery Log';
+  title.textContent = FIELD_NOTES_TITLE;
   header.appendChild(title);
 
   const discoveredCrops = new Set(

@@ -51,18 +51,18 @@ direction is intentionally revised.
 - Gentle moon-lilac reserved for sparse mythic accents (e.g. temple sparks), not plot ready rings
 
 ### Materials and chrome
-- Stage bands — scenic grove stage (top), then an **info band** (game text +
-  Discovery Log side by side), then a slim bottom dock with Reset only.
+- Stage bands — scenic grove stage (top), then an **info band** (clickable
+  Field Notes game-text plank), then a slim bottom dock with Reset only.
   Soften the outer app shell so the grove reads as the place.
 - Info band (`#info-band`): below `#grove-stage`, same outer width as the
-  grove card (`--grove-outer-width` minus shrine-column overlap). Holds the
-  game text plank on the left and a standalone Discovery Log book button on
-  the right (not inside the text tile).
+  grove stage (full app column; `width` / `max-width: 100%`). Holds only
+  the game text plank (full width of the band).
 - Game text (`#game-text`): painted weathered wood plank
   (`assets/scene/game_text_plank.png`) in the same Fresh Moss watercolor
   language as the grove; faint linen readability wash over the plank; warm
-  worn-wood rim (not mint panel chrome). Fixed **two-line** height; overflow
-  clipped (line-clamp).
+  worn-wood rim (not mint panel chrome). Fixed **two-line** height — line 1
+  is the dynamic message (single-line ellipsis); line 2 is the permanent
+  title **Field Notes**. Whole plank is a button that opens Field Notes.
 - Grove stage (`#grove-stage`): in-game scenic backdrop
   (`assets/scene/grove_clearing.png`) — misty canopy, empty clearing, moss
   foreground; no baked shrine alcoves (icons sit on top). Farm + corner
@@ -79,10 +79,10 @@ direction is intentionally revised.
   Desk art (`assets/scene/player_desk.png`) and desk firefly / flowering art
   are **parked** for a later redesign — do not delete. Crops stay on ready
   plots until dragged (plot drag lands in a later milestone).
-- Discovery Log: standalone book button (`#discovery-log`) in the info band
-  to the right of the game text tile — uses `discovery_log.png` art
-  (`aria-label` only; quiet idle visual hint). Not inside the text plank.
-- Modals: cream linen inside sage / frame borders (Discovery Log, shrine
+- Field Notes: opened by clicking the game-text plank (`#game-text`); modal
+  still uses `discovery_log.png` book art in the header. No standalone book
+  button on the main screen.
+- Modals: cream linen inside sage / frame borders (Field Notes, shrine
   detail, reset confirm)
 - Shrines: simplified painterly guardian icons on small altars, hugging farm
   corners; frog/monkey tops align with the top of the farm tiles; main view
@@ -102,11 +102,11 @@ direction is intentionally revised.
 - Buttons: moss fills; quiet, not neon
 
 ### Icons
-One artistic language for crops, shrines, Discovery Log, and the Dragon
-Temple: cozy lofi 2D painterly icons with true transparency (no baked
+One artistic language for crops, shrines, Field Notes (book cutout), and the
+Dragon Temple: cozy lofi 2D painterly icons with true transparency (no baked
 checkerboard or cream canvas). Soft mist belongs on the scenic backdrop;
 cutout icons sit cleanly in the grove. Each crop must be unmistakable at
-~64px. Discovery Log shrine-value faces (`log_frog.png`, `log_monkey.png`,
+~64px. Field Notes shrine-value faces (`log_frog.png`, `log_monkey.png`,
 `log_fox.png`, `log_tiger.png`) stay emoji-simple. Assets under
 `assets/icons/`; scene under `assets/scene/`. Emoji remain as fallback
 until an asset exists. Prior Fresh Moss backups:
@@ -321,16 +321,15 @@ Legacy `harvestPlot` / fly-to-inventory path is unused in the live UI.
 still carry an empty `inventory` object for migration. Crop holding is
 on-plot until plot drag ships.
 
-## Discovery Log
-Standalone book button in the info band to the right of the game text tile
-(`#discovery-log` / `src/ui/discoveryLog.js`) — not inside the text plank.
-Uses book cutout art (`discovery_log.png`); `aria-label` only on the main
-screen (no visible “Discovery Log” label); quiet idle visual hint. Opens a
-centered modal (click outside to close). Reset control sits at the
-bottom of this modal (opens the existing reset confirm).
+## Field Notes
+Opened by clicking the game-text plank in the info band (`#game-text` /
+`src/ui/discoveryLog.js`). Permanent second line on the plank is titled
+**Field Notes** (`aria-label` matches). Opens a centered modal (click outside
+to close). Reset control sits at the bottom of this modal (opens the existing
+reset confirm).
 
 - Modal header: book cutout (`discovery_log.png`) above the title
-  **Discovery Log** (closed leather-bound journal/tome with a leather strap,
+  **Field Notes** (closed leather-bound journal/tome with a leather strap,
   soft moss accents; simplified shapes for small size; same art language as
   shrines / Dragon Temple), then a progress line **Discoveries N / M**.
   `M` is every crop entry in `CROPS` (plantables + alchemy products);
@@ -551,8 +550,8 @@ does not weight the tribute). Total burn animation ≈
 
 ### Layout
 - Lives inside `#grove-stage` directly above `#farm-board` (tight grove gap
-  so the tribute board reads flush on the farm). Info band (game text +
-  Discovery Log) sits below the grove stage.
+  so the tribute board reads flush on the farm). Info band (Field Notes
+  game-text plank) sits below the grove stage.
 - Object width matches a 4-plot farm row including frame padding (shrines not
   counted). Soft drop-shadow on the roof figure like corner shrines.
 - Stack: wrath meter above → roof-only dragon PNG → 1×4 holy farm-style
@@ -734,44 +733,45 @@ pendingClose, pendingReward, triggerChance }`
   `wrath >= wrathMax` (and not mid-burn/reveal) → resolve as a loss and save.
 
 ## Screens
-Main farm in a scenic grove stage + info band (game text + Discovery Log) +
+Main farm in a scenic grove stage + info band (Field Notes game-text plank) +
 Dragon Temple. Overlays: radial crop picker (anchored to the clicked plot),
-shrine detail, Discovery Log modal, reset confirm. No separate menus. Reset
-is at the bottom of the Discovery Log.
+shrine detail, Field Notes modal, reset confirm. No separate menus. Reset
+is at the bottom of Field Notes.
 
 ### Layout (current)
 - Target: desktop and portrait phone. Main screen (grove + temple + farm +
-  shrines + text + Discovery Log book) fits in `100dvh` **without vertical
+  shrines + text plank) fits in `100dvh` **without vertical
   scrolling**; tile/shrine sizes scale via `stageFit.js`.
 - Bands: scenic grove stage on top (`#grove-stage` holds Dragon Temple above
   the 4×4 plot grid with shrines hugging farm corners; frog/monkey tops
-  align with farm tile tops); info band below (`#info-band`: two-line game
-  text plank + standalone Discovery Log book). No bottom Reset dock.
+  align with farm tile tops); info band below (`#info-band`: two-line
+  game-text plank with permanent **Field Notes** title; click opens the
+  modal). No bottom Reset dock.
 - Farm stays primary inside the grove. Dragon Temple height is reserved for
   the active dock even while resting so the clearing does not jump.
 - Ready crops stay on plots; click does nothing. Drag with **pointer events**
   (mouse + touch) to shrines / temple / adjacent ready crops to mix.
-- **Reset** lives at the bottom of the Discovery Log modal (confirm overlay
+- **Reset** lives at the bottom of the Field Notes modal (confirm overlay
   unchanged).
 
 ## Game text panel
 HUD message area for explaining what is going on.
 
-- Location: in the info band below the scenic grove stage, left of the
-  Discovery Log book; width shares the info band with the log button.
-  Chrome is always visible.
+- Location: fills the info band below the scenic grove stage. Chrome is
+  always visible. Whole plank is clickable and opens Field Notes.
 - Painted plank backdrop (`assets/scene/game_text_plank.png`) with a faint
   linen readability wash and warm wood rim; ink text with a soft light
   shadow for legibility. Fixed **two-line** height.
-- Fixed height for **two** readable lines; never grows or shrinks. No
-  scroller — overflow is clipped (line-clamp). Text is centered in the tile.
-  Font size `0.875rem`.
+- Line 1: dynamic message (single-line ellipsis). Line 2: permanent title
+  **Field Notes** (slightly quieter than the message). Never grows or
+  shrinks. No scroller. Text is centered in the tile. Font size `0.875rem`
+  (title `0.75rem`).
 - Default when `gameText` is `null` (startup, reset, or after clear):
   `It's a cozy day for farming.`
   (UI fallback in `gameTextPanel.js`; state stays `null`). New text replaces
   current text. Code can clear it (`clearGameText`) to restore the default.
   No player dismiss control yet.
-- Plain text only (no HTML).
+- Plain text only (no HTML) in the message line.
 - Persists with save/load.
 
 Triggers:
@@ -892,7 +892,7 @@ Plot count must match `TOTAL_PLOTS` (16) or the save is replaced.
 
 No server. Player can wipe progress via Reset (confirm required). On Yes,
 state is replaced with a fresh `createInitialState()` (including an empty
-Discovery Log) and saved. Confirm overlay does not pause timers or
+Field Notes log) and saved. Confirm overlay does not pause timers or
 animations; No or click outside dismisses and play continues.
 
 ## Design principles

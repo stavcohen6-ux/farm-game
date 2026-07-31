@@ -7,6 +7,7 @@ const MIN_TILE_PX = 34;
 const MAX_TILE_PX = 64;
 const MIN_SHRINE_PX = 52;
 const MAX_SHRINE_PX = 120;
+const SHRINE_PLAQUE_RESERVE_PX = 30;
 
 export function installStageFit(appEl) {
   if (!appEl) return () => {};
@@ -37,8 +38,14 @@ export function installStageFit(appEl) {
       MIN_TILE_PX,
       MAX_TILE_PX,
     );
+    const plotGap = Math.max(4, Math.round(tile * 0.12));
+    const framePad = Math.max(8, Math.round(tile * 0.22));
+    const farmH = 4 * tile + 3 * plotGap + 2 * framePad;
+    // Cap so top + bottom shrines (figure + plaque) fit within farm height
+    // and keep hugging the corners on narrow viewports.
+    const shrineFromFarm = Math.floor(farmH / 2) - SHRINE_PLAQUE_RESERVE_PX;
     const shrine = clamp(
-      Math.floor(tile * 1.85),
+      Math.min(Math.floor(tile * 1.85), shrineFromFarm),
       MIN_SHRINE_PX,
       Math.min(MAX_SHRINE_PX, Math.floor(availW * 0.28)),
     );
@@ -47,11 +54,8 @@ export function installStageFit(appEl) {
     appEl.style.setProperty('--tile-font', `${Math.max(0.95, tile / 42)}rem`);
     appEl.style.setProperty('--shrine-figure', `${shrine}px`);
     appEl.style.setProperty('--shrine-col', `${shrine + 8}px`);
-    appEl.style.setProperty('--plot-gap', `${Math.max(4, Math.round(tile * 0.12))}px`);
-    appEl.style.setProperty(
-      '--frame-pad',
-      `${Math.max(8, Math.round(tile * 0.22))}px`,
-    );
+    appEl.style.setProperty('--plot-gap', `${plotGap}px`);
+    appEl.style.setProperty('--frame-pad', `${framePad}px`);
   };
 
   apply();

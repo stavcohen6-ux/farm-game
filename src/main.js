@@ -37,7 +37,6 @@ import { openCropPicker } from './ui/cropPicker.js';
 import { openShrineDetail } from './ui/shrineDetail.js';
 import { openResetConfirm } from './ui/resetConfirm.js';
 import { openDiscoveryLog } from './ui/discoveryLog.js';
-import { setIcon, UI_ICONS } from './ui/icon.js';
 import { playHarvestCropFly } from './ui/bonusCropFly.js';
 import {
   playTempleRewardSparks,
@@ -62,17 +61,8 @@ const pendingBlessingVisualShrineIds = new Set();
 const appEl = document.getElementById('app');
 const boardEl = document.getElementById('farm-board');
 const gridEl = document.getElementById('farm-grid');
-const discoveryLogEl = document.getElementById('discovery-log');
 const dragonTempleEl = document.getElementById('dragon-temple');
 const gameTextEl = document.getElementById('game-text');
-
-if (discoveryLogEl) {
-  setIcon(discoveryLogEl, {
-    src: UI_ICONS.discoveryLog,
-    emoji: '📖',
-    imgClass: 'game-icon game-icon--discovery-log',
-  });
-}
 
 installStageFit(appEl);
 
@@ -435,7 +425,9 @@ function handleDiscoveryLog() {
   openDiscoveryLog(state, handleResetGame);
 }
 
-discoveryLogEl.onclick = handleDiscoveryLog;
+if (gameTextEl) {
+  gameTextEl.onclick = handleDiscoveryLog;
+}
 
 render();
 setInterval(tick, RENDER_INTERVAL_MS);
