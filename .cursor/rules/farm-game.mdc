@@ -46,23 +46,16 @@ If multiple approaches are possible, prefer the simplest one suitable for a solo
 
 ---
 
-# Locked desk art and Discovery Log hotspot
+# Parked desk art
 
-The player desk painting and Discovery Log click target are **locked**.
+The player desk UI is **removed** from the live game. Keep
+`assets/scene/player_desk.png` and related firefly / flowering art for a
+later redesign — do not delete them.
 
-Do **not** change any of the following unless the user explicitly asks:
+Do **not** reintroduce `#player-desk` / inventory shelf / Mix row unless
+explicitly requested.
 
-- `assets/scene/player_desk.png` (replace, crop, re-export, or move painted elements)
-- `.player-desk` backdrop layout: `background-size`, `background-position`,
-  padding (`--desk-pad-x` / `--desk-pad-y` and related), `min-height`,
-  `width` / `--grove-outer-width` coupling that would shift the painted book
-- `.discovery-log-btn` hit box: `right`, `bottom`, `width`, `height`
-  (calibrated over the painted book; current lock:
-  `right: 4.85rem; bottom: 0; width: 7rem; height: 4.75rem`)
-
-Changing inventory/alchemy DOM chrome is fine when requested, but do not
-reposition desk art or the log hotspot as a side effect. If a task seems
-to require moving them, stop and ask.
+Discovery Log is a standalone button in `#info-band` (not a desk hotspot).
 
 ---
 

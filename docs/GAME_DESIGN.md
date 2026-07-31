@@ -51,14 +51,18 @@ direction is intentionally revised.
 - Gentle moon-lilac reserved for sparse mythic accents (e.g. temple sparks), not plot ready rings
 
 ### Materials and chrome
-- Stage: three bands — game text (top), scenic grove stage (middle), player
-  desk (bottom). Soften the outer app shell so the grove reads as the place;
-  desk and grove stay visually separate bands.
-- Game text band (`#game-text`): painted weathered wood plank
+- Stage bands — scenic grove stage (top), then an **info band** (game text +
+  Discovery Log side by side), then a slim bottom dock with Reset only.
+  Soften the outer app shell so the grove reads as the place.
+- Info band (`#info-band`): below `#grove-stage`, same outer width as the
+  grove card (`--grove-outer-width` minus shrine-column overlap). Holds the
+  game text plank on the left and a standalone Discovery Log book button on
+  the right (not inside the text tile).
+- Game text (`#game-text`): painted weathered wood plank
   (`assets/scene/game_text_plank.png`) in the same Fresh Moss watercolor
-  language as the grove and desk; faint linen readability wash over the
-  plank; warm worn-wood rim (not mint panel chrome). Own top band — not
-  inside `#grove-stage`.
+  language as the grove; faint linen readability wash over the plank; warm
+  worn-wood rim (not mint panel chrome). Fixed **two-line** height; overflow
+  clipped (line-clamp).
 - Grove stage (`#grove-stage`): in-game scenic backdrop
   (`assets/scene/grove_clearing.png`) — misty canopy, empty clearing, moss
   foreground; no baked shrine alcoves (icons sit on top). Farm + corner
@@ -71,39 +75,19 @@ direction is intentionally revised.
   changing tile size. Mood ref: `assets/mood/farm_board_lofi_ghibli_mood.png`
 - Locked farm plots: locked tile texture only — no lock emoji/icon overlay.
   Unlock uses a brief locked-to-soil fade (same textures, no lock icon).
-- Inventory / alchemy / Discovery Log live on one bottom **player desk**
-  (`#player-desk` in `#bottom-dock`): painted watercolor workstation backdrop
-  (`assets/scene/player_desk.png`) in the same Fresh Moss language as the
-  forest, but a **separate band** with a clear gap from `#grove-stage` — they
-  do not touch or share art. Soft mist overlay keeps shelf/slots readable.
-  Grove / forest assets and `#grove-stage` styles are not part of the desk
-  chrome. Desk outer width matches the grove stage (farm band + grove
-  horizontal padding) so it lines up under the forest card.
-- **Locked desk art:** `player_desk.png` and the CSS that places it
-  (`.player-desk` `background-size` / `background-position` / padding /
-  min-height) must not be changed unless explicitly requested. The painted
-  Discovery Log book position is calibrated against this lock.
-  One approved edit has been made: the painted stone mortar was removed from
-  the far-left tabletop so the Mix mortar is the only one on the desk. Canvas
-  size and every pixel outside that left patch are unchanged, so the book
-  hotspot still matches. Pre-edit backup:
-  `assets/mood/archive_desk_with_mortar/player_desk.png`.
-- Desk layout: inventory as a top shelf (6 slots); alchemy Mix row centered
-  on the work surface; Discovery Log painted into `player_desk.png` on the
-  far-right tabletop with a transparent clickable hotspot (`#discovery-log`,
-  `aria-label` only — no dock icon, no neon/hover glow; quiet idle visual
-  hint over the painted book). Hotspot box is **locked** at
-  `right: 4.85rem; bottom: 0; width: 7rem; height: 4.75rem` on
-  `.discovery-log-btn` — do not nudge without an explicit ask. No
-  main-screen titles for “Alchemy Station” or “Discovery Log” (log title
-  remains in the opened modal). Mix is a painted mortar resting between the
-  slots: quiet when invalid; soft honey glow and a gentle vertical nudge when
-  a valid pair is ready. The desk painting carries the workstation feel.
+- **Player desk removed** from the live UI (inventory shelf + Mix row gone).
+  Desk art (`assets/scene/player_desk.png`) and desk firefly / flowering art
+  are **parked** for a later redesign — do not delete. Crops stay on ready
+  plots until dragged (plot drag lands in a later milestone).
+- Discovery Log: standalone book button (`#discovery-log`) in the info band
+  to the right of the game text tile — uses `discovery_log.png` art
+  (`aria-label` only; quiet idle visual hint). Not inside the text plank.
 - Modals: cream linen inside sage / frame borders (Discovery Log, shrine
   detail, reset confirm)
 - Shrines: simplified painterly guardian icons on small altars, hugging farm
-  corners; main view shows figure + progress bar only (name / tier in the
-  click detail modal); no hover lift/scale on shrines
+  corners; frog/monkey tops align with the top of the farm tiles; main view
+  shows figure + progress bar only (name / tier in the click detail modal);
+  no hover lift/scale on shrines
 - Dragon Temple: simplified Lofi Ghibli painterly roof dragon sitting above a
   1×4 holy farm-style tribute board (`dragon_temple_rest.png` /
   `dragon_temple_awake.png`; locked copies in `assets/mood/locked_shrines/`).
@@ -150,16 +134,17 @@ lift). Farm stays primary; chrome stays quiet.
 
 ## Core loop
 Choose a crop → Plant it → Wait (optional water if the plant asks;
-optional critter welcome if a butterfly settles) → Harvest → Collect →
-(optional) Flower an empty plot with a plantable (guarantees next butterfly) →
-(optional) Mix crops via alchemy → Offer crops to shrines (optional) →
-(optional) Desk fireflies may leave a gift on a free inventory slot →
-(optional) Dragon Temple event → Plant again.
+optional critter welcome if a butterfly settles) → Crop stays ready on the
+plot → Drag ready crop to a shrine, the Dragon Temple, or an adjacent ready
+crop (alchemy mix) → Plant again.
 The farm remains the primary screen.
 
+Inventory shelf, desk alchemy Mix row, desk fireflies, and flowering are
+**parked** (art kept; not in the live loop).
+
 ## Farm
-- Grid of 20 total plots, laid out 5 rows by 4 columns.
-- 4 plots start unlocked; 16 are visible but locked. (confirmed)
+- Grid of 16 total plots, laid out 4 rows by 4 columns.
+- 4 plots start unlocked; 12 are visible but locked. (confirmed)
 - Fox Shrine unlocks more plots (see Shrines).
 
 ## Crops
@@ -319,75 +304,31 @@ welcome clears with no shrine progress.
   still growing and still asking on return, cues wait; if already ready, just
   harvest.
 
-## Harvesting
-- One click harvests a ready crop (`harvestAmount`, currently 1). The crop
-  flies from the plot to inventory (green tile → grey on land); the inventory
-  count updates when it lands, then the tile pulses.
-- The decay clock starts at harvest time (`expiresAt = now + decayMs`),
-  including while the crop is still in-flight as a pending grant. Skipped
-  when `decayDisabled` is true (`expiresAt` stays null).
-- Tiger Shrine may grant +1 extra on harvest (see Shrines). The bonus crop
-  flies the same way, starting 0.5s after the first flyer, with spark emojis
-  (✨) flying outward from each corner (visual only).
-- Mid-flight grants are stored as `pendingHarvests` and applied immediately
-  on load if the page reloads before a flyer lands (animation may be skipped).
-  Expired pending grants spoil on load instead of entering inventory.
+## Harvesting / moving ready crops
+Ready crops stay on the plot. Clicking a ready plot does nothing.
+Drag a ready crop to:
+- a **shrine** — consumes the crop from the plot; Tiger bonus may apply
+  (extra same-crop progress + fly VFX from plot to shrine; not on mix/temple)
+- the **Dragon Temple** — fills a matching demand slot from the plot
+- an **adjacent ready crop** (up/down/left/right only) — if the pair matches
+  a recipe, mix immediately: source plot clears, result sits ready on the
+  target plot; invalid pairs snap back with no change
+
+Legacy `harvestPlot` / fly-to-inventory path is unused in the live UI.
 
 ## Inventory
-- Top shelf on the player desk (`#inventory`) — fixed row of **6**
-  always-visible slots (same tile size as farm plots). Empty slots show as
-  quiet dashed frames; filled slots show icon + count in the bottom-right
-  corner. Shelf width is constant — it does not grow or shrink when crop
-  types are added.
-- Each crop has a configurable `maxStack` (all 10 for now). Counts above
-  `maxStack` split across additional slots of the same crop (e.g. 11 wheat →
-  slots of 10 and 1). A grant is rejected when adding it would exceed 6
-  stack slots (inventory + in-flight harvests + waiting desk fireflies).
-  The crop stays where it was
-  (ready plot, alchemy result, or input slot); the inventory panel briefly
-  shakes. No game-text message.
-- Waiting fireflies occupy shelf tiles after crop stacks (not empty frames);
-  see Desk visitors (fireflies). Only truly free dashed frames accept new
-  crop grants.
-- Stored as FIFO batches per crop: `{ [cropId]: [{ amount, expiresAt }, …] }`.
-  UI fills slots left-to-right from visual stacks of up to `maxStack`.
-  Spending / dragging always takes from the oldest batch first.
-- Inventory crops are perishable unless `decayDisabled` is true. When
-  `expiresAt` is reached, that batch disappears (wall-clock, including
-  offline). Decay is on top of shrine / alchemy / temple sinks — not a
-  replacement for them.
-- Urgency UI (no countdown numbers): normal → soft amber wash in the last
-  ~25% of life → stronger wash + small wilt mark in the last ~10%. Each
-  filled inventory slot’s urgency uses the oldest unit in that stack. Same
-  tints on filled alchemy and Dragon Temple input slots. Spoiled crops
-  disappear with no game-text notice.
-- Drag to a slot: the oldest unit leaves; its tint travels with it; the
-  inventory stacks retint from the new oldest units left. Return from a slot
-  (unconsumed): same `expiresAt` re-enters inventory; stack urgency updates
-  from FIFO fill again.
-- Includes harvested crops and claimed alchemy results.
-- Receiving a crop briefly pulses its stack slot (after the harvest fly
-  lands; the last slot for that crop).
-- Items are draggable; one crop per drop onto a shrine, alchemy board
-  (empty slot or anywhere on the board), the active Dragon Temple
-  (empty slot or anywhere on the temple tile), or an empty unlocked farm
-  plot that is not already flowered (**plantable crops only** — flowers
-  that plot; see Flowered plots). Empty inventory frames are
-  not drop targets.
-- No hover tooltips on inventory tiles (keeps drag-and-drop uncluttered).
+**Parked:** the inventory shelf UI is removed with the player desk. State may
+still carry an empty `inventory` object for migration. Crop holding is
+on-plot until plot drag ships.
 
 ## Discovery Log
-Painted into the player desk backdrop on the far-right tabletop
-(`assets/scene/player_desk.png`), clear of the centered Mix row. Clickable
-via a transparent hotspot (`#discovery-log` / `src/ui/discoveryLog.js`) —
-no separate dock icon, no neon/hover glow; quiet idle visual hint over the
-painted book. Hotspot geometry is **locked** (`.discovery-log-btn`:
-`right: 4.85rem; bottom: 0; width: 7rem; height: 4.75rem`) together with
-desk backdrop placement — do not move unless explicitly requested. Opens a
-centered modal (click outside to close).
+Standalone book button in the info band to the right of the game text tile
+(`#discovery-log` / `src/ui/discoveryLog.js`) — not inside the text plank.
+Uses book cutout art (`discovery_log.png`); `aria-label` only on the main
+screen (no visible “Discovery Log” label); quiet idle visual hint. Opens a
+centered modal (click outside to close). Reset control sits at the
+bottom of this modal (opens the existing reset confirm).
 
-- No visible “Discovery Log” label on the main screen; hotspot uses
-  `aria-label="Discovery Log"`.
 - Modal header: book cutout (`discovery_log.png`) above the title
   **Discovery Log** (closed leather-bound journal/tome with a leather strap,
   soft moss accents; simplified shapes for small size; same art language as
@@ -395,9 +336,9 @@ centered modal (click outside to close).
   `M` is every crop entry in `CROPS` (plantables + alchemy products);
   `N` is the unique discovered union. No locked silhouettes; undiscovered
   content appears only as remaining count in that progress line.
-- Discovered items are the union of ever-received crops and successfully
-  mixed alchemy results. Empty copy when none: “Harvest crops or mix
-  alchemy to fill your log” (progress still shows `0 / M`).
+- Discovered items are the union of crops that have been **ready on a plot**
+  and successfully mixed alchemy results. Empty copy when none: “Grow crops
+  to ready to fill your log” (progress still shows `0 / M`).
 - Two sections when there is at least one discovery: **Harvested crops**
   (`plantable: true`) then **Alchemy mixes** (`plantable: false`). Omit a
   section if it has no discovered rows. Order within each section follows
@@ -413,50 +354,18 @@ centered modal (click outside to close).
   tied for the maximum amount with a quiet honey chip (soft honey
   background/border, amber/bold amount). Teaches affinity by reading the
   numbers; no tutorial copy.
-- Sticky after offering, spoiling, emptying inventory, or Reset only.
-  State: `discoveredCropIds: string[]` (marked in `forceAddToInventory`);
+- Sticky after Reset only (and survives offer/spoil of held crops when those
+  return). State: `discoveredCropIds: string[]` (marked when a crop becomes
+  **ready on a plot** via `markReadyCropsDiscovered`);
   `discoveredAlchemyResultIds: string[]` result id keys (marked in
   `mixAlchemy` on first successful Mix). Both lists survive reload;
   cleared only by the full-game Reset button.
 
 ## Alchemy
-Work surface on the player desk below the inventory shelf
-(`src/ui/alchemyPanel.js`). Recipes in `src/data/alchemyRecipes.js`
-(order-independent). Distinct from inventory: `#alchemy`, separate slots and
-state (`state.alchemy`).
-
-### Board
-- Sits on the desk work row under the inventory shelf (shelf-on-top layout).
-- Untitled work surface centered on the desk (no station title, no station
-  tile). Two input slots + Mix (input mode). Mix is the primary action
-  between the slots, drawn as a painted mortar and pestle
-  (`assets/icons/mortar.png`) sitting on the desk rather than a labelled
-  button — no text, no border, no fill. Its base lines up with the slot
-  bottoms and it stands `4.8rem` tall, matching the painted Discovery Log
-  book. The button's layout box stays `var(--tile)` tall and only the art
-  overflows upward, so desk height and the book hotspot never move.
-- Drag inventory crops into an empty slot, or anywhere on the alchemy
-  board (fills the first open slot left to right). If both slots are
-  full or a result is waiting to claim, the drop is ignored.
-- Input slots store `{ cropId, expiresAt }` (decay continues while held).
-  Filled slots show the same urgency tints as inventory.
-- Click a filled slot to return that crop to inventory (keeps `expiresAt`).
-- Mix is disabled until the pair matches a recipe: the mortar sits faded and
-  desaturated (`.alchemy__mix--faded`). A valid pair wakes it
-  (`.alchemy__mix--ready`) with a soft honey glow under it and a gentle
-  vertical nudge (same family as the plot butterfly bob — no scale pulse).
-  Perishable ticks refresh slot urgency in place (`updateAlchemyLive`) so the
-  ready animation is not restarted every second — same idea as the Dragon
-  Temple ready-edge. No invalid-mix popup.
-- Mix / Burn / spend actions sweep expired crops first so an exact-second
-  expiry cannot be consumed.
-- On Mix: brief **ritual** (visual only, no game text) — pestle grind on the
-  mortar (~340ms) with a soft spark puff, then inputs are consumed; slots and
-  Mix hide; result appears in the center with icon and name (soft rise-in) and
-  sparks arc from the mortar into the claim. Fail stays silent (faded mortar).
-- Click the result to add it to inventory; board resets to empty slots.
-  Alchemy result decay starts only when claimed into inventory (unclaimed
-  result is untinted).
+Desk Mix UI remains **parked**. Live mixing is **on-plot**: drag one ready
+crop onto an orthogonally adjacent ready crop. Recipes in
+`src/data/alchemyRecipes.js` (order-independent). Instant mix; no Mix button.
+Result is ready on the drop target plot; source plot empties.
 
 ### Recipes (current)
 | Inputs | Result | Icon |
@@ -555,7 +464,8 @@ Corner cards show icon, name, next/max tier name, and active-tier progress.
   natural progression gate. Every alchemy mix appears on at least one tier.
 
 ### Detail window
-Click shrine → centered modal (click outside to close). Below the title, an
+Click shrine → centered modal (click outside to close). Reset control sits at the
+bottom of this modal (opens the existing reset confirm). Below the title, an
 **Accepts:** line lists icons for the **active** tier’s allowlist (omitted
 when maxed). Then lists every tier: name, effect text, that tier’s accepted
 crop icons, progress bar. Active = live `n / required`; completed = full
@@ -581,16 +491,17 @@ apex: Moonberry)
 3. Wise Monkey — Research Level +3 → level 4 — moonflower, moonlit_loaf,
    moonroot, moonberry
 
-**Fox — Expansion** (`plotsToUnlock` per tier, currently 4; unlocks highest
-locked plot ids first; 15 / 25 / 35 / 50 = 125; apex: Wildroot)
-1. Forest Fox — More land — turnip, root_loaf
-2. Valley Fox — More land — blueberry, forest_bread, wildroot
-3. Mountain Fox — More land — moonflower, moonroot, moonberry
-4. Guardian Fox — Final land unlock — golden_pumpkin, golden_root,
-   enchanted_jam, sunberry
+**Fox — Expansion** (`plotsToUnlock` 4 / 4 / 2 / 2; unlocks bottom-up by
+row, left-to-right within a row — so the top row opens left pair then right
+pair; 15 / 25 / 35 / 50 = 125; apex: Wildroot)
+1. Forest Fox — More land (4) — turnip, root_loaf
+2. Valley Fox — More land (4) — blueberry, forest_bread, wildroot
+3. Mountain Fox — More land (2, top-row left) — moonflower, moonroot, moonberry
+4. Guardian Fox — Final land unlock (2, top-row right) — golden_pumpkin,
+   golden_root, enchanted_jam, sunberry
 
-**Tiger — Fortune** (+1 crop chance on harvest; 20 / 30 / 45 / 60 = 155;
-apex: Solar Gourd)
+**Tiger — Fortune** (+1 offering chance when dragging a ready crop to a
+shrine; 20 / 30 / 45 / 60 = 155; apex: Solar Gourd)
 1. Young Tiger — +25% bonus crops — wheat, turnip
 2. Hunting Tiger — +50% bonus crops — blueberry, forest_bread, wildroot
 3. Golden Tiger — +75% bonus crops — moonflower, moonlit_loaf, moonroot,
@@ -598,8 +509,8 @@ apex: Solar Gourd)
 4. Spirit Tiger — +100% bonus crops — golden_pumpkin, sunfruit, golden_loaf,
    golden_bloom, solar_gourd
 
-Bonus crop flies from the harvested plot to inventory 0.5s after the base
-harvest flyer, with corner sparks; count updates on land.
+Bonus: a second same-type offering applies immediately; a spark-fly VFX
+arcs from the (now empty) plot to the shrine. No bonus on mix or temple.
 
 ## Dragon Temple
 Matched-tribute challenge above the farm plot grid (not including shrines).
@@ -639,8 +550,9 @@ does not weight the tribute). Total burn animation ≈
 `burnPulseMs × burnPulseCount` (currently 3.6s).
 
 ### Layout
-- Lives inside `#grove-stage` below the game text panel and directly above
-  `#farm-board` (tight grove gap so the tribute board reads flush on the farm).
+- Lives inside `#grove-stage` directly above `#farm-board` (tight grove gap
+  so the tribute board reads flush on the farm). Info band (game text +
+  Discovery Log) sits below the grove stage.
 - Object width matches a 4-plot farm row including frame padding (shrines not
   counted). Soft drop-shadow on the roof figure like corner shrines.
 - Stack: wrath meter above → roof-only dragon PNG → 1×4 holy farm-style
@@ -772,8 +684,8 @@ Per-shrine revoke (only the lost tier’s blessing):
 - Frog — growth speed blessing steps down one tier (live via
   `getActiveBlessing`); at tier 0, new plants use base growth. Crops
   already growing keep their baked `growthMs`.
-- Fox — re-lock the lost tier’s `plotsToUnlock` plots (currently 4;
-  lowest unlocked expandable plot ids first, reversing unlock order).
+- Fox — re-lock the lost tier’s `plotsToUnlock` plots (4 / 4 / 2 / 2;
+  reverse of unlock order: top-row right-to-left, then lower rows).
   Destroy crops on those re-locked plots (not returned to inventory).
   Tier-0 bar clear locks nothing.
 - Tiger — bonus harvest chance steps down one tier (live blessing); at
@@ -822,46 +734,44 @@ pendingClose, pendingReward, triggerChance }`
   `wrath >= wrathMax` (and not mid-burn/reveal) → resolve as a loss and save.
 
 ## Screens
-Main farm in a scenic grove stage + game text panel + Dragon Temple +
-player desk (inventory shelf, alchemy work surface, Discovery Log book).
-Overlays: radial crop picker (anchored to the clicked plot), shrine detail,
-Discovery Log modal, reset confirm. No separate menus. Reset control sits
-below the player desk in the bottom dock.
+Main farm in a scenic grove stage + info band (game text + Discovery Log) +
+Dragon Temple. Overlays: radial crop picker (anchored to the clicked plot),
+shrine detail, Discovery Log modal, reset confirm. No separate menus. Reset
+is at the bottom of the Discovery Log.
 
 ### Layout (current)
-- Target: desktop web. Portrait / mobile fit is deferred.
-- Three bands: game text panel at the top (flush with the grove card); scenic
-  grove stage in the middle (`#grove-stage` holds Dragon Temple above the
-  plot grid with shrines hugging farm corners); player desk
-  (`#player-desk` in `#bottom-dock`) below as a **separate** watercolor
-  workstation band (`assets/scene/player_desk.png`) — clear gap from the
-  grove; outer width matches `#grove-stage` (shared `--grove-outer-width`);
-  forest art / `#grove-stage` styles unchanged by desk chrome. Desk:
-  inventory shelf on top (fixed 6-slot row, centered on the painted ledge);
-  alchemy Mix row centered on the work surface; Discovery Log painted into
-  the desk art with a clickable hotspot (desk art + hotspot geometry
-  locked — see Visual Style / Discovery Log). Reset below the desk.
+- Target: desktop and portrait phone. Main screen (grove + temple + farm +
+  shrines + text + Discovery Log book) fits in `100dvh` **without vertical
+  scrolling**; tile/shrine sizes scale via `stageFit.js`.
+- Bands: scenic grove stage on top (`#grove-stage` holds Dragon Temple above
+  the 4×4 plot grid with shrines hugging farm corners; frog/monkey tops
+  align with farm tile tops); info band below (`#info-band`: two-line game
+  text plank + standalone Discovery Log book). No bottom Reset dock.
 - Farm stays primary inside the grove. Dragon Temple height is reserved for
   the active dock even while resting so the clearing does not jump.
+- Ready crops stay on plots; click does nothing. Drag with **pointer events**
+  (mouse + touch) to shrines / temple / adjacent ready crops to mix.
+- **Reset** lives at the bottom of the Discovery Log modal (confirm overlay
+  unchanged).
 
 ## Game text panel
-Top HUD message area for explaining what is going on.
+HUD message area for explaining what is going on.
 
-- Location: above the scenic grove stage (Dragon Temple + farm), width flush
-  with the painted grove card below it (`--grove-outer-width` minus the
-  shrine-column overlap). Chrome is always visible.
+- Location: in the info band below the scenic grove stage, left of the
+  Discovery Log book; width shares the info band with the log button.
+  Chrome is always visible.
 - Painted plank backdrop (`assets/scene/game_text_plank.png`) with a faint
   linen readability wash and warm wood rim; ink text with a soft light
-  shadow for legibility. Fixed one-line height unchanged.
-- Fixed height for **one** readable line; never grows or shrinks. No
-  scroller — overflow is clipped with ellipsis. Text is centered in the tile.
+  shadow for legibility. Fixed **two-line** height.
+- Fixed height for **two** readable lines; never grows or shrinks. No
+  scroller — overflow is clipped (line-clamp). Text is centered in the tile.
   Font size `0.875rem`.
 - Default when `gameText` is `null` (startup, reset, or after clear):
   `It's a cozy day for farming.`
   (UI fallback in `gameTextPanel.js`; state stays `null`). New text replaces
   current text. Code can clear it (`clearGameText`) to restore the default.
   No player dismiss control yet.
-- Plain text only (no HTML). One line only (no embedded newlines).
+- Plain text only (no HTML).
 - Persists with save/load.
 
 Triggers:
@@ -883,68 +793,13 @@ API (`src/state/gameState.js`): `setGameText(state, text)`,
 `clearGameText(state)`. UI: `src/ui/gameTextPanel.js`.
 
 ## Flowered plots (land care)
-
-Optional sink + personalization. Spend a harvested plantable on empty soil to
-bless the next plant with a guaranteed butterfly (no water on that plant).
-
-- Drag a **plantable** inventory crop onto an **empty unlocked** plot that is
-  not already flowered. Alchemy products (`plantable: false`) are rejected.
-- Consumes one unit from inventory (FIFO). Plot sets `flowered: true`.
-- Visual: flowered soil texture `assets/icons/plot_soil_flowered.png` (new
-  asset only — does not replace `plot_soil.png`). Yellow/cream blooms + green
-  leaves cluster from the top-left down the left edge (stop before the bottom);
-  bottom strip and top-right stay clear soil for the growth bar and butterfly
-  cue. Center stays open for crops.
-- Next plant on that plot: skip water roll; **force** a butterfly visit using
-  that crop’s `critterVisitMinProgress` / `critterVisitMaxProgress` window.
-  Welcome still optional; still uses `addShrineProgress` only — **never**
-  `offerCrop`, so flowering / welcoming **never wakes the Dragon**.
-- Flowering does not grant shrine progress by itself.
-- Clears `flowered` when that plant is successfully harvested, or when the
-  plot is re-locked (Fox burn destroys crop and clears care).
-- Already-flowered empty plots reject further flower drops until cleared.
-- Ignore-safe: never flowering is fine; base farm loop unchanged.
+**Parked** (no inventory to spend). Flowered soil art
+(`assets/icons/plot_soil_flowered.png`) kept for later. `flowerPlot` is a
+no-op in the live build.
 
 ## Desk visitors (fireflies)
-
-Optional fate gift on the inventory shelf — fully separate from plot butterfly
-care. Config in `src/data/deskVisitor.js`. Cue icon: `assets/icons/firefly.png`
-(watercolor firefly with a bright glowing abdomen; emoji fallback `✨`).
-
-**Trigger:** after a successful player shrine offering (`offerCrop`), roll
-hidden `offerChance` (default **0.20**). Independent of Dragon
-`triggerChance`. Hit → enqueue a firefly with
-`appearAt = now + random(delayMinSeconds, delayMaxSeconds)` (default
-**15–25** seconds). Further offerings can schedule more fireflies while
-others are still approaching (queue allowed).
-
-**Arrival:** when `now >= appearAt`, try to claim one free shelf tile
-(not used by a crop stack, pending harvest reservation, or another waiting
-firefly). Free tile → status `waiting` with a stable `slotIndex` (lowest free
-index under the shelf layout). No free tile → firefly is **lost** (removed;
-no gift). Does not wait for space later. Oldest `appearAt` first.
-
-**Shelf layout:** waiting fireflies sit at their `slotIndex`. Crop stacks pack
-left-to-right into the remaining frames. Fireflies do not slide when other
-visitors are welcomed.
-
-**Slot reservation:** a waiting firefly **occupies** its shelf tile. That
-slot is not empty and cannot receive harvests, alchemy claims, temple
-returns, or other crop grants. Capacity counts +1 tile per waiting firefly.
-Timeline for one slot — never free: firefly sitting → sparkles on click
-(reservation held) → gifted crop in **that same** clicked slot.
-
-**Welcome:** click the firefly tile → sparks → 1 researched plantable gift
-(weighted by configurable `giftRarityWeights`; all rarities **1** for now =
-uniform among unlocked plantables) → reservation becomes the crop atomically,
-pinned to the clicked `slotIndex` via one-shot `deskGiftLand`. No game-text
-message. No shrine progress; does not wake the Dragon. Prefer gifts that need
-a new stack tile when possible so the shelf tile stays filled.
-
-**State:** `deskVisitors: { id, kind: 'firefly', appearAt,
-status: 'approaching' | 'waiting', slotIndex? }[]`. Approaching do not
-reserve tiles / have no `slotIndex`. `deskGiftLand` is transient
-(`null | { slotIndex, cropId }`) and is not persisted across reload.
+**Parked** with the desk. Config (`src/data/deskVisitor.js`) and
+`assets/icons/firefly.png` kept for later. Scheduling is a no-op.
 
 ## Plot visitors (tanuki nap)
 
@@ -953,8 +808,9 @@ desk fireflies. Config in `src/data/plotNapper.js`. Single pose:
 `assets/icons/tanuki_sleep.png` (emoji fallback `🦝`). The tanuki is only ever
 shown curled asleep — it has no walk or stretch pose.
 
-**Trigger:** after a successful harvest (`harvestPlot`), roll hidden
-`harvestChance` (default **0.15**). No-ops if a napper already exists or
+**Trigger:** after a successful harvest (`harvestPlot`) — currently
+dormant while ready crops stay on plots; returns with plot-offer drag —
+roll hidden `harvestChance` (default **0.15**). No-ops if a napper already exists or
 unlocked plots < `minUnlockedPlots` (default **8**). Hit → schedule
 `plotNapper` with `appearAt = now + random(delayMinSeconds, delayMaxSeconds)`
 (default **8–20** seconds), status `approaching`. Does **not** pick a plot yet.
@@ -1021,37 +877,19 @@ status: 'approaching' | 'sleeping' | 'waking', plotId?, wakeAt? }`.
   `shrineTriggerChanceIncrease`
 
 ## Persistence
-`localStorage` JSON after plant / harvest / water / critter welcome / flower plot /
-offer (may also schedule desk fireflies) / desk firefly welcome /
-alchemy / temple actions (and when crops spoil, fireflies arrive/are lost,
-or a tanuki napper arrives/wakes/is lost on the 1s tick). Missing
-planted-crop `watered` backfilled to `false`; missing / invalid
-`waterRequestAt` backfilled to `null` (no retroactive water asks on legacy
-plants). Missing `critterWelcomed` backfilled to `false`; missing / invalid
-`critterVisitAt` backfilled to `null` (no retroactive visits on legacy plants).
-Missing plot `flowered` backfilled to `false`. Missing `shrines` backfilled to tier 0;
-missing / invalid shrine `dragonBonusOfferings` backfilled to `0`;
-missing `alchemy` backfilled to empty board; missing `dragonTemple` backfilled
-to resting (`lastResult` preserved when present); missing `pendingHarvests`
-backfilled to `[]`; missing `discoveredCropIds` seeded from currently held
-crops (inventory + alchemy / temple slots); missing
-`discoveredAlchemyResultIds` backfilled to `[]` (no recipe backfill);
-missing `deskVisitors` backfilled to `[]` (invalid entries dropped);
-missing / invalid `plotNapper` backfilled to `null` (`waking` cleared on load);
-missing or invalid `gameText`
-backfilled to `null`.
-Legacy inventory counts (`cropId → number`) migrate to one fresh batch each
-(`expiresAt = now + decayMs`, or `null` when `decayDisabled`). Legacy bare
-slot crop-id strings migrate the same way. On load: run decay catch-up first,
-then apply any remaining
-pending harvest grants (fly animation may be skipped), then reconcile desk
-fireflies (place waiting or lose if shelf full), then reconcile plot napper
-(place sleeping, advance to wake, or lose; `waking` cleared with no leave anim).
-If an active temple
-event was mid-burn on load, the burn snap-finishes as a win pending close. If a
-pending win reveal was in progress, it finalizes immediately. Legacy timer
-events without a valid `demand` close without penalty. If still active with
-`wrath >= wrathMax`, it resolves as a loss and is saved.
+`localStorage` JSON (`saveVersion: 2` = desk-less / plot-held crops). After
+plant / water / critter welcome / offer / temple actions / Reset, and on the
+1s tick when crops spoil or a tanuki napper arrives/wakes/is lost.
+
+On load for `saveVersion < 2` (or missing): wipe `inventory`,
+`pendingHarvests`, desk alchemy slots, desk visitors, clear `flowered` flags,
+and reset any active Dragon Temple (slots discarded — no inventory return).
+Then run the usual normalizers. Ready crops on plots are marked discovered
+(`markReadyCropsDiscovered`). Missing `discoveredCropIds` seeded from crops
+currently on plots / held slots; missing `discoveredAlchemyResultIds`
+backfilled to `[]`. Missing or invalid `gameText` backfilled to `null`.
+Plot count must match `TOTAL_PLOTS` (16) or the save is replaced.
+
 No server. Player can wipe progress via Reset (confirm required). On Yes,
 state is replaced with a fresh `createInitialState()` (including an empty
 Discovery Log) and saved. Confirm overlay does not pause timers or
@@ -1062,15 +900,13 @@ animations; No or click outside dismisses and play continues.
 - Progression values stay data-driven.
 
 ## Future vision (not yet built)
-- More alchemy recipes, research UI, deeper progression, portrait / mobile
-  layout (e.g. ~1080×1920) and better mobile DnD.
+- More alchemy recipes, research UI, deeper progression.
 - Vine plot care (second land-care look / perk; mechanic TBD).
 - Additional plot critter types; player-chosen shrine destination for
   butterflies.
 
 ## Out of scope (current)
-- Seeds, full recipe book (always-on catalog), research UI, mobile layout /
-  DnD polish,
+- Seeds, full recipe book (always-on catalog), research UI,
   shrine hover tooltips (replaced by detail window).
 - Vine plot care (deferred).
 - Critter growth time-save, Tiger-like +1 from critters, inventory butterflies,

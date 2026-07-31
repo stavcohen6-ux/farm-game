@@ -106,7 +106,7 @@ export const SHRINES = [
         name: 'Mountain Fox',
         progressRequired: 35,
         acceptedCropIds: ['moonflower', 'moonroot', 'moonberry'],
-        plotsToUnlock: 4,
+        plotsToUnlock: 2,
         tooltip: 'More land',
       },
       {
@@ -118,7 +118,7 @@ export const SHRINES = [
           'enchanted_jam',
           'sunberry',
         ],
-        plotsToUnlock: 4,
+        plotsToUnlock: 2,
         tooltip: 'Final land unlock',
       },
     ],

@@ -4,7 +4,8 @@ import { SHRINES } from '../data/shrines.js';
 import { logShrineIconSrc, setCropIcon, setIcon, UI_ICONS } from './icon.js';
 
 // Opens a modal listing discovered crops with shrine values and origin.
-export function openDiscoveryLog(state) {
+// `onReset` — optional; when set, shows Reset at the bottom of the log.
+export function openDiscoveryLog(state, onReset = null) {
   const overlay = document.createElement('div');
   overlay.className = 'discovery-log-overlay';
 
@@ -57,7 +58,7 @@ export function openDiscoveryLog(state) {
   if (entries.length === 0) {
     const empty = document.createElement('p');
     empty.className = 'discovery-log__empty';
-    empty.textContent = 'Harvest crops or mix alchemy to fill your log';
+    empty.textContent = 'Grow crops to ready to fill your log';
     modal.appendChild(empty);
   } else {
     const plantables = entries.filter((crop) => crop.plantable);
@@ -73,6 +74,22 @@ export function openDiscoveryLog(state) {
         renderSection('Alchemy mixes', mixes, discoveredRecipes),
       );
     }
+  }
+
+  if (typeof onReset === 'function') {
+    const footer = document.createElement('div');
+    footer.className = 'discovery-log__footer';
+    const resetBtn = document.createElement('button');
+    resetBtn.type = 'button';
+    resetBtn.className = 'reset-game';
+    resetBtn.textContent = 'Reset';
+    resetBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      close();
+      onReset();
+    });
+    footer.appendChild(resetBtn);
+    modal.appendChild(footer);
   }
 
   overlay.appendChild(modal);

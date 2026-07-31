@@ -7,11 +7,10 @@ import {
   finalizeDragonTempleClose,
   claimTempleWinReward,
   tickDragonTemple,
-  flushPendingHarvests,
   tickCropDecay,
   markCropDiscovered,
+  markReadyCropsDiscovered,
   collectHeldCropIds,
-  reconcileDeskVisitors,
   reconcilePlotNapper,
   STARTING_RESEARCH_LEVEL,
   TOTAL_PLOTS,
@@ -22,6 +21,7 @@ import { isAlchemyResultId } from '../data/alchemyRecipes.js';
 import { DRAGON_TEMPLE } from '../data/dragonTemple.js';
 
 const STORAGE_KEY = 'farm-game-state';
+const SAVE_VERSION = 2;
 
 export function save(state) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -442,6 +442,12 @@ export function load() {
 
     const now = Date.now();
     let dirty = false;
+
+    // Desk-less farm: wipe inventory / desk alchemy / fireflies / active temple.
+    if (migrateToPlotHeldCrops(parsed)) {
+      dirty = true;
+    }
+
     if (normalizeShrines(parsed)) {
       dirty = true;
     }
@@ -474,17 +480,9 @@ export function load() {
       parsed.gameText = parsed.gameText.trim();
     }
 
-    // Catch up perishable crops (including mid-flight grants) after offline time.
+    // Catch up perishable crops after offline time.
     const spoiled = tickCropDecay(parsed, Date.now());
     if (Object.keys(spoiled).length > 0) {
-      dirty = true;
-    }
-    // Apply remaining mid-flight harvest grants so reload cannot lose fresh crops.
-    if (flushPendingHarvests(parsed)) {
-      dirty = true;
-    }
-    // Place or drop desk fireflies whose appear time has passed while offline.
-    if (reconcileDeskVisitors(parsed, Date.now())) {
       dirty = true;
     }
     // Place, wake, or drop tanuki napper after offline time.
@@ -513,6 +511,9 @@ export function load() {
     if (tickDragonTemple(parsed, Date.now())) {
       dirty = true;
     }
+    if (markReadyCropsDiscovered(parsed, Date.now())) {
+      dirty = true;
+    }
     if (dirty) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
     }
@@ -521,6 +522,26 @@ export function load() {
   } catch {
     return createInitialState();
   }
+}
+
+/** Strip desk/inventory mode once; safe to re-run (idempotent when version >= 2). */
+function migrateToPlotHeldCrops(parsed) {
+  if (parsed.saveVersion === SAVE_VERSION) return false;
+
+  parsed.inventory = {};
+  parsed.pendingHarvests = [];
+  parsed.alchemy = createInitialAlchemy();
+  parsed.deskVisitors = [];
+  parsed.deskGiftLand = null;
+  // Discard any in-progress temple tribute (no inventory to return to).
+  parsed.dragonTemple = createInitialDragonTemple();
+  if (Array.isArray(parsed.plots)) {
+    for (const plot of parsed.plots) {
+      if (plot) plot.flowered = false;
+    }
+  }
+  parsed.saveVersion = SAVE_VERSION;
+  return true;
 }
 
 function normalizeDiscoveredCrops(parsed) {

@@ -26,7 +26,7 @@ import {
   getPlotNapMs,
 } from '../data/plotNapper.js';
 
-export const GRID_ROWS = 5;
+export const GRID_ROWS = 4;
 export const GRID_COLS = 4;
 export const TOTAL_PLOTS = GRID_ROWS * GRID_COLS;
 export const UNLOCKED_PLOTS_AT_START = 4;
@@ -89,25 +89,25 @@ export function createInitialState() {
     });
   }
   return {
+    saveVersion: 2,
     plots,
     inventory: {},
-    // Harvest grants awaiting fly-to-inventory; flushed on load if interrupted
+    // Harvest grants awaiting fly-to-inventory; unused while crops stay on plots
     pendingHarvests: [],
     researchLevel: STARTING_RESEARCH_LEVEL,
     shrines: createInitialShrines(),
     alchemy: createInitialAlchemy(),
     dragonTemple: createInitialDragonTemple(),
-    // Crop ids the player has ever received into inventory (sticky until Reset)
+    // Crop ids the player has ever seen ready on a plot (sticky until Reset)
     discoveredCropIds: [],
     // Alchemy result ids successfully mixed at least once (sticky until Reset)
     discoveredAlchemyResultIds: [],
-    // Desk fireflies: { id, kind, appearAt, status, slotIndex? }[]
+    // Desk fireflies (parked — desk removed; keep shape for later)
     deskVisitors: [],
-    // One-shot: pin next gift stack to the clicked firefly shelf slot
     deskGiftLand: null, // null | { slotIndex, cropId }
     // Sleeping tanuki on one empty plot: null | { id, kind, appearAt, status, plotId?, wakeAt? }
     plotNapper: null,
-    // Player-facing message for the top text panel; null = empty
+    // Player-facing message for the info-band text panel; null = empty
     gameText: null,
   };
 }
@@ -115,6 +115,7 @@ export function createInitialState() {
 // Replace the contents of an existing state object with a fresh farm.
 export function resetState(state) {
   const fresh = createInitialState();
+  state.saveVersion = fresh.saveVersion;
   state.plots = fresh.plots;
   state.inventory = fresh.inventory;
   state.pendingHarvests = fresh.pendingHarvests;
@@ -230,6 +231,106 @@ export function isReady(cell, now) {
   return now - cell.crop.plantedAt >= getPlantedGrowthMs(cell);
 }
 
+/** Orthogonal 4-neighbor adjacency on the farm grid (no diagonals). */
+export function areAdjacentPlots(plotIdA, plotIdB) {
+  if (
+    typeof plotIdA !== 'number' ||
+    typeof plotIdB !== 'number' ||
+    plotIdA === plotIdB ||
+    plotIdA < 0 ||
+    plotIdB < 0 ||
+    plotIdA >= TOTAL_PLOTS ||
+    plotIdB >= TOTAL_PLOTS
+  ) {
+    return false;
+  }
+  const rowA = Math.floor(plotIdA / GRID_COLS);
+  const colA = plotIdA % GRID_COLS;
+  const rowB = Math.floor(plotIdB / GRID_COLS);
+  const colB = plotIdB % GRID_COLS;
+  return Math.abs(rowA - rowB) + Math.abs(colA - colB) === 1;
+}
+
+/**
+ * Remove a ready crop from a plot. Does not touch inventory.
+ * Returns `{ cropId, plotId }` or null.
+ */
+export function takeReadyCropFromPlot(state, plotId, now = Date.now()) {
+  const plot = state.plots.find((p) => p.id === plotId);
+  if (!plot?.crop || !isReady(plot, now)) return null;
+  const { cropId } = plot.crop;
+  if (!getCrop(cropId)) {
+    plot.crop = null;
+    plot.flowered = false;
+    return null;
+  }
+  plot.crop = null;
+  plot.flowered = false;
+  return { cropId, plotId };
+}
+
+/** Place a crop on a plot as already-ready (alchemy result / temple return). */
+export function placeReadyCropOnPlot(state, plotId, cropId, now = Date.now()) {
+  const plot = state.plots.find((p) => p.id === plotId);
+  if (!plot || plot.locked || plot.crop) return false;
+  if (isPlotNapped(state, plotId)) return false;
+  if (!getCrop(cropId)) return false;
+
+  plot.crop = {
+    cropId,
+    plantedAt: now - 1,
+    growthMs: 1,
+    watered: true,
+    waterRequestAt: null,
+    critterWelcomed: true,
+    critterVisitAt: null,
+  };
+  plot.flowered = false;
+  markCropDiscovered(state, cropId);
+  return true;
+}
+
+function findEmptyUnlockedPlotId(state) {
+  for (const plot of state.plots) {
+    if (plot.locked || plot.crop) continue;
+    if (isPlotNapped(state, plot.id)) continue;
+    return plot.id;
+  }
+  return null;
+}
+
+/** Return a held temple crop onto an empty farm plot (desk-less sink). */
+function returnCropToFarm(state, cropId) {
+  if (!getCrop(cropId)) return false;
+  const plotId = findEmptyUnlockedPlotId(state);
+  if (plotId == null) return false;
+  return placeReadyCropOnPlot(state, plotId, cropId);
+}
+
+/**
+ * Mix two adjacent ready crops in place. Result sits on `toPlotId`;
+ * `fromPlotId` is cleared. Returns `{ resultId, fromPlotId, toPlotId }` or null.
+ */
+export function mixAdjacentReadyPlots(state, fromPlotId, toPlotId, now = Date.now()) {
+  if (!areAdjacentPlots(fromPlotId, toPlotId)) return null;
+
+  const from = state.plots.find((p) => p.id === fromPlotId);
+  const to = state.plots.find((p) => p.id === toPlotId);
+  if (!from?.crop || !to?.crop) return null;
+  if (!isReady(from, now) || !isReady(to, now)) return null;
+
+  const resultId = findAlchemyResult(from.crop.cropId, to.crop.cropId);
+  if (!resultId) return null;
+
+  from.crop = null;
+  from.flowered = false;
+  to.crop = null;
+  to.flowered = false;
+  placeReadyCropOnPlot(state, toPlotId, resultId, now);
+  markAlchemyRecipeDiscovered(state, resultId);
+  return { resultId, fromPlotId, toPlotId };
+}
+
 // True when a growing plant is currently asking for optional water.
 export function needsWater(cell, now = Date.now()) {
   if (!cell?.crop) return false;
@@ -291,20 +392,9 @@ function forceCritterVisit(crop, plantedAt, growthMs) {
   };
 }
 
-// Spend a plantable on an empty unlocked plot to flower it (next plant
-// gets a guaranteed butterfly). Returns true on success.
-export function flowerPlot(state, plotId, cropId) {
-  tickCropDecay(state);
-  const plot = state.plots.find((p) => p.id === plotId);
-  if (!plot || plot.locked || plot.crop || plot.flowered) return false;
-  if (isPlotNapped(state, plotId)) return false;
-
-  const crop = getCrop(cropId);
-  if (!crop?.plantable) return false;
-  if (!takeFromInventory(state, cropId)) return false;
-
-  plot.flowered = true;
-  return true;
+// Flowering is parked (no inventory). Keep for a later redesign.
+export function flowerPlot(_state, _plotId, _cropId) {
+  return false;
 }
 
 export function plantCrop(state, plotId, cropId) {
@@ -672,7 +762,7 @@ function forceAddToInventory(state, cropId, amount, expiresAt) {
   markCropDiscovered(state, cropId);
 }
 
-// Sticky discovery: once seen in inventory, stays until full Reset.
+// Sticky discovery: once seen (ready on a plot, or formerly inventory), stays until Reset.
 export function markCropDiscovered(state, cropId) {
   if (!getCrop(cropId)) return;
   if (!Array.isArray(state.discoveredCropIds)) {
@@ -681,6 +771,18 @@ export function markCropDiscovered(state, cropId) {
   if (!state.discoveredCropIds.includes(cropId)) {
     state.discoveredCropIds.push(cropId);
   }
+}
+
+/** Mark plantables/alchemy products that are ready on plots as discovered. */
+export function markReadyCropsDiscovered(state, now = Date.now()) {
+  let changed = false;
+  for (const plot of state.plots) {
+    if (!plot?.crop || !isReady(plot, now)) continue;
+    const before = state.discoveredCropIds?.length ?? 0;
+    markCropDiscovered(state, plot.crop.cropId);
+    if ((state.discoveredCropIds?.length ?? 0) > before) changed = true;
+  }
+  return changed;
 }
 
 // Sticky alchemy recipe discovery: once mixed, stays until full Reset.
@@ -694,7 +796,7 @@ export function markAlchemyRecipeDiscovered(state, resultId) {
   }
 }
 
-// Crop ids currently sitting in inventory or board slots (for save migration).
+// Crop ids currently sitting in inventory, board slots, or on plots (for save migration).
 export function collectHeldCropIds(state) {
   const ids = new Set();
   for (const cropId of Object.keys(state.inventory || {})) {
@@ -709,6 +811,10 @@ export function collectHeldCropIds(state) {
       const id = getHeldCropId(slot);
       if (id) ids.add(id);
     }
+  }
+  for (const plot of state.plots || []) {
+    const cropId = plot?.crop?.cropId;
+    if (cropId) ids.add(cropId);
   }
   return [...ids];
 }
@@ -861,10 +967,15 @@ function canAcceptCrop(state, cropId, amount = 1) {
   );
 }
 
+// Unlock bottom-up by row; within a row, left to right (so partial top-row
+// unlocks open the left pair before the right pair).
 function unlockPlots(state, count) {
-  const locked = state.plots
-    .filter((plot) => plot.locked)
-    .sort((a, b) => b.id - a.id);
+  const locked = state.plots.filter((plot) => plot.locked).sort((a, b) => {
+    const rowA = Math.floor(a.id / GRID_COLS);
+    const rowB = Math.floor(b.id / GRID_COLS);
+    if (rowA !== rowB) return rowB - rowA;
+    return a.id - b.id;
+  });
 
   const unlockedPlotIds = [];
   for (let i = 0; i < count && i < locked.length; i++) {
@@ -874,12 +985,18 @@ function unlockPlots(state, count) {
   return unlockedPlotIds;
 }
 
-// Re-lock fox-expanded plots (lowest ids first), reversing unlockPlots order.
+// Re-lock fox-expanded plots in reverse unlock order (top row right-to-left,
+// then lower rows).
 function lockPlots(state, count) {
   const firstExpandableId = TOTAL_PLOTS - UNLOCKED_PLOTS_AT_START;
   const unlocked = state.plots
     .filter((plot) => !plot.locked && plot.id < firstExpandableId)
-    .sort((a, b) => a.id - b.id);
+    .sort((a, b) => {
+      const rowA = Math.floor(a.id / GRID_COLS);
+      const rowB = Math.floor(b.id / GRID_COLS);
+      if (rowA !== rowB) return rowA - rowB;
+      return b.id - a.id;
+    });
 
   const lockedPlotIds = [];
   for (let i = 0; i < count && i < unlocked.length; i++) {
@@ -1114,7 +1231,7 @@ export function addDragonTempleWrath(state, amount) {
   return true;
 }
 
-export function offerCrop(state, shrineId, cropId) {
+export function offerCrop(state, shrineId, cropId, sourcePlotId = null) {
   tickCropDecay(state);
   if (isShrineMaxed(state, shrineId)) return false;
 
@@ -1141,20 +1258,27 @@ export function offerCrop(state, shrineId, cropId) {
   }
   const templeWasActive = Boolean(state.dragonTemple.active);
 
-  if (!takeFromInventory(state, cropId)) return false;
-
-  const progress = state.shrines[shrineId];
-  const bonusUses = getDragonBonusOfferings(state, shrineId);
-  const multiplier =
-    bonusUses > 0 ? DRAGON_TEMPLE.rewardProgressMultiplier : 1;
-  const amount = baseAmount * multiplier;
-
-  // Consume one use before progress (maxing clears remaining uses).
-  if (bonusUses > 0 && progress) {
-    progress.dragonBonusOfferings = bonusUses - 1;
+  if (sourcePlotId != null) {
+    const taken = takeReadyCropFromPlot(state, sourcePlotId);
+    if (!taken || taken.cropId !== cropId) return false;
+    maybeSchedulePlotNapperFromHarvest(state);
+  } else if (!takeFromInventory(state, cropId)) {
+    return false;
   }
 
-  const result = addShrineProgress(state, shrineId, amount);
+  const tigerBlessing = getActiveBlessing(state, 'tiger');
+  const chance = tigerBlessing?.bonusHarvestChance ?? 0;
+  const bonus =
+    sourcePlotId != null && chance > 0 && Math.random() < chance;
+
+  const unlockedPlotIds = [];
+  const first = applyOfferingProgress(state, shrineId, cropId, baseAmount);
+  if (first) unlockedPlotIds.push(...first.unlockedPlotIds);
+
+  if (bonus && !isShrineMaxed(state, shrineId)) {
+    const second = applyOfferingProgress(state, shrineId, cropId, baseAmount);
+    if (second) unlockedPlotIds.push(...second.unlockedPlotIds);
+  }
 
   if (templeWasActive) {
     addDragonTempleWrath(state, DRAGON_TEMPLE.wrathPerShrineOffer);
@@ -1162,7 +1286,27 @@ export function offerCrop(state, shrineId, cropId) {
     maybeTriggerDragonTempleFromOffering(state, shrineId, cropId);
   }
   maybeScheduleDeskVisitorFromOffering(state);
-  return result;
+  return {
+    unlockedPlotIds,
+    bonus,
+    cropId,
+    plotId: sourcePlotId,
+  };
+}
+
+/** Apply one offering's progress (and one Dragon-bonus use if any). */
+function applyOfferingProgress(state, shrineId, cropId, baseAmount) {
+  const progress = state.shrines[shrineId];
+  const bonusUses = getDragonBonusOfferings(state, shrineId);
+  const multiplier =
+    bonusUses > 0 ? DRAGON_TEMPLE.rewardProgressMultiplier : 1;
+  const amount = baseAmount * multiplier;
+
+  if (bonusUses > 0 && progress) {
+    progress.dragonBonusOfferings = bonusUses - 1;
+  }
+
+  return addShrineProgress(state, shrineId, amount);
 }
 
 function maybeTriggerDragonTempleFromOffering(state, shrineId, cropId) {
@@ -1259,7 +1403,7 @@ export function claimAlchemyResult(state) {
   return true;
 }
 
-function returnDragonTempleSlotsToInventory(state) {
+function returnDragonTempleSlotsToFarm(state) {
   const temple = state.dragonTemple;
   if (!temple?.slots) return;
 
@@ -1267,12 +1411,7 @@ function returnDragonTempleSlotsToInventory(state) {
     const held = temple.slots[i];
     const cropId = getHeldCropId(held);
     if (!cropId) continue;
-    const expiresAt = getHeldExpiresAt(held);
-    const crop = getCrop(cropId);
-    const expiry =
-      typeof expiresAt === 'number' ? expiresAt : getExpiresAt(crop);
-    // Force return — these crops were already owned before the event.
-    forceAddToInventory(state, cropId, 1, expiry);
+    returnCropToFarm(state, cropId);
     temple.slots[i] = null;
   }
 }
@@ -1284,7 +1423,7 @@ export function closeDragonTempleEvent(state) {
   }
   const lastResult = state.dragonTemple.lastResult ?? null;
   const pendingReward = Boolean(state.dragonTemple.pendingReward);
-  returnDragonTempleSlotsToInventory(state);
+  returnDragonTempleSlotsToFarm(state);
   state.dragonTemple.active = false;
   state.dragonTemple.demand = [];
   state.dragonTemple.wrath = 0;
@@ -1320,7 +1459,7 @@ function demandCropAt(temple, slotIndex) {
   return demand[slotIndex] ?? null;
 }
 
-export function placeDragonTempleSlot(state, slotIndex, cropId) {
+export function placeDragonTempleSlot(state, slotIndex, cropId, sourcePlotId = null) {
   tickCropDecay(state);
   const temple = state.dragonTemple;
   if (!temple?.active || temple.burning || temple.pendingClose) return false;
@@ -1335,12 +1474,20 @@ export function placeDragonTempleSlot(state, slotIndex, cropId) {
   if (!getCrop(cropId)) return false;
   if (demandCropAt(temple, slotIndex) !== cropId) return false;
 
-  const taken = takeFromInventory(state, cropId);
-  if (!taken) return false;
+  let expiresAt = null;
+  if (sourcePlotId != null) {
+    const taken = takeReadyCropFromPlot(state, sourcePlotId);
+    if (!taken || taken.cropId !== cropId) return false;
+    maybeSchedulePlotNapperFromHarvest(state);
+  } else {
+    const taken = takeFromInventory(state, cropId);
+    if (!taken) return false;
+    expiresAt = taken.expiresAt;
+  }
 
   temple.slots[slotIndex] = {
-    cropId: taken.cropId,
-    expiresAt: taken.expiresAt,
+    cropId,
+    expiresAt,
   };
 
   // Impatient dragon: claim the tribute the moment every board slot matches.
@@ -1350,14 +1497,14 @@ export function placeDragonTempleSlot(state, slotIndex, cropId) {
   return true;
 }
 
-export function placeDragonTempleNextSlot(state, cropId) {
+export function placeDragonTempleNextSlot(state, cropId, sourcePlotId = null) {
   const temple = state.dragonTemple;
   if (!temple?.active || temple.burning || temple.pendingClose) return false;
   const slotIndex = temple.slots.findIndex(
     (slot, i) => !slot && demandCropAt(temple, i) === cropId,
   );
   if (slotIndex < 0) return false;
-  return placeDragonTempleSlot(state, slotIndex, cropId);
+  return placeDragonTempleSlot(state, slotIndex, cropId, sourcePlotId);
 }
 
 export function clearDragonTempleSlot(state, slotIndex) {
@@ -1376,8 +1523,7 @@ export function clearDragonTempleSlot(state, slotIndex) {
   const cropId = getHeldCropId(held);
   if (!cropId) return false;
 
-  const expiresAt = getHeldExpiresAt(held);
-  if (!addToInventory(state, cropId, 1, expiresAt ?? undefined)) return false;
+  if (!returnCropToFarm(state, cropId)) return false;
   temple.slots[slotIndex] = null;
   return true;
 }
@@ -1485,18 +1631,9 @@ function ensureDeskVisitors(state) {
   return state.deskVisitors;
 }
 
-// After a shrine offering: maybe schedule a firefly (independent of Dragon).
-export function maybeScheduleDeskVisitorFromOffering(state, now = Date.now()) {
-  const chance = DESK_VISITOR.offerChance ?? 0;
-  if (!(chance > 0) || Math.random() >= chance) return false;
-
-  ensureDeskVisitors(state).push({
-    id: createDeskVisitorId(),
-    kind: 'firefly',
-    appearAt: now + getDeskVisitorDelayMs(),
-    status: 'approaching',
-  });
-  return true;
+// Desk fireflies parked (desk removed). Keep API for a later redesign.
+export function maybeScheduleDeskVisitorFromOffering(_state, _now = Date.now()) {
+  return false;
 }
 
 export function getWaitingDeskVisitors(state) {

@@ -1,14 +1,9 @@
 import { getCrop } from '../data/crops.js';
 import { DRAGON_TEMPLE } from '../data/dragonTemple.js';
 import { getHeldCropId, getHeldExpiresAt } from '../state/gameState.js';
-import { CROP_DRAG_TYPE, CROP_DRAG_PREFIX } from './shrinesPanel.js';
+import { CROP_DRAG_TYPE, parseCropDragData } from './shrinesPanel.js';
 import { applyDecayUrgencyClass, appendWiltMark } from './decayUrgency.js';
 import { setCropIcon, setIcon, UI_ICONS } from './icon.js';
-
-function parseCropDragData(raw) {
-  if (!raw || !raw.startsWith(CROP_DRAG_PREFIX)) return null;
-  return raw.slice(CROP_DRAG_PREFIX.length);
-}
 
 function burnTotalMs() {
   return DRAGON_TEMPLE.burnPulseMs * DRAGON_TEMPLE.burnPulseCount;
@@ -160,8 +155,8 @@ function renderSlot(
     slotEl.title = burning
       ? 'Burning…'
       : crop
-        ? `${crop.name} — click to return to inventory`
-        : 'Click to return to inventory';
+        ? `${crop.name} — click to return to farm`
+        : 'Click to return to farm';
     slotEl.onclick = burning || !interactive ? null : () => onClear(slotIndex);
     return;
   }
@@ -205,11 +200,11 @@ function renderSlot(
     event.preventDefault();
     event.stopPropagation();
     slotEl.classList.remove('dragon-temple__slot--drag-over');
-    const cropIdFromDrag = parseCropDragData(
+    const drag = parseCropDragData(
       event.dataTransfer.getData(CROP_DRAG_TYPE),
     );
-    if (!cropIdFromDrag) return;
-    onPlace(slotIndex, cropIdFromDrag);
+    if (!drag) return;
+    onPlace(slotIndex, drag.cropId, drag.plotId);
   };
 }
 
@@ -228,11 +223,11 @@ function wireTempleDropTarget(container, onPlaceNext) {
   container.ondrop = (event) => {
     event.preventDefault();
     container.classList.remove('dragon-temple--drag-over');
-    const cropIdFromDrag = parseCropDragData(
+    const drag = parseCropDragData(
       event.dataTransfer.getData(CROP_DRAG_TYPE),
     );
-    if (!cropIdFromDrag) return;
-    onPlaceNext(cropIdFromDrag);
+    if (!drag) return;
+    onPlaceNext(drag.cropId, drag.plotId);
   };
 }
 
@@ -264,6 +259,7 @@ function buildSlotsRow(temple, handlers, burning, now, interactive) {
   const slots = temple.slots ?? [];
   for (let i = 0; i < DRAGON_TEMPLE.slotCount; i++) {
     const slotEl = document.createElement('div');
+    slotEl.dataset.slotIndex = String(i);
     renderSlot(
       slotEl,
       interactive ? slots[i] ?? null : null,

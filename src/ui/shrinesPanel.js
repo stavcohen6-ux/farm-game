@@ -7,6 +7,26 @@ const CROP_DRAG_PREFIX = 'farm-crop:';
 
 export { CROP_DRAG_TYPE, CROP_DRAG_PREFIX };
 
+/** @param {{ cropId: string, plotId?: number|null }} opts */
+export function encodeCropDrag({ cropId, plotId = null }) {
+  if (plotId == null) return `${CROP_DRAG_PREFIX}${cropId}`;
+  return `${CROP_DRAG_PREFIX}${cropId}|plot:${plotId}`;
+}
+
+/** @returns {{ cropId: string, plotId: number|null } | null} */
+export function parseCropDragData(raw) {
+  if (!raw || !raw.startsWith(CROP_DRAG_PREFIX)) return null;
+  const rest = raw.slice(CROP_DRAG_PREFIX.length);
+  const sep = rest.lastIndexOf('|plot:');
+  if (sep < 0) {
+    return rest ? { cropId: rest, plotId: null } : null;
+  }
+  const cropId = rest.slice(0, sep);
+  const plotId = Number(rest.slice(sep + 6));
+  if (!cropId || !Number.isInteger(plotId)) return null;
+  return { cropId, plotId };
+}
+
 // Renders the four corner shrines and wires click + drop targets for offerings.
 // pendingBlessingVisualShrineIds: hide glow until temple sparks land.
 export function renderShrines(
@@ -34,11 +54,6 @@ export function renderShrines(
       pendingBlessingVisualShrineIds,
     );
   }
-}
-
-function parseCropDragData(raw) {
-  if (!raw || !raw.startsWith(CROP_DRAG_PREFIX)) return null;
-  return raw.slice(CROP_DRAG_PREFIX.length);
 }
 
 function renderShrine(
@@ -126,9 +141,9 @@ function renderShrine(
   container.ondrop = (event) => {
     event.preventDefault();
     container.classList.remove('shrine--drag-over');
-    const cropId = parseCropDragData(event.dataTransfer.getData(CROP_DRAG_TYPE));
-    if (!cropId) return;
+    const drag = parseCropDragData(event.dataTransfer.getData(CROP_DRAG_TYPE));
+    if (!drag) return;
     suppressClick = true;
-    onOffer(shrine.id, cropId);
+    onOffer(shrine.id, drag.cropId, drag.plotId);
   };
 }

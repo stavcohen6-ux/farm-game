@@ -5,7 +5,7 @@ import {
   takeDeskGiftLand,
   INVENTORY_SLOT_COUNT,
 } from '../state/gameState.js';
-import { CROP_DRAG_TYPE, CROP_DRAG_PREFIX } from './shrinesPanel.js';
+import { CROP_DRAG_TYPE, encodeCropDrag } from './shrinesPanel.js';
 import { applyDecayUrgencyClass, appendWiltMark } from './decayUrgency.js';
 import { setCropIcon, setIcon, UI_ICONS } from './icon.js';
 
@@ -115,7 +115,10 @@ function appendCropStack(item, stack, now) {
   appendWiltMark(item, urgency);
 
   item.ondragstart = (event) => {
-    event.dataTransfer.setData(CROP_DRAG_TYPE, `${CROP_DRAG_PREFIX}${cropId}`);
+    event.dataTransfer.setData(
+      CROP_DRAG_TYPE,
+      encodeCropDrag({ cropId }),
+    );
     event.dataTransfer.effectAllowed = 'move';
     item.classList.add('inventory__item--dragging');
   };

@@ -1,14 +1,9 @@
 import { getCrop } from '../data/crops.js';
 import { findAlchemyResult } from '../data/alchemyRecipes.js';
 import { getHeldCropId, getHeldExpiresAt } from '../state/gameState.js';
-import { CROP_DRAG_TYPE, CROP_DRAG_PREFIX } from './shrinesPanel.js';
+import { CROP_DRAG_TYPE, parseCropDragData } from './shrinesPanel.js';
 import { applyDecayUrgencyClass, appendWiltMark } from './decayUrgency.js';
 import { setCropIcon, setIcon, UI_ICONS } from './icon.js';
-
-function parseCropDragData(raw) {
-  if (!raw || !raw.startsWith(CROP_DRAG_PREFIX)) return null;
-  return raw.slice(CROP_DRAG_PREFIX.length);
-}
 
 function renderSlot(slotEl, held, slotKey, onClear, onPlace, now) {
   slotEl.className = 'alchemy__slot';
@@ -65,11 +60,11 @@ function renderSlot(slotEl, held, slotKey, onClear, onPlace, now) {
     event.preventDefault();
     event.stopPropagation();
     slotEl.classList.remove('alchemy__slot--drag-over');
-    const cropIdFromDrag = parseCropDragData(
+    const drag = parseCropDragData(
       event.dataTransfer.getData(CROP_DRAG_TYPE),
     );
-    if (!cropIdFromDrag) return;
-    onPlace(slotKey, cropIdFromDrag);
+    if (!drag) return;
+    onPlace(slotKey, drag.cropId);
   };
 }
 
@@ -88,11 +83,11 @@ function wireAlchemyDropTarget(container, onPlaceNext) {
   container.ondrop = (event) => {
     event.preventDefault();
     container.classList.remove('alchemy--drag-over');
-    const cropIdFromDrag = parseCropDragData(
+    const drag = parseCropDragData(
       event.dataTransfer.getData(CROP_DRAG_TYPE),
     );
-    if (!cropIdFromDrag) return;
-    onPlaceNext(cropIdFromDrag);
+    if (!drag) return;
+    onPlaceNext(drag.cropId);
   };
 }
 

@@ -7,17 +7,15 @@ import {
   hasCritterVisit,
   isPlotNapped,
 } from '../state/gameState.js';
-import { CROP_DRAG_TYPE, CROP_DRAG_PREFIX } from './shrinesPanel.js';
+import { CROP_DRAG_TYPE, parseCropDragData } from './shrinesPanel.js';
+import { wireReadyCropPointerDrag } from './plotPointerDrag.js';
 import { setCropIcon, setIcon, UI_ICONS } from './icon.js';
 import { setTanukiIcon } from './tanukiNap.js';
 import { breathTiming } from './breathTiming.js';
 
 const WATER_SPRINKLE_DROPS = 12;
 
-function parseCropDragData(raw) {
-  if (!raw || !raw.startsWith(CROP_DRAG_PREFIX)) return null;
-  return raw.slice(CROP_DRAG_PREFIX.length);
-}
+let suppressPlotClickAfterDrag = false;
 
 // Syncs the plot grid into `container` and wires plot clicks to
 // `onPlotClick(plotId)`. Reuses unchanged plot elements so ready-crop
@@ -37,6 +35,7 @@ function parseCropDragData(raw) {
 // while the fixed overlay plays arrive / leave.
 //
 // `onFlowerPlot(plotId, cropId)` — drop a plantable on an empty plot to flower it.
+// `onPlotCropDrop({ cropId, fromPlotId, clientX, clientY })` — pointer drag end.
 export function renderGrid(
   container,
   state,
@@ -49,6 +48,7 @@ export function renderGrid(
   onFlowerPlot = null,
   tanukiArrivingPlotIds = new Set(),
   tanukiLeavingPlotIds = new Set(),
+  onPlotCropDrop = null,
 ) {
   container.style.gridTemplateColumns = `repeat(${GRID_COLS}, 1fr)`;
   container.style.gridTemplateRows = `repeat(${GRID_ROWS}, 1fr)`;
@@ -102,19 +102,23 @@ export function renderGrid(
     }
   }
 
-  // Rebuild child order only when needed; replaceChanged keeps ready icons
-  // that were reused above.
   syncChildren(container, nextEls);
 
-  // Assigning onclick (rather than addEventListener) keeps this idempotent
-  // across re-renders without accumulating duplicate listeners.
   container.onclick = (event) => {
+    if (suppressPlotClickAfterDrag) {
+      suppressPlotClickAfterDrag = false;
+      return;
+    }
     const plotEl = event.target.closest('[data-plot-id]');
     if (!plotEl) return;
     onPlotClick(Number(plotEl.dataset.plotId));
   };
 
   wireFlowerDrop(container, state, onFlowerPlot);
+  wireReadyCropPointerDrag(container, state, now, (payload) => {
+    suppressPlotClickAfterDrag = true;
+    onPlotCropDrop?.(payload);
+  });
 }
 
 function wireFlowerDrop(container, state, onFlowerPlot) {
@@ -146,11 +150,11 @@ function wireFlowerDrop(container, state, onFlowerPlot) {
     clearFlowerDragOver(container);
     const plotEl = flowerDropTarget(event, state);
     if (!plotEl) return;
-    const cropId = parseCropDragData(
+    const drag = parseCropDragData(
       event.dataTransfer.getData(CROP_DRAG_TYPE),
     );
-    if (!cropId) return;
-    onFlowerPlot(Number(plotEl.dataset.plotId), cropId);
+    if (!drag) return;
+    onFlowerPlot(Number(plotEl.dataset.plotId), drag.cropId);
   };
 }
 
