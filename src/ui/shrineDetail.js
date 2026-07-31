@@ -1,16 +1,42 @@
+import { getCrop } from '../data/crops.js';
 import { getShrine } from '../data/shrines.js';
-import { getPreferredPlantables } from '../data/crops.js';
-import { isShrineMaxed } from '../state/gameState.js';
-import { setCropIcon, setIcon, shrineIconSrc } from './icon.js';
+import { getActiveShrineTier, isShrineMaxed } from '../state/gameState.js';
+import { setCropIcon, setIcon, logShrineIconSrc } from './icon.js';
+
+let cropTipEl = null;
+
+function ensureCropTip() {
+  if (cropTipEl) return cropTipEl;
+  cropTipEl = document.createElement('div');
+  cropTipEl.className = 'shrine-crop-tip';
+  cropTipEl.hidden = true;
+  document.body.appendChild(cropTipEl);
+  return cropTipEl;
+}
+
+function showCropTip(anchor, name) {
+  const tip = ensureCropTip();
+  tip.textContent = name;
+  tip.hidden = false;
+  const rect = anchor.getBoundingClientRect();
+  tip.style.left = `${rect.left + rect.width / 2}px`;
+  tip.style.top = `${rect.bottom + 6}px`;
+}
+
+function hideCropTip() {
+  if (cropTipEl) cropTipEl.hidden = true;
+}
 
 // Shows a centered modal listing every tier for a shrine: name, effect,
-// and progress (Complete / live / Locked). Click outside to close.
+// accepted crops, and progress (Complete / live / Locked). Click outside
+// to close.
 export function openShrineDetail(state, shrineId) {
   const shrine = getShrine(shrineId);
   const progress = state.shrines?.[shrineId];
   if (!shrine || !progress) return;
 
   const maxed = isShrineMaxed(state, shrineId);
+  const activeTier = getActiveShrineTier(state, shrineId);
 
   const overlay = document.createElement('div');
   overlay.className = 'shrine-detail-overlay';
@@ -23,7 +49,7 @@ export function openShrineDetail(state, shrineId) {
   const titleIcon = document.createElement('span');
   titleIcon.className = 'shrine-detail__title-icon';
   setIcon(titleIcon, {
-    src: shrineIconSrc(shrine.id),
+    src: logShrineIconSrc(shrine.id),
     emoji: shrine.icon,
     alt: '',
     imgClass: 'game-icon game-icon--shrine-detail',
@@ -32,19 +58,12 @@ export function openShrineDetail(state, shrineId) {
   title.append(` ${shrine.name} — ${shrine.theme}`);
   modal.appendChild(title);
 
-  const preferred = getPreferredPlantables(shrineId);
-  if (preferred.length > 0) {
-    const prefers = document.createElement('p');
-    prefers.className = 'shrine-detail__prefers';
-    prefers.append('Prefers: ');
-    preferred.forEach((crop, index) => {
-      if (index > 0) prefers.append(' ');
-      const icon = document.createElement('span');
-      icon.className = 'shrine-detail__prefers-icon';
-      setCropIcon(icon, crop, 'game-icon game-icon--inline');
-      prefers.appendChild(icon);
-    });
-    modal.appendChild(prefers);
+  if (activeTier) {
+    const accepts = document.createElement('p');
+    accepts.className = 'shrine-detail__accepts';
+    accepts.append('Accepts: ');
+    appendAcceptedIcons(accepts, activeTier);
+    modal.appendChild(accepts);
   }
 
   const list = document.createElement('div');
@@ -63,8 +82,24 @@ export function openShrineDetail(state, shrineId) {
   });
 
   function close() {
+    hideCropTip();
     overlay.remove();
   }
+}
+
+function appendAcceptedIcons(parent, tier) {
+  const ids = tier?.acceptedCropIds ?? [];
+  ids.forEach((cropId, index) => {
+    const crop = getCrop(cropId);
+    if (!crop) return;
+    if (index > 0) parent.append(' ');
+    const icon = document.createElement('span');
+    icon.className = 'shrine-detail__accepts-icon';
+    setCropIcon(icon, crop, 'game-icon game-icon--inline');
+    icon.addEventListener('pointerenter', () => showCropTip(icon, crop.name));
+    icon.addEventListener('pointerleave', hideCropTip);
+    parent.appendChild(icon);
+  });
 }
 
 function renderTierRow(tier, index, progress, maxed) {
@@ -89,6 +124,14 @@ function renderTierRow(tier, index, progress, maxed) {
   effect.className = 'shrine-detail__tier-effect';
   effect.textContent = tier.tooltip;
   row.appendChild(effect);
+
+  if ((tier.acceptedCropIds ?? []).length > 0) {
+    const accepts = document.createElement('div');
+    accepts.className = 'shrine-detail__tier-accepts';
+    accepts.append('Accepts: ');
+    appendAcceptedIcons(accepts, tier);
+    row.appendChild(accepts);
+  }
 
   const track = document.createElement('div');
   track.className = 'shrine-detail__progress-track';

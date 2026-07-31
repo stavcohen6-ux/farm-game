@@ -79,36 +79,3 @@ function flySpark({ startX, startY, endX, endY, onLand }) {
     onLand?.();
   };
 }
-
-// Pulses a shrine animal icon twice at burn-pulse speed, then calls onComplete.
-// Progress must be applied only after this completes (not during the pulse).
-export function pulseShrineIcon(iconEl, onComplete) {
-  if (!iconEl) {
-    onComplete?.();
-    return;
-  }
-
-  const pulseMs = DRAGON_TEMPLE.burnPulseMs;
-  const pulseCount = DRAGON_TEMPLE.rewardPulseCount;
-  let finished = false;
-
-  function finish() {
-    if (finished) return;
-    finished = true;
-    iconEl.classList.remove('shrine__icon--reward-pulse');
-    iconEl.style.removeProperty('animation-duration');
-    iconEl.style.removeProperty('animation-iteration-count');
-    onComplete?.();
-  }
-
-  iconEl.classList.remove('shrine__icon--reward-pulse');
-  // Restart animation if the class was already present.
-  void iconEl.offsetWidth;
-  iconEl.style.animationDuration = `${pulseMs}ms`;
-  iconEl.style.animationIterationCount = String(pulseCount);
-  iconEl.classList.add('shrine__icon--reward-pulse');
-
-  iconEl.addEventListener('animationend', finish, { once: true });
-  // Fallback if a re-render removes the icon mid-pulse.
-  window.setTimeout(finish, pulseMs * pulseCount + 50);
-}

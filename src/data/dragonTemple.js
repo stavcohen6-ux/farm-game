@@ -1,17 +1,20 @@
-// Dragon Temple event config. Tunables for the timed sacrifice challenge.
+// Dragon Temple event config. Matched tribute + harvest-fueled wrath.
 // See docs/GAME_DESIGN.md → Dragon Temple.
 export const DRAGON_TEMPLE = {
-  slotCount: 5, // sacrifice slots that must be filled before Burn
-  pointsPerBurn: 5, // progress added each successful Burn
-  progressRequired: 15, // progress needed to win the event (3 burns × 5)
-  durationMs: 90 * 1000, // countdown length when the event starts
+  slotCount: 4, // demand board slots; auto-burn when all match
+  wrathMax: 8, // wrath at or above this loses the event
+  wrathPerHarvest: 1, // added per successful plot harvest while awake
+  wrathPerShrineOffer: 3, // added when offering to an animal shrine while awake
   burnPulseMs: 1200, // half of ready-crop pulse (2.4s); one fire pulse
   burnPulseCount: 3, // fire pulses before slotted crops disappear
-  resultRevealMs: 500, // show granted bar points before win/lose close
-  rewardProgress: 10, // shrine progress granted after a successful win prize
+  burnEmberCount: 3, // rising ember dots per burning slot
+  burnEmberMs: 1400, // one ember rise, played once per dot
+  resultRevealMs: 500, // pause after burn before win close
+  // Win prize: next N offerings to the blessed shrine grant multiplied points
+  rewardBonusOfferings: 5,
+  rewardProgressMultiplier: 2, // 100% bonus = double offering progress
   rewardSparkCount: 4, // spark emojis that fly temple → shrine
   rewardSparkIcon: '✨',
-  rewardPulseCount: 2, // animal-icon pulses before progress is applied
   // Hidden chance that a shrine offering wakes the dragon (0–1)
   defaultTriggerChance: 0.1,
   // Added to triggerChance after a missed offering roll, per shrine (capped at 1)

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <base href="../" />
+  <title>Mix button mockup — painted mortar</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ---- Preview-only chrome (loaded after style.css so it wins) ---- */
+    html, body { height: auto; overflow: auto; }
+
+    body {
+      background:
+        radial-gradient(ellipse 60% 50% at 85% 10%, rgba(200, 228, 240, 0.55) 0%, transparent 45%),
+        radial-gradient(ellipse 80% 60% at 15% 100%, #b8e0c4 0%, transparent 50%),
+        linear-gradient(180deg, #d8f0e0 0%, #b8dcc8 50%, #9ecab0 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.25rem;
+      padding: 1.5rem 1rem 4rem;
+      font-family: 'Quicksand', 'Nunito', system-ui, sans-serif;
+      color: var(--ink);
+    }
+
+    #app { max-height: none; max-width: none; overflow: visible; padding: 0; }
+
+    h1 { margin: 0; font-size: 1.05rem; font-weight: 700; }
+
+    .note {
+      margin: 0;
+      max-width: 40rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+
+    .caption {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+      align-self: flex-start;
+      margin-left: 0.2rem;
+    }
+
+    .block { display: flex; flex-direction: column; gap: 0.4rem; align-items: center; }
+
+    .variant-switch {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+      background: rgba(247, 252, 247, 0.7);
+      border: 1.5px solid rgba(158, 201, 170, 0.6);
+      border-radius: 999px;
+      padding: 0.4rem 0.75rem;
+    }
+
+    .variant-switch button {
+      border: 1.5px solid transparent;
+      border-radius: 999px;
+      background: transparent;
+      font: inherit;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--muted);
+      padding: 0.25rem 0.7rem;
+      cursor: pointer;
+    }
+
+    .variant-switch button[aria-pressed='true'] {
+      background: rgba(181, 217, 192, 0.55);
+      border-color: rgba(95, 154, 114, 0.5);
+      color: var(--ink);
+    }
+
+    /* Proposed desk art: painted mortar removed from the backdrop */
+    .player-desk.no-mortar {
+      background-image: url('preview/player_desk_nomortar.png?v=3');
+    }
+
+    /* Show the painted book hotspot so scale is comparable */
+    .show-book .discovery-log-btn {
+      outline: 1.5px dashed rgba(95, 154, 114, 0.55);
+      outline-offset: 0;
+    }
+
+    /* =====================================================
+       PROPOSED: painted mortar Mix
+       Layout box stays var(--tile) tall so the desk height
+       and the painted-book calibration never move.
+       The art overflows upward into the shelf gap only.
+       ===================================================== */
+    .alchemy__mix--mock {
+      position: relative;
+      box-sizing: border-box;
+      width: var(--mix-box-w, 5rem); /* set per variant from art aspect */
+      height: var(--tile);       /* 4rem — row height identical to today */
+      padding: 0;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      flex-shrink: 0;
+      overflow: visible;         /* art rises above the row */
+      display: block;
+      transition: transform 0.14s ease, filter 0.14s ease, opacity 0.14s ease;
+    }
+
+    .alchemy__mix--mock .game-icon--mix {
+      position: absolute;
+      left: 50%;
+      bottom: 0;                 /* base sits on the slot baseline */
+      transform: translateX(-50%);
+      height: var(--mix-art-h, 4.8rem); /* painted-book height */
+      width: auto;
+      object-fit: contain;
+      pointer-events: none;
+      z-index: 1;
+      filter: drop-shadow(0 2px 3px rgba(47, 59, 42, 0.22));
+      transition: transform 0.14s ease;
+    }
+
+    /* Quiet / invalid */
+    .alchemy__mix--mock.is-faded { cursor: default; }
+    .alchemy__mix--mock.is-faded .game-icon--mix {
+      opacity: 0.45;
+      filter: saturate(0.5) drop-shadow(0 1px 2px rgba(47, 59, 42, 0.14));
+    }
+
+    /* Ready — honey glow pooled under/behind the mortar */
+    .alchemy__mix--mock.is-ready::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: -0.6rem;
+      width: calc(var(--mix-box-w, 5rem) + 2.2rem);
+      height: 5.2rem;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      pointer-events: none;
+      background: radial-gradient(
+        ellipse at 50% 62%,
+        rgba(245, 224, 140, 0.85) 0%,
+        rgba(235, 205, 100, 0.5) 34%,
+        rgba(230, 198, 90, 0.22) 56%,
+        transparent 75%
+      );
+      animation: mix-ready-glow 2.8s ease-in-out infinite;
+    }
+
+    .alchemy__mix--mock.is-ready .game-icon--mix {
+      animation: mix-ready-pulse 2.8s ease-in-out infinite;
+    }
+
+    .alchemy__mix--mock.is-ready:hover .game-icon--mix {
+      transform: translateX(-50%) translateY(-2px) scale(1.04);
+    }
+
+    @keyframes mix-ready-glow {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    @keyframes mix-ready-pulse {
+      0%, 100% { transform: translateX(-50%) scale(1); }
+      50% { transform: translateX(-50%) scale(1.045); }
+    }
+
+    /* Fake shelf/slot fillers for the mock */
+    .mock-slot-icon { width: 70%; height: 70%; object-fit: contain; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h1>Mix button mockup — painted mortar</h1>
+    <p class="note">
+      Newly painted mortar, not a crop of the station art. Whole object, sitting on the
+      desk with its base on the same line as the slots. Sized to
+      <strong>4.75rem tall — exactly the painted book's height</strong>, which is the
+      most room available between the shelf and the desk edge. The button's layout box
+      stays <code>4rem</code> tall, so desk height and the book hotspot never move.
+    </p>
+
+    <div class="variant-switch" role="group" aria-label="Mortar variant">
+      <span style="font-size: 0.78rem; font-weight: 700; color: var(--muted);">Variant:</span>
+      <button type="button" data-variant="d" aria-pressed="true">D — wide &amp; low</button>
+      <button type="button" data-variant="c" aria-pressed="false">C — warm greige</button>
+      <button type="button" data-variant="b" aria-pressed="false">B — soft wash</button>
+      <button type="button" data-variant="a" aria-pressed="false">A — cool stone</button>
+      <span style="width: 1px; height: 1.1rem; background: rgba(95,154,114,0.35);"></span>
+      <button type="button" id="toggle-book" aria-pressed="false">Outline book</button>
+    </div>
+
+    <!-- ============ CURRENT ============ -->
+    <div class="block">
+      <div class="caption">Current</div>
+      <div class="player-desk" id="desk-current">
+        <aside class="inventory">
+          <ul class="inventory__list"></ul>
+        </aside>
+        <div class="player-desk__work">
+          <aside class="alchemy">
+            <div class="alchemy__row">
+              <div class="alchemy__slot alchemy__slot--filled">
+                <span class="alchemy__slot-icon">
+                  <img class="game-icon mock-slot-icon" src="assets/icons/wheat.png" alt="" />
+                </span>
+              </div>
+              <button type="button" class="alchemy__mix">Mix</button>
+              <div class="alchemy__slot alchemy__slot--filled">
+                <span class="alchemy__slot-icon">
+                  <img class="game-icon mock-slot-icon" src="assets/icons/turnip.png" alt="" />
+                </span>
+              </div>
+            </div>
+          </aside>
+        </div>
+        <button type="button" class="discovery-log-btn" aria-label="Discovery Log"></button>
+      </div>
+    </div>
+
+    <!-- ============ PROPOSED — READY ============ -->
+    <div class="block">
+      <div class="caption">Proposed — ready (valid pair)</div>
+      <div class="player-desk no-mortar" id="desk-ready">
+        <aside class="inventory">
+          <ul class="inventory__list"></ul>
+        </aside>
+        <div class="player-desk__work">
+          <aside class="alchemy">
+            <div class="alchemy__row">
+              <div class="alchemy__slot alchemy__slot--filled">
+                <span class="alchemy__slot-icon">
+                  <img class="game-icon mock-slot-icon" src="assets/icons/wheat.png" alt="" />
+                </span>
+              </div>
+              <button type="button" class="alchemy__mix--mock is-ready" aria-label="Mix" title="Mix">
+                <img class="game-icon game-icon--mix" src="preview/mortar_c.png" alt="" draggable="false" />
+              </button>
+              <div class="alchemy__slot alchemy__slot--filled">
+                <span class="alchemy__slot-icon">
+                  <img class="game-icon mock-slot-icon" src="assets/icons/turnip.png" alt="" />
+                </span>
+              </div>
+            </div>
+          </aside>
+        </div>
+        <button type="button" class="discovery-log-btn" aria-label="Discovery Log"></button>
+      </div>
+    </div>
+
+    <!-- ============ PROPOSED — QUIET ============ -->
+    <div class="block">
+      <div class="caption">Proposed — quiet (empty / no recipe)</div>
+      <div class="player-desk no-mortar" id="desk-quiet">
+        <aside class="inventory">
+          <ul class="inventory__list"></ul>
+        </aside>
+        <div class="player-desk__work">
+          <aside class="alchemy">
+            <div class="alchemy__row">
+              <div class="alchemy__slot alchemy__slot--empty">Drop</div>
+              <button type="button" class="alchemy__mix--mock is-faded" disabled aria-label="Mix">
+                <img class="game-icon game-icon--mix" src="preview/mortar_c.png" alt="" draggable="false" />
+              </button>
+              <div class="alchemy__slot alchemy__slot--empty">Drop</div>
+            </div>
+          </aside>
+        </div>
+        <button type="button" class="discovery-log-btn" aria-label="Discovery Log"></button>
+      </div>
+    </div>
+
+    <!-- ============ PROPOSED — RESULT ============ -->
+    <div class="block">
+      <div class="caption">Proposed — result claim (unchanged)</div>
+      <div class="player-desk no-mortar" id="desk-result">
+        <aside class="inventory">
+          <ul class="inventory__list"></ul>
+        </aside>
+        <div class="player-desk__work">
+          <aside class="alchemy">
+            <button type="button" class="alchemy__result">
+              <span class="game-icon game-icon--inline">
+                <img class="game-icon game-icon--inline" src="assets/icons/root_loaf.png" alt="" />
+              </span>
+              Root Loaf
+            </button>
+          </aside>
+        </div>
+        <button type="button" class="discovery-log-btn" aria-label="Discovery Log"></button>
+      </div>
+    </div>
+
+    <p class="note" id="size-readout"></p>
+    <p class="note">
+      The dashed outline (toggle above) marks the painted book hotspot so you can compare
+      the mortar against it at true scale. Note the desk painting already has its own
+      mortar on the far left — worth deciding whether the echo reads as charming or as
+      duplication.
+    </p>
+  </div>
+
+  <script type="module">
+    // Fill the inventory shelves so the desk reads at true height.
+    const SHELF = ['wheat', 'turnip', 'blueberry', null, null, null];
+    for (const list of document.querySelectorAll('.inventory__list')) {
+      SHELF.forEach((cropId, i) => {
+        const li = document.createElement('li');
+        li.dataset.slotIndex = String(i);
+        if (!cropId) {
+          li.className = 'inventory__item inventory__item--empty';
+          li.setAttribute('aria-hidden', 'true');
+        } else {
+          li.className = 'inventory__item';
+          const icon = document.createElement('span');
+          icon.className = 'inventory__icon';
+          const img = document.createElement('img');
+          img.className = 'game-icon';
+          img.src = `assets/icons/${cropId}.png`;
+          img.alt = '';
+          icon.appendChild(img);
+          const count = document.createElement('span');
+          count.className = 'inventory__count';
+          count.textContent = '3';
+          li.append(icon, count);
+        }
+        list.appendChild(li);
+      });
+    }
+
+    // Variant switcher. Art height is fixed to the painted-book height;
+    // the button box widens to match each painting's aspect ratio.
+    const ART_H_REM = 4.8;
+    const REM = 16;
+
+    function fitBox(img) {
+      const btn = img.closest('.alchemy__mix--mock');
+      if (!btn || !img.naturalHeight) return;
+      const aspect = img.naturalWidth / img.naturalHeight;
+      const artW = ART_H_REM * aspect;
+      btn.style.setProperty('--mix-art-h', `${ART_H_REM}rem`);
+      btn.style.setProperty('--mix-box-w', `${(artW + 0.7).toFixed(2)}rem`);
+      const readout = document.getElementById('size-readout');
+      if (readout) {
+        readout.textContent =
+          `art ${Math.round(artW * REM)} x ${Math.round(ART_H_REM * REM)} px` +
+          `  ·  painted book 112 x 76 px`;
+      }
+    }
+
+    function applyVariant(v) {
+      document.querySelectorAll('.game-icon--mix').forEach((img) => {
+        img.src = `preview/mortar_${v}.png`;
+        if (img.complete) fitBox(img);
+        else img.onload = () => fitBox(img);
+      });
+    }
+
+    const variantBtns = document.querySelectorAll('[data-variant]');
+    variantBtns.forEach((btn) => {
+      btn.onclick = () => {
+        variantBtns.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+        applyVariant(btn.dataset.variant);
+      };
+    });
+    applyVariant('d');
+
+    const bookBtn = document.getElementById('toggle-book');
+    bookBtn.onclick = () => {
+      const on = bookBtn.getAttribute('aria-pressed') !== 'true';
+      bookBtn.setAttribute('aria-pressed', String(on));
+      document.querySelectorAll('.player-desk').forEach((d) => {
+        d.classList.toggle('show-book', on);
+      });
+    };
+  </script>
+</body>
+</html>

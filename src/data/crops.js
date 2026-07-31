@@ -151,20 +151,20 @@ export const CROPS = [
     icon: '🥭',
   },
   {
-    id: 'harvest_tonic',
-    name: 'Harvest Tonic',
-    description: 'A blended tonic of grain and root, offered to the gods.',
+    id: 'root_loaf',
+    name: 'Root Loaf',
+    description: 'A rustic wheat loaf made hearty with sweet turnip root.',
     shrineValues: { frog: 6, monkey: 4, fox: 6, tiger: 4 },
     plantable: false,
     decaySeconds: 60,
     decayDisabled: true,
     maxStack: 10,
-    icon: '🥃',
+    icon: '🥖',
   },
   {
     id: 'forest_bread',
     name: 'Forest Bread',
-    description: 'Warm bread mixed from wheat and woodland berries.',
+    description: 'Warm wheat bread studded with sweet woodland blueberries.',
     shrineValues: { frog: 6, monkey: 5, fox: 7, tiger: 3 },
     plantable: false,
     decaySeconds: 60,
@@ -173,42 +173,42 @@ export const CROPS = [
     icon: '🍞',
   },
   {
-    id: 'moonlit_grain',
-    name: 'Moonlit Grain',
-    description: 'Grain touched by moonflower, soft and pale as dawn.',
+    id: 'moonlit_loaf',
+    name: 'Moonlit Loaf',
+    description: 'A pale wheat loaf scented with moonflower petals.',
     shrineValues: { frog: 7, monkey: 9, fox: 3, tiger: 4 },
     plantable: false,
     decaySeconds: 60,
     decayDisabled: true,
     maxStack: 10,
-    icon: '🥞',
+    icon: '🥖',
   },
   {
-    id: 'golden_champignon',
-    name: 'Golden Champignon',
-    description: 'A golden mushroom blended from wheat and pumpkin.',
+    id: 'golden_loaf',
+    name: 'Golden Loaf',
+    description: 'A rich wheat loaf baked with sweet golden pumpkin.',
     shrineValues: { frog: 7, monkey: 5, fox: 4, tiger: 9 },
     plantable: false,
     decaySeconds: 60,
     decayDisabled: true,
     maxStack: 10,
-    icon: '🍄‍🟫',
+    icon: '🍞',
   },
   {
-    id: 'sunblessed_shroom',
-    name: 'Sunblessed Shroom',
-    description: 'A sun-warmed mushroom mixed from wheat and sunfruit. Frog apex gift.',
+    id: 'sunbread',
+    name: 'Sunbread',
+    description: 'A radiant wheat bread warmed by the juice of sunfruit. Frog apex gift.',
     shrineValues: { frog: 13, monkey: 4, fox: 3, tiger: 8 },
     plantable: false,
     decaySeconds: 60,
     decayDisabled: true,
     maxStack: 10,
-    icon: '🍄',
+    icon: '🍞',
   },
   {
-    id: 'wildroot_mix',
-    name: 'Wildroot Mix',
-    description: 'A rustic blend of turnip and woodland berries. Fox apex gift.',
+    id: 'wildroot',
+    name: 'Wildroot',
+    description: 'A hardy turnip root transformed by wild blueberry sweetness. Fox apex gift.',
     shrineValues: { frog: 2, monkey: 3, fox: 12, tiger: 3 },
     plantable: false,
     decaySeconds: 60,
@@ -217,9 +217,9 @@ export const CROPS = [
     icon: '🫚',
   },
   {
-    id: 'moonroot_essence',
-    name: 'Moonroot Essence',
-    description: 'Root essence steeped with moonflower petals.',
+    id: 'moonroot',
+    name: 'Moonroot',
+    description: 'A turnip root steeped in the cool glow of moonflower petals.',
     shrineValues: { frog: 4, monkey: 8, fox: 6, tiger: 5 },
     plantable: false,
     decaySeconds: 60,
@@ -228,9 +228,9 @@ export const CROPS = [
     icon: '🫘',
   },
   {
-    id: 'harvest_root',
-    name: 'Harvest Root',
-    description: 'A hearty root mixed from turnip and golden pumpkin.',
+    id: 'golden_root',
+    name: 'Golden Root',
+    description: 'A sturdy turnip root enriched with golden pumpkin flesh.',
     shrineValues: { frog: 4, monkey: 4, fox: 7, tiger: 10 },
     plantable: false,
     decaySeconds: 60,
@@ -239,9 +239,9 @@ export const CROPS = [
     icon: '🌿',
   },
   {
-    id: 'sunroot_essence',
-    name: 'Sunroot Essence',
-    description: 'Root essence infused with radiant sunfruit.',
+    id: 'sunroot',
+    name: 'Sunroot',
+    description: 'A turnip root infused with the warmth of radiant sunfruit.',
     shrineValues: { frog: 8, monkey: 4, fox: 7, tiger: 10 },
     plantable: false,
     decaySeconds: 60,
@@ -250,20 +250,20 @@ export const CROPS = [
     icon: '🍀',
   },
   {
-    id: 'mystic_berry',
-    name: 'Mystic Berry',
-    description: 'A berry touched by moonflower, deep and mysterious. Monkey apex gift.',
+    id: 'moonberry',
+    name: 'Moonberry',
+    description: 'A blueberry transformed by the quiet magic of moonflower. Monkey apex gift.',
     shrineValues: { frog: 3, monkey: 11, fox: 6, tiger: 3 },
     plantable: false,
     decaySeconds: 60,
     decayDisabled: true,
     maxStack: 10,
-    icon: '🍇',
+    icon: '🫐',
   },
   {
     id: 'enchanted_jam',
     name: 'Enchanted Jam',
-    description: 'Sweet jam of blueberries and golden pumpkin.',
+    description: 'A sweet preserve of blueberries and golden pumpkin.',
     shrineValues: { frog: 4, monkey: 5, fox: 8, tiger: 9 },
     plantable: false,
     decaySeconds: 60,
@@ -272,9 +272,9 @@ export const CROPS = [
     icon: '🍯',
   },
   {
-    id: 'radiant_berry',
-    name: 'Radiant Berry',
-    description: 'A glowing berry mixed from blueberry and sunfruit.',
+    id: 'sunberry',
+    name: 'Sunberry',
+    description: 'A plump blueberry glowing with the warmth of sunfruit.',
     shrineValues: { frog: 8, monkey: 5, fox: 8, tiger: 9 },
     plantable: false,
     decaySeconds: 60,
@@ -283,20 +283,20 @@ export const CROPS = [
     icon: '🍓',
   },
   {
-    id: 'celestial_seed',
-    name: 'Celestial Seed',
-    description: 'A seed of moonflower and golden pumpkin, lit from within.',
+    id: 'golden_bloom',
+    name: 'Golden Bloom',
+    description: 'A moonflower bloom with petals turned gold by pumpkin magic.',
     shrineValues: { frog: 5, monkey: 9, fox: 4, tiger: 10 },
     plantable: false,
     decaySeconds: 60,
     decayDisabled: true,
     maxStack: 10,
-    icon: '🥜',
+    icon: '🌼',
   },
   {
     id: 'solar_bloom',
     name: 'Solar Bloom',
-    description: 'A bloom of moonflower warmed by sunfruit.',
+    description: 'A moonflower bloom opened and warmed by radiant sunfruit.',
     shrineValues: { frog: 9, monkey: 9, fox: 4, tiger: 10 },
     plantable: false,
     decaySeconds: 60,
@@ -305,15 +305,15 @@ export const CROPS = [
     icon: '🌻',
   },
   {
-    id: 'divine_harvest',
-    name: 'Divine Harvest',
-    description: 'A sacred blend of golden pumpkin and sunfruit. Tiger apex gift.',
+    id: 'solar_gourd',
+    name: 'Solar Gourd',
+    description: 'A golden pumpkin blazing with the ancient warmth of sunfruit. Tiger apex gift.',
     shrineValues: { frog: 8, monkey: 4, fox: 4, tiger: 17 },
     plantable: false,
     decaySeconds: 60,
     decayDisabled: true,
     maxStack: 10,
-    icon: '🪻',
+    icon: '🎃',
   },
 ];
 
@@ -362,22 +362,6 @@ export function formatShrineValues(crop) {
   const values = crop?.shrineValues;
   if (!values) return '';
   return `🐸${values.frog}  🐵${values.monkey}  🦊${values.fox}  🐯${values.tiger}`;
-}
-
-const PREFERRED_MIN_VALUE = 3;
-const PREFERRED_MAX = 2;
-
-// Plantables a shrine prefers for its detail "Prefers:" line.
-// Only values above PREFERRED_MIN_VALUE; up to PREFERRED_MAX; CROPS order breaks ties.
-export function getPreferredPlantables(shrineId) {
-  return CROPS.filter(
-    (crop) =>
-      crop.plantable &&
-      typeof crop.shrineValues?.[shrineId] === 'number' &&
-      crop.shrineValues[shrineId] > PREFERRED_MIN_VALUE,
-  )
-    .sort((a, b) => b.shrineValues[shrineId] - a.shrineValues[shrineId])
-    .slice(0, PREFERRED_MAX);
 }
 
 // Remaining life fraction → UI urgency. Uses the crop's full decay window.

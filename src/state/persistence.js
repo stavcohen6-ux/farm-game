@@ -11,8 +11,11 @@ import {
   tickCropDecay,
   markCropDiscovered,
   collectHeldCropIds,
+  reconcileDeskVisitors,
+  reconcilePlotNapper,
   STARTING_RESEARCH_LEVEL,
   TOTAL_PLOTS,
+  INVENTORY_SLOT_COUNT,
 } from './gameState.js';
 import { getCrop, getExpiresAt } from '../data/crops.js';
 import { isAlchemyResultId } from '../data/alchemyRecipes.js';
@@ -41,6 +44,123 @@ function migrateHeldSlot(held, now) {
     }
   }
   return null;
+}
+
+function normalizeDeskVisitors(parsed) {
+  if (!Array.isArray(parsed.deskVisitors)) {
+    parsed.deskVisitors = [];
+    return true;
+  }
+
+  const next = [];
+  const usedSlots = new Set();
+  for (const raw of parsed.deskVisitors) {
+    if (!raw || typeof raw !== 'object') continue;
+    if (typeof raw.id !== 'string' || !raw.id) continue;
+    if (raw.kind !== 'firefly') continue;
+    if (typeof raw.appearAt !== 'number') continue;
+    if (raw.status !== 'approaching' && raw.status !== 'waiting') continue;
+    const entry = {
+      id: raw.id,
+      kind: 'firefly',
+      appearAt: raw.appearAt,
+      status: raw.status,
+    };
+    if (raw.status === 'waiting') {
+      const slot = raw.slotIndex;
+      if (
+        typeof slot === 'number' &&
+        Number.isInteger(slot) &&
+        slot >= 0 &&
+        slot < INVENTORY_SLOT_COUNT &&
+        !usedSlots.has(slot)
+      ) {
+        entry.slotIndex = slot;
+        usedSlots.add(slot);
+      }
+    }
+    next.push(entry);
+  }
+
+  let dirty = next.length !== parsed.deskVisitors.length;
+  parsed.deskVisitors = next;
+
+  if (parsed.deskGiftLand != null) {
+    parsed.deskGiftLand = null;
+    dirty = true;
+  }
+
+  return dirty;
+}
+
+function normalizePlotNapper(parsed) {
+  const raw = parsed.plotNapper;
+  if (raw == null) {
+    if (parsed.plotNapper !== null) {
+      parsed.plotNapper = null;
+      return true;
+    }
+    return false;
+  }
+
+  if (!raw || typeof raw !== 'object') {
+    parsed.plotNapper = null;
+    return true;
+  }
+  if (typeof raw.id !== 'string' || !raw.id) {
+    parsed.plotNapper = null;
+    return true;
+  }
+  if (raw.kind !== 'tanuki') {
+    parsed.plotNapper = null;
+    return true;
+  }
+  if (typeof raw.appearAt !== 'number') {
+    parsed.plotNapper = null;
+    return true;
+  }
+
+  // Mid-animation wake on load: clear — no retroactive leave animation.
+  if (raw.status === 'waking') {
+    parsed.plotNapper = null;
+    return true;
+  }
+
+  if (raw.status === 'approaching') {
+    parsed.plotNapper = {
+      id: raw.id,
+      kind: 'tanuki',
+      appearAt: raw.appearAt,
+      status: 'approaching',
+    };
+    return false;
+  }
+
+  if (raw.status === 'sleeping') {
+    if (typeof raw.plotId !== 'number' || typeof raw.wakeAt !== 'number') {
+      parsed.plotNapper = null;
+      return true;
+    }
+    const plot = Array.isArray(parsed.plots)
+      ? parsed.plots.find((p) => p?.id === raw.plotId)
+      : null;
+    if (!plot || plot.locked || plot.crop || plot.flowered) {
+      parsed.plotNapper = null;
+      return true;
+    }
+    parsed.plotNapper = {
+      id: raw.id,
+      kind: 'tanuki',
+      appearAt: raw.appearAt,
+      status: 'sleeping',
+      plotId: raw.plotId,
+      wakeAt: raw.wakeAt,
+    };
+    return false;
+  }
+
+  parsed.plotNapper = null;
+  return true;
 }
 
 function batchSortKey(expiresAt) {
@@ -168,11 +288,34 @@ function normalizeAlchemy(parsed, now) {
   };
 }
 
+function normalizeDragonTempleDemand(raw, discoveredCropIds) {
+  const count = DRAGON_TEMPLE.slotCount;
+  const pool = (
+    Array.isArray(discoveredCropIds) ? discoveredCropIds : []
+  ).filter((id) => typeof id === 'string' && getCrop(id));
+
+  let demand = Array.isArray(raw.demand)
+    ? raw.demand
+        .slice(0, count)
+        .filter((id) => typeof id === 'string' && getCrop(id))
+    : [];
+
+  while (demand.length < count) {
+    if (pool.length === 0) break;
+    demand.push(pool[Math.floor(Math.random() * pool.length)]);
+  }
+
+  if (demand.length < count) {
+    return null;
+  }
+  return demand.slice(0, count);
+}
+
 function normalizeDragonTemple(parsed, now) {
   const defaults = createInitialDragonTemple();
   if (!parsed.dragonTemple || typeof parsed.dragonTemple !== 'object') {
     parsed.dragonTemple = defaults;
-    return;
+    return true;
   }
 
   const raw = parsed.dragonTemple;
@@ -210,13 +353,34 @@ function normalizeDragonTemple(parsed, now) {
       pendingReward,
       triggerChance,
     };
-    return;
+    return (
+      raw.endsAt != null ||
+      raw.progress != null ||
+      (Array.isArray(raw.demand) && raw.demand.length > 0)
+    );
   }
+
+  const demand = normalizeDragonTempleDemand(raw, parsed.discoveredCropIds);
+  if (!demand) {
+    // Legacy timer events / corrupt demand — close without penalty.
+    parsed.dragonTemple = {
+      ...createInitialDragonTemple(),
+      lastResult,
+      pendingReward,
+      triggerChance,
+    };
+    return true;
+  }
+
+  const wrath =
+    typeof raw.wrath === 'number' && Number.isFinite(raw.wrath)
+      ? Math.min(DRAGON_TEMPLE.wrathMax, Math.max(0, raw.wrath))
+      : 0;
 
   parsed.dragonTemple = {
     active: true,
-    endsAt: typeof raw.endsAt === 'number' ? raw.endsAt : null,
-    progress: typeof raw.progress === 'number' ? raw.progress : 0,
+    demand,
+    wrath,
     slots: migratedSlots,
     lastResult,
     burning: Boolean(raw.burning),
@@ -224,6 +388,43 @@ function normalizeDragonTemple(parsed, now) {
     pendingReward,
     triggerChance,
   };
+  return (
+    raw.endsAt != null ||
+    raw.progress != null ||
+    typeof raw.wrath !== 'number'
+  );
+}
+
+function normalizeShrines(parsed) {
+  if (!parsed.shrines || typeof parsed.shrines !== 'object') {
+    parsed.shrines = createInitialShrines();
+    return true;
+  }
+
+  let dirty = false;
+  const defaults = createInitialShrines();
+  for (const shrineId of Object.keys(defaults)) {
+    if (!parsed.shrines[shrineId]) {
+      parsed.shrines[shrineId] = { ...defaults[shrineId] };
+      dirty = true;
+      continue;
+    }
+
+    const shrine = parsed.shrines[shrineId];
+    const remaining = shrine.dragonBonusOfferings;
+    if (
+      typeof remaining !== 'number' ||
+      !Number.isFinite(remaining) ||
+      remaining < 0
+    ) {
+      shrine.dragonBonusOfferings = 0;
+      dirty = true;
+    } else if (!Number.isInteger(remaining)) {
+      shrine.dragonBonusOfferings = Math.floor(remaining);
+      dirty = true;
+    }
+  }
+  return dirty;
 }
 
 export function load() {
@@ -238,31 +439,32 @@ export function load() {
     if (typeof parsed.researchLevel !== 'number') {
       parsed.researchLevel = STARTING_RESEARCH_LEVEL;
     }
-    if (!parsed.shrines || typeof parsed.shrines !== 'object') {
-      parsed.shrines = createInitialShrines();
-    } else {
-      const defaults = createInitialShrines();
-      for (const shrineId of Object.keys(defaults)) {
-        if (!parsed.shrines[shrineId]) {
-          parsed.shrines[shrineId] = defaults[shrineId];
-        }
-      }
-    }
 
     const now = Date.now();
     let dirty = false;
+    if (normalizeShrines(parsed)) {
+      dirty = true;
+    }
     if (normalizePlantedCropWater(parsed)) {
       dirty = true;
     }
     normalizeInventory(parsed, now);
     normalizePendingHarvests(parsed, now);
     normalizeAlchemy(parsed, now);
-    normalizeDragonTemple(parsed, now);
 
     if (normalizeDiscoveredCrops(parsed)) {
       dirty = true;
     }
     if (normalizeDiscoveredAlchemyRecipes(parsed)) {
+      dirty = true;
+    }
+    if (normalizeDragonTemple(parsed, now)) {
+      dirty = true;
+    }
+    if (normalizeDeskVisitors(parsed)) {
+      dirty = true;
+    }
+    if (normalizePlotNapper(parsed)) {
       dirty = true;
     }
 
@@ -279,6 +481,20 @@ export function load() {
     }
     // Apply remaining mid-flight harvest grants so reload cannot lose fresh crops.
     if (flushPendingHarvests(parsed)) {
+      dirty = true;
+    }
+    // Place or drop desk fireflies whose appear time has passed while offline.
+    if (reconcileDeskVisitors(parsed, Date.now())) {
+      dirty = true;
+    }
+    // Place, wake, or drop tanuki napper after offline time.
+    const napperResult = reconcilePlotNapper(parsed, Date.now());
+    if (napperResult.changed) {
+      dirty = true;
+    }
+    // Offline catch-up may leave status 'waking' with no UI to finish — clear it.
+    if (parsed.plotNapper?.status === 'waking') {
+      parsed.plotNapper = null;
       dirty = true;
     }
     // Snap-finish mid-animation burns / pending reveals so reload cannot soft-lock.

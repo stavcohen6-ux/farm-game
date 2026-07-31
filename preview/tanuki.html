@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Resolve game asset / module paths from the repo root, not /preview/. -->
+  <base href="../" />
+  <title>Tanuki nap preview</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Preview-only chrome. Loaded after style.css so these win. */
+    html,
+    body {
+      height: auto;
+      overflow: auto;
+    }
+
+    body {
+      background: #cfe0d3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.25rem;
+      padding: 1.5rem 1rem 3rem;
+      font-family: 'Quicksand', system-ui, sans-serif;
+      color: var(--ink);
+    }
+
+    /* Neutralise app shell sizing; we only want its CSS variables. */
+    #app {
+      max-height: none;
+      max-width: none;
+      overflow: visible;
+      padding: 0;
+    }
+
+    .tp-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      opacity: 0.7;
+    }
+
+    .tp-stage {
+      padding: 1.5rem 2.5rem;
+      border-radius: 1.25rem;
+      background: #c8ddd0;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+
+    .tp-panel {
+      width: min(680px, 100%);
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+      padding: 1.1rem 1.25rem;
+      border-radius: 1rem;
+      background: var(--linen);
+      box-shadow: 0 6px 18px rgba(42, 90, 60, 0.14);
+    }
+
+    .tp-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .tp-row--label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      opacity: 0.55;
+    }
+
+    .tp-panel button {
+      font: inherit;
+      font-weight: 700;
+      font-size: 0.82rem;
+      padding: 0.42rem 0.85rem;
+      border: none;
+      border-radius: 0.6rem;
+      background: var(--moss);
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .tp-panel button:hover {
+      background: var(--moss-deep);
+    }
+
+    .tp-panel button.tp-ghost {
+      background: #dfe9e0;
+      color: var(--ink);
+    }
+
+    .tp-panel button.tp-ghost:hover {
+      background: #cfdcd1;
+    }
+
+    .tp-panel input[type='range'] {
+      flex: 1 1 180px;
+      min-width: 140px;
+    }
+
+    .tp-panel input[type='number'] {
+      font: inherit;
+      width: 5.5rem;
+      padding: 0.3rem 0.4rem;
+      border: 1px solid #c4d3c7;
+      border-radius: 0.45rem;
+    }
+
+    .tp-readout {
+      font-variant-numeric: tabular-nums;
+      font-size: 0.8rem;
+      font-weight: 700;
+      min-width: 7.5rem;
+      opacity: 0.75;
+    }
+
+    .tp-status {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding-top: 0.2rem;
+      border-top: 1px solid #e2ebe3;
+    }
+
+    .tp-status span:last-child {
+      font-variant-numeric: tabular-nums;
+      opacity: 0.7;
+    }
+
+    .tp-hint {
+      font-size: 0.75rem;
+      line-height: 1.5;
+      opacity: 0.6;
+    }
+
+    label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="tp-title">Tanuki nap — animation preview</div>
+
+  <div id="app">
+    <div class="tp-stage">
+      <div id="farm-grid" class="farm-grid"></div>
+    </div>
+  </div>
+
+  <div class="tp-panel">
+    <div class="tp-row">
+      <button id="tp-full">Play full sequence</button>
+      <button id="tp-arrive" class="tp-ghost">Appear</button>
+      <button id="tp-sleep" class="tp-ghost">Sleep (idle)</button>
+      <button id="tp-leave" class="tp-ghost">Leave</button>
+      <button id="tp-stop" class="tp-ghost">Stop</button>
+      <label><input type="checkbox" id="tp-loop" checked /> Loop</label>
+    </div>
+
+    <div class="tp-row">
+      <span class="tp-row--label">Speed</span>
+      <input type="range" id="tp-speed" min="5" max="150" step="5" value="100" />
+      <span class="tp-readout" id="tp-speed-out">1.00&times;</span>
+    </div>
+
+    <div class="tp-row">
+      <span class="tp-row--label">Nap hold</span>
+      <input type="number" id="tp-nap" min="0" step="500" value="2000" />
+      <span class="tp-hint">ms between appear and leave (real game: 90&ndash;150s)</span>
+    </div>
+
+    <div class="tp-row">
+      <label><input type="checkbox" id="tp-scrub-on" /> Pause &amp; scrub</label>
+      <input type="range" id="tp-scrub" min="0" max="1000" step="1" value="0" disabled />
+      <button id="tp-prev" class="tp-ghost" disabled>&minus;1f</button>
+      <button id="tp-next" class="tp-ghost" disabled>+1f</button>
+    </div>
+
+    <div class="tp-status">
+      <span id="tp-beat">idle</span>
+      <span id="tp-time">&mdash;</span>
+    </div>
+
+    <div class="tp-hint">
+      Uses the real <code>src/ui/tanukiNap.js</code> and <code>src/ui/farmGrid.js</code>, so this is
+      the shipping animation, not a copy. Click any tile to move the tanuki there. The tanuki
+      appears and leaves at the tile centre in the sleeping pose; only the idle breathing and zzz
+      loop while it naps.
+    </div>
+  </div>
+
+  <script type="module">
+    import { createInitialState } from './src/state/gameState.js';
+    import { renderGrid } from './src/ui/farmGrid.js';
+    import { playTanukiArrive, playTanukiLeave } from './src/ui/tanukiNap.js';
+
+    const FRAME_MS = 16;
+    const SPEED_SYNC_MS = 40;
+
+    const gridEl = document.getElementById('farm-grid');
+    const beatEl = document.getElementById('tp-beat');
+    const timeEl = document.getElementById('tp-time');
+    const speedEl = document.getElementById('tp-speed');
+    const speedOutEl = document.getElementById('tp-speed-out');
+    const napEl = document.getElementById('tp-nap');
+    const loopEl = document.getElementById('tp-loop');
+    const scrubOnEl = document.getElementById('tp-scrub-on');
+    const scrubEl = document.getElementById('tp-scrub');
+    const prevEl = document.getElementById('tp-prev');
+    const nextEl = document.getElementById('tp-next');
+
+    const state = createInitialState();
+    for (const plot of state.plots) plot.locked = false;
+
+    const arrivingPlotIds = new Set();
+    const leavingPlotIds = new Set();
+
+    let plotId = 9;
+    let speed = 1;
+    let runToken = 0;
+    let scrubTarget = null;
+    let pausedAnimations = [];
+
+    function napperFor(id) {
+      return {
+        id: `pn-preview-${id}`,
+        kind: 'tanuki',
+        appearAt: Date.now(),
+        status: 'sleeping',
+        plotId: id,
+        wakeAt: Date.now() + 60_000,
+      };
+    }
+
+    function render() {
+      renderGrid(
+        gridEl,
+        state,
+        Date.now(),
+        handlePlotClick,
+        new Set(),
+        null,
+        new Set(),
+        new Set(),
+        null,
+        arrivingPlotIds,
+        leavingPlotIds,
+      );
+    }
+
+    function plotRect(id) {
+      return gridEl
+        .querySelector(`[data-plot-id="${id}"]`)
+        ?.getBoundingClientRect();
+    }
+
+    function setBeat(label) {
+      beatEl.textContent = label;
+    }
+
+    // Newly chained animations appear mid-sequence, so keep re-applying rate.
+    function applySpeed() {
+      if (scrubOnEl.checked) return;
+      for (const animation of document.getAnimations()) {
+        if (animation.playbackRate !== speed) animation.playbackRate = speed;
+      }
+    }
+
+    function activeAnimation() {
+      const overlay = document.querySelector('.tanuki-visitor');
+      const running = overlay
+        ?.getAnimations()
+        .find((a) => a.playState === 'running' || a.playState === 'paused');
+      if (running) return running;
+      return document.querySelector('.plot__napper')?.getAnimations()[0] ?? null;
+    }
+
+    function animationDuration(animation) {
+      const raw = animation?.effect?.getTiming?.().duration;
+      return typeof raw === 'number' && raw > 0 ? raw : 0;
+    }
+
+    function syncScrubReadout() {
+      if (!scrubTarget) {
+        timeEl.textContent = '—';
+        return;
+      }
+      const total = animationDuration(scrubTarget);
+      const at = Number(scrubTarget.currentTime) || 0;
+      timeEl.textContent = `${Math.round(at)} / ${Math.round(total)} ms`;
+      if (total > 0) {
+        scrubEl.value = String(Math.round((at / total) * 1000));
+      }
+    }
+
+    function seekScrub(ms) {
+      if (!scrubTarget) return;
+      const total = animationDuration(scrubTarget);
+      scrubTarget.currentTime = Math.max(0, Math.min(total, ms));
+      syncScrubReadout();
+    }
+
+    function engageScrub() {
+      scrubTarget = activeAnimation();
+      pausedAnimations = document
+        .getAnimations()
+        .filter((a) => a.playState === 'running');
+      for (const animation of pausedAnimations) animation.pause();
+      scrubEl.disabled = false;
+      prevEl.disabled = false;
+      nextEl.disabled = false;
+      syncScrubReadout();
+    }
+
+    function releaseScrub() {
+      for (const animation of pausedAnimations) {
+        if (animation.playState === 'paused') animation.play();
+      }
+      pausedAnimations = [];
+      scrubTarget = null;
+      scrubEl.disabled = true;
+      prevEl.disabled = true;
+      nextEl.disabled = true;
+      timeEl.textContent = '—';
+      applySpeed();
+    }
+
+    function wait(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    function playArrive() {
+      return new Promise((resolve) => {
+        state.plotNapper = napperFor(plotId);
+        leavingPlotIds.clear();
+        arrivingPlotIds.add(plotId);
+        render();
+        setBeat('appearing');
+
+        playTanukiArrive({
+          targetRect: plotRect(plotId),
+          onComplete: () => {
+            arrivingPlotIds.delete(plotId);
+            render();
+            resolve();
+          },
+        });
+        applySpeed();
+      });
+    }
+
+    function playWakeLeave() {
+      return new Promise((resolve) => {
+        if (!state.plotNapper) state.plotNapper = napperFor(plotId);
+        arrivingPlotIds.clear();
+        leavingPlotIds.add(plotId);
+        render();
+        setBeat('leaving');
+
+        playTanukiLeave({
+          sourceRect: plotRect(plotId),
+          onComplete: () => {
+            leavingPlotIds.delete(plotId);
+            state.plotNapper = null;
+            render();
+            resolve();
+          },
+        });
+        applySpeed();
+      });
+    }
+
+    function showSleeping() {
+      stop();
+      state.plotNapper = napperFor(plotId);
+      arrivingPlotIds.clear();
+      leavingPlotIds.clear();
+      render();
+      setBeat('sleeping (idle loop)');
+    }
+
+    function stop() {
+      runToken += 1;
+      for (const overlay of document.querySelectorAll('.tanuki-visitor')) {
+        overlay.remove();
+      }
+      arrivingPlotIds.clear();
+      leavingPlotIds.clear();
+      setBeat('idle');
+    }
+
+    async function playFull() {
+      stop();
+      const token = ++runToken;
+
+      do {
+        await playArrive();
+        if (token !== runToken) return;
+
+        setBeat('sleeping');
+        await wait(Math.max(0, Number(napEl.value) || 0));
+        if (token !== runToken) return;
+
+        await playWakeLeave();
+        if (token !== runToken) return;
+
+        await wait(500);
+      } while (loopEl.checked && token === runToken);
+
+      if (token === runToken) setBeat('idle');
+    }
+
+    async function playOnce(runner) {
+      stop();
+      const token = ++runToken;
+      await runner();
+      if (token === runToken) setBeat('idle');
+    }
+
+    function handlePlotClick(clickedId) {
+      plotId = clickedId;
+      showSleeping();
+    }
+
+    document.getElementById('tp-full').onclick = playFull;
+    document.getElementById('tp-arrive').onclick = () => playOnce(playArrive);
+    document.getElementById('tp-leave').onclick = () => playOnce(playWakeLeave);
+    document.getElementById('tp-sleep').onclick = showSleeping;
+    document.getElementById('tp-stop').onclick = () => {
+      stop();
+      state.plotNapper = null;
+      render();
+    };
+
+    speedEl.oninput = () => {
+      speed = Number(speedEl.value) / 100;
+      speedOutEl.textContent = `${speed.toFixed(2)}\u00d7`;
+      applySpeed();
+    };
+
+    scrubOnEl.onchange = () => {
+      if (scrubOnEl.checked) engageScrub();
+      else releaseScrub();
+    };
+
+    scrubEl.oninput = () => {
+      if (!scrubTarget) return;
+      const total = animationDuration(scrubTarget);
+      seekScrub((Number(scrubEl.value) / 1000) * total);
+    };
+
+    prevEl.onclick = () =>
+      seekScrub((Number(scrubTarget?.currentTime) || 0) - FRAME_MS);
+    nextEl.onclick = () =>
+      seekScrub((Number(scrubTarget?.currentTime) || 0) + FRAME_MS);
+
+    setInterval(() => {
+      applySpeed();
+      if (scrubOnEl.checked && scrubTarget) syncScrubReadout();
+    }, SPEED_SYNC_MS);
+
+    showSleeping();
+  </script>
+</body>
+</html>

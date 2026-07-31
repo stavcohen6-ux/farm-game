@@ -1,20 +1,20 @@
 // Order-independent alchemy recipes. Inputs are normalized as sorted ids.
 export const ALCHEMY_RECIPES = [
-  { inputs: ['wheat', 'turnip'], resultId: 'harvest_tonic' },
+  { inputs: ['wheat', 'turnip'], resultId: 'root_loaf' },
   { inputs: ['blueberry', 'wheat'], resultId: 'forest_bread' },
-  { inputs: ['moonflower', 'wheat'], resultId: 'moonlit_grain' },
-  { inputs: ['golden_pumpkin', 'wheat'], resultId: 'golden_champignon' },
-  { inputs: ['sunfruit', 'wheat'], resultId: 'sunblessed_shroom' },
-  { inputs: ['blueberry', 'turnip'], resultId: 'wildroot_mix' },
-  { inputs: ['moonflower', 'turnip'], resultId: 'moonroot_essence' },
-  { inputs: ['golden_pumpkin', 'turnip'], resultId: 'harvest_root' },
-  { inputs: ['sunfruit', 'turnip'], resultId: 'sunroot_essence' },
-  { inputs: ['blueberry', 'moonflower'], resultId: 'mystic_berry' },
+  { inputs: ['moonflower', 'wheat'], resultId: 'moonlit_loaf' },
+  { inputs: ['golden_pumpkin', 'wheat'], resultId: 'golden_loaf' },
+  { inputs: ['sunfruit', 'wheat'], resultId: 'sunbread' },
+  { inputs: ['blueberry', 'turnip'], resultId: 'wildroot' },
+  { inputs: ['moonflower', 'turnip'], resultId: 'moonroot' },
+  { inputs: ['golden_pumpkin', 'turnip'], resultId: 'golden_root' },
+  { inputs: ['sunfruit', 'turnip'], resultId: 'sunroot' },
+  { inputs: ['blueberry', 'moonflower'], resultId: 'moonberry' },
   { inputs: ['blueberry', 'golden_pumpkin'], resultId: 'enchanted_jam' },
-  { inputs: ['blueberry', 'sunfruit'], resultId: 'radiant_berry' },
-  { inputs: ['golden_pumpkin', 'moonflower'], resultId: 'celestial_seed' },
+  { inputs: ['blueberry', 'sunfruit'], resultId: 'sunberry' },
+  { inputs: ['golden_pumpkin', 'moonflower'], resultId: 'golden_bloom' },
   { inputs: ['moonflower', 'sunfruit'], resultId: 'solar_bloom' },
-  { inputs: ['golden_pumpkin', 'sunfruit'], resultId: 'divine_harvest' },
+  { inputs: ['golden_pumpkin', 'sunfruit'], resultId: 'solar_gourd' },
 ];
 
 function recipeKey(cropIdA, cropIdB) {

@@ -1,5 +1,6 @@
-// Static shrine definitions. Progress requirements and blessing values are
-// data-driven so they can be tuned without changing game logic.
+// Static shrine definitions. Progress requirements, accepted crops, and
+// blessing values are data-driven so they can be tuned without changing
+// game logic.
 
 export const SHRINES = [
   {
@@ -12,26 +13,36 @@ export const SHRINES = [
       {
         name: 'Sleeping Frog',
         progressRequired: 15,
+        acceptedCropIds: ['wheat', 'root_loaf'],
         growthSpeedBonus: 0.25,
-        tooltip: 'Crops grow 25% faster',
+        tooltip: '+25% growth',
       },
       {
         name: 'Rainkeeper Frog',
         progressRequired: 25,
+        acceptedCropIds: ['wheat', 'turnip', 'root_loaf'],
         growthSpeedBonus: 0.5,
-        tooltip: 'Crops grow 50% faster',
+        tooltip: '+50% growth',
       },
       {
         name: 'Ancient River Frog',
         progressRequired: 40,
+        acceptedCropIds: ['blueberry', 'forest_bread', 'moonlit_loaf'],
         growthSpeedBonus: 0.75,
-        tooltip: 'Crops grow 75% faster',
+        tooltip: '+75% growth',
       },
       {
         name: 'Spirit Frog',
         progressRequired: 55,
+        acceptedCropIds: [
+          'sunfruit',
+          'sunbread',
+          'sunroot',
+          'sunberry',
+          'solar_bloom',
+        ],
         growthSpeedBonus: 1,
-        tooltip: 'Crops grow 100% faster',
+        tooltip: '+100% growth',
       },
     ],
   },
@@ -45,18 +56,26 @@ export const SHRINES = [
       {
         name: 'Curious Monkey',
         progressRequired: 12,
+        acceptedCropIds: ['wheat', 'turnip', 'root_loaf'],
         researchBonus: 1,
         tooltip: 'Research Level +1',
       },
       {
         name: 'Clever Monkey',
         progressRequired: 24,
+        acceptedCropIds: ['blueberry', 'forest_bread', 'wildroot'],
         researchBonus: 2,
         tooltip: 'Research Level +2',
       },
       {
         name: 'Wise Monkey',
         progressRequired: 40,
+        acceptedCropIds: [
+          'moonflower',
+          'moonlit_loaf',
+          'moonroot',
+          'moonberry',
+        ],
         researchBonus: 3,
         tooltip: 'Research Level +3',
       },
@@ -72,26 +91,35 @@ export const SHRINES = [
       {
         name: 'Forest Fox',
         progressRequired: 15,
+        acceptedCropIds: ['turnip', 'root_loaf'],
         plotsToUnlock: 4,
-        tooltip: 'Unlock more land',
+        tooltip: 'More land',
       },
       {
         name: 'Valley Fox',
         progressRequired: 25,
+        acceptedCropIds: ['blueberry', 'forest_bread', 'wildroot'],
         plotsToUnlock: 4,
-        tooltip: 'Grow your farmland',
+        tooltip: 'More land',
       },
       {
         name: 'Mountain Fox',
         progressRequired: 35,
+        acceptedCropIds: ['moonflower', 'moonroot', 'moonberry'],
         plotsToUnlock: 4,
-        tooltip: 'Even more land unlocked',
+        tooltip: 'More land',
       },
       {
         name: 'Guardian Fox',
         progressRequired: 50,
+        acceptedCropIds: [
+          'golden_pumpkin',
+          'golden_root',
+          'enchanted_jam',
+          'sunberry',
+        ],
         plotsToUnlock: 4,
-        tooltip: 'Final land expansion',
+        tooltip: 'Final land unlock',
       },
     ],
   },
@@ -105,26 +133,41 @@ export const SHRINES = [
       {
         name: 'Young Tiger',
         progressRequired: 20,
+        acceptedCropIds: ['wheat', 'turnip'],
         bonusHarvestChance: 0.25,
-        tooltip: '25% bonus crop chance',
+        tooltip: '+25% bonus crops',
       },
       {
         name: 'Hunting Tiger',
         progressRequired: 30,
+        acceptedCropIds: ['blueberry', 'forest_bread', 'wildroot'],
         bonusHarvestChance: 0.5,
-        tooltip: '50% bonus crop chance',
+        tooltip: '+50% bonus crops',
       },
       {
         name: 'Golden Tiger',
         progressRequired: 45,
+        acceptedCropIds: [
+          'moonflower',
+          'moonlit_loaf',
+          'moonroot',
+          'moonberry',
+        ],
         bonusHarvestChance: 0.75,
-        tooltip: '75% bonus crop chance',
+        tooltip: '+75% bonus crops',
       },
       {
         name: 'Spirit Tiger',
         progressRequired: 60,
+        acceptedCropIds: [
+          'golden_pumpkin',
+          'sunfruit',
+          'golden_loaf',
+          'golden_bloom',
+          'solar_gourd',
+        ],
         bonusHarvestChance: 1,
-        tooltip: '100% bonus crop chance',
+        tooltip: '+100% bonus crops',
       },
     ],
   },
@@ -137,4 +180,8 @@ export function getShrine(shrineId) {
 export function getShrineMaxTier(shrineId) {
   const shrine = getShrine(shrineId);
   return shrine ? shrine.tiers.length : 0;
+}
+
+export function tierAcceptsCrop(tier, cropId) {
+  return Boolean(tier?.acceptedCropIds?.includes(cropId));
 }

@@ -1,5 +1,5 @@
 import { getShrine } from '../data/shrines.js';
-import { isShrineMaxed } from '../state/gameState.js';
+import { getDragonBonusOfferings, isShrineMaxed } from '../state/gameState.js';
 import { setIcon, shrineIconSrc } from './icon.js';
 
 const CROP_DRAG_TYPE = 'text/plain';
@@ -8,7 +8,14 @@ const CROP_DRAG_PREFIX = 'farm-crop:';
 export { CROP_DRAG_TYPE, CROP_DRAG_PREFIX };
 
 // Renders the four corner shrines and wires click + drop targets for offerings.
-export function renderShrines(boardEl, state, onOffer, onShrineClick) {
+// pendingBlessingVisualShrineIds: hide glow until temple sparks land.
+export function renderShrines(
+  boardEl,
+  state,
+  onOffer,
+  onShrineClick,
+  pendingBlessingVisualShrineIds = null,
+) {
   for (const shrine of [
     getShrine('frog'),
     getShrine('monkey'),
@@ -18,7 +25,14 @@ export function renderShrines(boardEl, state, onOffer, onShrineClick) {
     if (!shrine) continue;
     const container = boardEl.querySelector(`#shrine-${shrine.id}`);
     if (!container) continue;
-    renderShrine(container, shrine, state, onOffer, onShrineClick);
+    renderShrine(
+      container,
+      shrine,
+      state,
+      onOffer,
+      onShrineClick,
+      pendingBlessingVisualShrineIds,
+    );
   }
 }
 
@@ -27,7 +41,14 @@ function parseCropDragData(raw) {
   return raw.slice(CROP_DRAG_PREFIX.length);
 }
 
-function renderShrine(container, shrine, state, onOffer, onShrineClick) {
+function renderShrine(
+  container,
+  shrine,
+  state,
+  onOffer,
+  onShrineClick,
+  pendingBlessingVisualShrineIds,
+) {
   const progress = state.shrines[shrine.id];
   const maxed = isShrineMaxed(state, shrine.id);
   const currentTier = progress.tier;
@@ -40,6 +61,12 @@ function renderShrine(container, shrine, state, onOffer, onShrineClick) {
   container.className = `shrine shrine--${shrine.corner} shrine--${shrine.id}`;
   if (maxed) {
     container.classList.add('shrine--maxed');
+  }
+  const showBlessingGlow =
+    getDragonBonusOfferings(state, shrine.id) > 0 &&
+    !pendingBlessingVisualShrineIds?.has(shrine.id);
+  if (showBlessingGlow) {
+    container.classList.add('shrine--dragon-blessed');
   }
   container.innerHTML = '';
 

@@ -3,7 +3,7 @@ import { findAlchemyResult } from '../data/alchemyRecipes.js';
 import { getHeldCropId, getHeldExpiresAt } from '../state/gameState.js';
 import { CROP_DRAG_TYPE, CROP_DRAG_PREFIX } from './shrinesPanel.js';
 import { applyDecayUrgencyClass, appendWiltMark } from './decayUrgency.js';
-import { setCropIcon } from './icon.js';
+import { setCropIcon, setIcon, UI_ICONS } from './icon.js';
 
 function parseCropDragData(raw) {
   if (!raw || !raw.startsWith(CROP_DRAG_PREFIX)) return null;
@@ -13,11 +13,13 @@ function parseCropDragData(raw) {
 function renderSlot(slotEl, held, slotKey, onClear, onPlace, now) {
   slotEl.className = 'alchemy__slot';
   slotEl.textContent = '';
+  slotEl.removeAttribute('data-crop-id');
 
   const cropId = getHeldCropId(held);
   if (cropId) {
     const crop = getCrop(cropId);
     slotEl.classList.add('alchemy__slot--filled');
+    slotEl.dataset.cropId = cropId;
     const urgency = applyDecayUrgencyClass(
       slotEl,
       cropId,
@@ -94,6 +96,69 @@ function wireAlchemyDropTarget(container, onPlaceNext) {
   };
 }
 
+function applyMixReadyState(mix, canMix) {
+  mix.disabled = !canMix;
+  mix.classList.toggle('alchemy__mix--ready', canMix);
+  mix.classList.toggle('alchemy__mix--faded', !canMix);
+  mix.title = canMix ? 'Mix' : '';
+}
+
+function canMixFromAlchemy(alchemy) {
+  return Boolean(
+    findAlchemyResult(
+      getHeldCropId(alchemy?.slotA ?? null),
+      getHeldCropId(alchemy?.slotB ?? null),
+    ),
+  );
+}
+
+/**
+ * Refresh perishable tints without rebuilding the board, so the Mix ready
+ * animation is not restarted (same idea as updateDragonTempleLive).
+ * Returns false when the DOM shape no longer matches state (caller should
+ * full-render).
+ */
+export function updateAlchemyLive(container, state) {
+  const alchemy = state.alchemy;
+  const now = Date.now();
+
+  if (alchemy?.resultId) {
+    const result = container.querySelector(':scope > .alchemy__result');
+    if (!result) return false;
+    // Unclaimed result has no decay tint to refresh.
+    return true;
+  }
+
+  const row = container.querySelector(':scope > .alchemy__row');
+  if (!row) return false;
+  const slots = row.querySelectorAll(':scope > .alchemy__slot');
+  const mix = row.querySelector(':scope > .alchemy__mix');
+  if (slots.length !== 2 || !mix) return false;
+
+  const helds = [alchemy?.slotA ?? null, alchemy?.slotB ?? null];
+  for (let i = 0; i < 2; i += 1) {
+    const slotEl = slots[i];
+    const cropId = getHeldCropId(helds[i]);
+    const shownId = slotEl.dataset.cropId || '';
+    const filled = slotEl.classList.contains('alchemy__slot--filled');
+    if (Boolean(cropId) !== filled) return false;
+    if ((cropId || '') !== shownId) return false;
+    if (!cropId) continue;
+
+    slotEl.querySelector('.crop-decay__wilt')?.remove();
+    const urgency = applyDecayUrgencyClass(
+      slotEl,
+      cropId,
+      getHeldExpiresAt(helds[i]),
+      now,
+    );
+    appendWiltMark(slotEl, urgency);
+  }
+
+  applyMixReadyState(mix, canMixFromAlchemy(alchemy));
+  return true;
+}
+
 // Renders the alchemy board: two input slots + Mix, or a claimable result.
 export function renderAlchemy(container, state, handlers) {
   const { onPlace, onPlaceNext, onClear, onMix, onClaim } = handlers;
@@ -137,17 +202,19 @@ export function renderAlchemy(container, state, handlers) {
   const mix = document.createElement('button');
   mix.type = 'button';
   mix.className = 'alchemy__mix';
-  mix.textContent = 'Mix';
-  const canMix = Boolean(
-    findAlchemyResult(
-      getHeldCropId(alchemy?.slotA ?? null),
-      getHeldCropId(alchemy?.slotB ?? null),
-    ),
-  );
-  mix.disabled = !canMix;
-  if (!canMix) {
-    mix.classList.add('alchemy__mix--faded');
-  }
+  // Wrapper holds the static drop-shadow; the img alone nudges so the
+  // filtered bitmap is not redrawn every frame.
+  const art = document.createElement('span');
+  art.className = 'alchemy__mix-art';
+  setIcon(art, {
+    src: UI_ICONS.mortar,
+    emoji: '⚗️',
+    alt: '',
+    imgClass: 'game-icon game-icon--mix',
+  });
+  mix.appendChild(art);
+  mix.setAttribute('aria-label', 'Mix');
+  applyMixReadyState(mix, canMixFromAlchemy(alchemy));
   mix.onclick = () => onMix();
 
   row.appendChild(slotA);

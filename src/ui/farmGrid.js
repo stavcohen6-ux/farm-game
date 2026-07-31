@@ -5,9 +5,12 @@ import {
   isReady,
   needsWater,
   hasCritterVisit,
+  isPlotNapped,
 } from '../state/gameState.js';
 import { CROP_DRAG_TYPE, CROP_DRAG_PREFIX } from './shrinesPanel.js';
 import { setCropIcon, setIcon, UI_ICONS } from './icon.js';
+import { setTanukiIcon } from './tanukiNap.js';
+import { breathTiming } from './breathTiming.js';
 
 const WATER_SPRINKLE_DROPS = 12;
 
@@ -30,6 +33,9 @@ function parseCropDragData(raw) {
 // `critterFlyingPlotIds` holds plots mid butterfly-to-shrine flight; the
 // perched cue stays hidden while the flyer is in the air.
 //
+// `tanukiArrivingPlotIds` / `tanukiLeavingPlotIds` hide the in-tile napper
+// while the fixed overlay plays arrive / leave.
+//
 // `onFlowerPlot(plotId, cropId)` — drop a plantable on an empty plot to flower it.
 export function renderGrid(
   container,
@@ -41,6 +47,8 @@ export function renderGrid(
   wateringPlotIds = new Set(),
   critterFlyingPlotIds = new Set(),
   onFlowerPlot = null,
+  tanukiArrivingPlotIds = new Set(),
+  tanukiLeavingPlotIds = new Set(),
 ) {
   container.style.gridTemplateColumns = `repeat(${GRID_COLS}, 1fr)`;
   container.style.gridTemplateRows = `repeat(${GRID_ROWS}, 1fr)`;
@@ -56,7 +64,18 @@ export function renderGrid(
     const unlocking = unlockingPlotIds.has(plot.id);
     const watering = wateringPlotIds.has(plot.id);
     const critterFlying = critterFlyingPlotIds.has(plot.id);
-    const key = plotKey(plot, now, unlocking, watering, critterFlying);
+    const napArriving = tanukiArrivingPlotIds.has(plot.id);
+    const napLeaving = tanukiLeavingPlotIds.has(plot.id);
+    const key = plotKey(
+      plot,
+      state,
+      now,
+      unlocking,
+      watering,
+      critterFlying,
+      napArriving,
+      napLeaving,
+    );
     const existing = existingById.get(plot.id);
     if (existing && existing.dataset.plotKey === key) {
       existing.dataset.row = String(Math.floor(plot.id / GRID_COLS));
@@ -65,7 +84,17 @@ export function renderGrid(
       }
       nextEls.push(existing);
     } else {
-      const el = renderPlot(plot, now, key, unlocking, watering, critterFlying);
+      const el = renderPlot(
+        plot,
+        state,
+        now,
+        key,
+        unlocking,
+        watering,
+        critterFlying,
+        napArriving,
+        napLeaving,
+      );
       if (unlocking && onUnlockAnimationEnd) {
         wireUnlockAnimation(el, plot.id, unlockingPlotIds, onUnlockAnimationEnd);
       }
@@ -131,6 +160,7 @@ function flowerDropTarget(event, state) {
   const plotId = Number(plotEl.dataset.plotId);
   const plot = state.plots.find((p) => p.id === plotId);
   if (!plot || plot.locked || plot.crop || plot.flowered) return null;
+  if (isPlotNapped(state, plotId)) return null;
   return plotEl;
 }
 
@@ -144,10 +174,27 @@ function clearFlowerDragOver(container) {
   }
 }
 
-function plotKey(plot, now, unlocking, watering, critterFlying) {
+function plotKey(
+  plot,
+  state,
+  now,
+  unlocking,
+  watering,
+  critterFlying,
+  napArriving,
+  napLeaving,
+) {
   const flower = plot.flowered ? 'flowered' : 'plain';
   if (plot.locked || unlocking) return unlocking ? 'unlocking' : 'locked';
-  if (!plot.crop) return `empty:${flower}`;
+  if (!plot.crop) {
+    let nap = '';
+    if (isPlotNapped(state, plot.id)) {
+      if (napArriving) nap = ':nap-arrive';
+      else if (napLeaving) nap = ':nap-leave';
+      else nap = `:nap:${state.plotNapper?.status ?? 'sleeping'}`;
+    }
+    return `empty:${flower}${nap}`;
+  }
   const crop = getCrop(plot.crop.cropId);
   if (!crop) return `empty:${flower}`;
   if (watering) return `growing:${crop.id}:watering:${flower}`;
@@ -235,7 +282,41 @@ function appendCritterCue(el) {
   el.appendChild(cue);
 }
 
-function renderPlot(plot, now, key, unlocking, watering, critterFlying) {
+// Stable per-napper breath speed; wall-clock phase so 1s grid rebuilds don't hitch.
+function napperBreathTiming(visitorId) {
+  return breathTiming(visitorId, 3.4, 0.6); // 3.4–3.99s
+}
+
+function appendNapperCue(el, napper) {
+  const cue = document.createElement('span');
+  cue.className = 'plot__napper';
+  cue.setAttribute('aria-hidden', 'true');
+  const breath = napperBreathTiming(napper?.id);
+  cue.style.animationDuration = `${breath.durationSec}s`;
+  cue.style.animationDelay = `${breath.delaySec}s`;
+  setTanukiIcon(cue, 'game-icon game-icon--napper');
+  el.appendChild(cue);
+
+  const zzz = document.createElement('span');
+  zzz.className = 'plot__napper-zzz';
+  zzz.setAttribute('aria-hidden', 'true');
+  zzz.textContent = 'z';
+  zzz.style.animationDuration = '4s';
+  zzz.style.animationDelay = `${breath.delaySec * 0.5}s`;
+  el.appendChild(zzz);
+}
+
+function renderPlot(
+  plot,
+  state,
+  now,
+  key,
+  unlocking,
+  watering,
+  critterFlying,
+  napArriving,
+  napLeaving,
+) {
   const el = document.createElement('div');
   el.dataset.plotId = plot.id;
   el.dataset.plotKey = key;
@@ -258,8 +339,16 @@ function renderPlot(plot, now, key, unlocking, watering, critterFlying) {
     el.classList.add('plot--flowered');
   }
 
+  const napped = isPlotNapped(state, plot.id);
+
   if (!plot.crop) {
     el.classList.add('plot--empty');
+    if (napped) {
+      el.classList.add('plot--napped');
+      if (!napArriving && !napLeaving) {
+        appendNapperCue(el, state.plotNapper);
+      }
+    }
     return el;
   }
 

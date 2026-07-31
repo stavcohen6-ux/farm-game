@@ -71,15 +71,13 @@ body {
   --radius: 0.75rem;
   --dock-pad: 0.75rem;
   --inventory-slots-inner: calc(6 * var(--tile) + 5 * var(--gap));
-  /* Farm board content width (grid + shrine columns); matches game-text */
+  /* Farm board content width (grid + shrine columns) */
   --farm-band-width: calc(
     140px + 1rem + (4 * var(--tile) + 3 * 8px + 2 * 8px) + 1rem + 140px
   );
   /* Grove stage outer width including --grove-pad-x on each side */
   --grove-outer-width: calc(var(--farm-band-width) + 2 * 1.25rem);
   --temple-meters-height: 1.65rem;
-  --temple-burn-height: 2.6rem;
-  --temple-dock-height: calc(var(--temple-meters-height) + var(--temple-burn-height));
 
   position: relative;
   z-index: 1;
@@ -106,6 +104,7 @@ body {
 .grove-stage {
   --grove-pad-x: 1.25rem;
   --grove-pad-y: 1rem;
+  /* Tight temple→farm so shrine base reads flush on the board */
   position: relative;
   z-index: 0;
   flex: 0 0 auto;
@@ -113,7 +112,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.15rem;
   padding: var(--grove-pad-y) var(--grove-pad-x) 1.35rem;
   border-radius: 1.5rem;
   overflow: hidden;
@@ -174,7 +173,7 @@ body {
   width: 100%;
   height: auto;
   max-width: 100%;
-  aspect-ratio: 1536 / 993;
+  aspect-ratio: 1536 / 533;
   object-fit: contain;
 }
 
@@ -205,46 +204,60 @@ body {
   height: 0.85rem;
 }
 
-/* Game text — full farm-board width, fixed three-line height */
+/* Game text — matches the painted grove card, fixed one-line height */
 
 .game-text {
-  width: var(--farm-band-width);
+  /* The grove card renders ~12.4px inside --grove-outer-width because the
+     shrine columns overlap the grid; subtract it so the plank ends flush
+     with the forest card below. */
+  width: calc(var(--grove-outer-width) - 12.4px);
   max-width: 100%;
   flex: 0 0 auto;
   align-self: center;
   box-sizing: border-box;
+  --game-text-font-size: 0.875rem;
   --game-text-line-height: 1.4;
-  height: calc(3 * 0.75rem * var(--game-text-line-height) + 2 * 0.55rem + 2px);
+  height: calc(
+    1 * var(--game-text-font-size) * var(--game-text-line-height) + 2 * 0.55rem +
+      2px
+  );
   padding: 0.55rem 0.85rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-family: 'Quicksand', 'Nunito', system-ui, sans-serif;
-  font-size: 0.75rem;
+  font-size: var(--game-text-font-size);
   font-weight: 600;
   line-height: var(--game-text-line-height);
   text-align: center;
-  overflow-x: hidden;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  background: rgba(247, 252, 247, 0.92);
-  border: 2px solid var(--panel-border);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  background-color: #b9a882;
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(247, 252, 247, 0.3) 0%,
+      rgba(232, 240, 224, 0.16) 100%
+    ),
+    url('assets/scene/game_text_plank.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
   border-radius: var(--radius);
-  color: var(--muted);
+  color: var(--ink);
+  text-shadow: 0 1px 0 rgba(247, 252, 247, 0.45);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 2px 0 rgba(90, 70, 40, 0.18),
     0 6px 18px rgba(42, 90, 60, 0.12);
 }
 
-/* Dragon Temple — meters above, wall slots on art, Burn below (no reflow) */
+/* Dragon Temple — meters, roof dragon, 1×4 holy farm row (flush on farm) */
 
 .dragon-temple {
-  width: calc(4 * var(--tile) + 3 * 8px + 2 * 8px);
+  width: calc(4 * var(--tile) + 3 * 8px + 2 * 14px);
   max-width: 100%;
   flex: 0 0 auto;
   align-self: center;
   padding: 0;
+  margin-bottom: 0.15rem;
   background: transparent;
   border: none;
   box-shadow: none;
@@ -321,45 +334,80 @@ body {
     drop-shadow(0 0 0 2px rgba(168, 111, 74, 0.55));
 }
 
-/* Overlay slots on the shrine front-wall niches */
+/* 1×4 holy farm-style board — same language as farm, brighter */
+.dragon-temple__board {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: 3px solid #5a5040;
+  background-color: #8a8270;
+  background-image: url('assets/icons/farm_frame.png');
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: brightness(1.12) saturate(1.08) sepia(0.12);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 236, 180, 0.35),
+    inset 0 -6px 14px rgba(40, 32, 18, 0.22),
+    0 4px 0 #4a4030,
+    0 10px 20px rgba(42, 36, 22, 0.18);
+  line-height: normal;
+}
+
 .dragon-temple__slots {
-  position: absolute;
-  left: 50%;
-  bottom: 12%;
-  transform: translateX(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.22rem;
-  width: 78%;
-  max-width: 100%;
+  gap: 8px;
+  width: 100%;
   flex-wrap: nowrap;
-  line-height: normal;
-  z-index: 2;
-  pointer-events: none;
 }
 
 .dragon-temple__slot {
   box-sizing: border-box;
-  width: calc(var(--tile) * 0.78);
-  height: calc(var(--tile) * 0.78);
+  width: var(--tile);
+  height: var(--tile);
   flex-shrink: 0;
-  border-radius: 8px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(var(--tile-font) * 0.72);
+  font-size: var(--tile-font);
   user-select: none;
-  background: rgba(58, 52, 44, 0.55);
+  position: relative;
+  background-color: #9aa2a8;
+  background-image: url('assets/icons/plot_locked.png');
+  background-size: cover;
+  background-position: center;
+  border: 1.5px solid rgba(120, 100, 70, 0.45);
   box-shadow:
-    inset 0 2px 4px rgba(16, 14, 10, 0.45),
-    inset 0 -1px 0 rgba(220, 200, 160, 0.12);
-  transition: transform 0.12s ease, background 0.12s ease, opacity 0.12s ease;
-  pointer-events: auto;
+    inset 0 3px 6px rgba(40, 32, 18, 0.38),
+    inset 0 -2px 0 rgba(255, 236, 180, 0.22),
+    0 2px 0 rgba(60, 52, 40, 0.3);
+  transition: transform 0.12s ease, background 0.12s ease, opacity 0.12s ease,
+    filter 0.12s ease;
+  filter: brightness(1.14) saturate(1.05);
+}
+
+.dragon-temple__slot--demand {
+  color: transparent;
+  /* Empty slots use a tiny font for text; keep icons at tile scale. */
+  font-size: var(--tile-font);
+}
+
+.dragon-temple__slot-icon--ghost {
+  opacity: 0.45;
+  filter: grayscale(0.1);
+}
+
+.dragon-temple__slot-icon--ghost .game-icon {
+  width: 2.85em;
+  height: 2.85em;
 }
 
 .dragon-temple__slot--empty {
-  border: 1.5px dashed rgba(200, 180, 140, 0.45);
+  border: 1.5px dashed rgba(220, 190, 130, 0.55);
   color: rgba(247, 236, 210, 0.85);
   font-size: 0.62rem;
   font-weight: 700;
@@ -367,103 +415,222 @@ body {
 }
 
 .dragon-temple__slot--faded {
-  opacity: 0.38;
+  opacity: 0.78;
   pointer-events: none;
   border-style: solid;
-  border-color: rgba(120, 110, 95, 0.35);
-  background: rgba(40, 36, 32, 0.35);
+  border-color: rgba(140, 120, 90, 0.4);
+  filter: brightness(1.06) saturate(0.95);
 }
 
 .dragon-temple__slot--filled {
-  border: 1.5px solid rgba(212, 192, 160, 0.75);
-  background: rgba(247, 244, 236, 0.92);
+  border: 1.5px solid rgba(212, 192, 160, 0.85);
+  background-color: rgba(247, 244, 236, 0.92);
+  background-image: none;
   color: var(--ink);
   cursor: pointer;
-  position: relative;
   opacity: 1;
+  filter: none;
+  overflow: visible;
 }
 
 .dragon-temple__slot--filled:hover {
   transform: translateY(-2px) scale(1.04);
 }
 
+/* Ready-to-burn: short fire trail around the slot edge until auto-burn.
+   Outer ring is masked to the border; inner layer spins with transform so
+   the loop stays smooth (no @property angle reset hitch). */
+.dragon-temple__slot-ready {
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+}
+
+.dragon-temple__slot-ready-spin {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 160%;
+  height: 160%;
+  translate: -50% -50%;
+  background: conic-gradient(
+    transparent 0deg,
+    transparent 200deg,
+    rgba(138, 85, 56, 0.14) 225deg,
+    rgba(168, 111, 74, 0.5) 250deg,
+    #c46a2e 268deg,
+    #b87838 288deg,
+    #e8c878 302deg,
+    #a86f4a 318deg,
+    rgba(138, 85, 56, 0.4) 338deg,
+    rgba(138, 85, 56, 0.12) 352deg,
+    transparent 360deg
+  );
+  animation: dragon-temple-ready-edge 2.7s linear infinite;
+}
+
+.dragon-temple__slot-ready-spin--glow {
+  filter: blur(3px);
+  opacity: 0.75;
+}
+
+/* Escalated ready-edge while burning: thicker, hotter, faster trail. */
+.dragon-temple__slot-ready--burning {
+  inset: -3px;
+  padding: 3px;
+}
+
+.dragon-temple__slot-ready--burning .dragon-temple__slot-ready-spin {
+  background: conic-gradient(
+    transparent 0deg,
+    transparent 150deg,
+    rgba(138, 85, 56, 0.2) 175deg,
+    rgba(168, 111, 74, 0.65) 205deg,
+    #c46a2e 230deg,
+    #b87838 255deg,
+    #e8c878 280deg,
+    #c46a2e 305deg,
+    #a86f4a 330deg,
+    rgba(138, 85, 56, 0.35) 348deg,
+    transparent 360deg
+  );
+  animation-duration: 0.9s;
+}
+
+.dragon-temple__slot-ready--burning .dragon-temple__slot-ready-spin--glow {
+  filter: blur(5px);
+  opacity: 0.9;
+}
+
+.dragon-temple__slot--filled .dragon-temple__slot-icon {
+  position: relative;
+  z-index: 1;
+}
+
+.dragon-temple__slot--filled:not(.dragon-temple__slot--burning) .crop-decay__wilt {
+  z-index: 1;
+}
+
+@keyframes dragon-temple-ready-edge {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .dragon-temple__slot--burning {
   cursor: default;
 }
 
+.dragon-temple__slot--burning .dragon-temple__slot-icon {
+  animation-name: dragon-temple-burn-char;
+  animation-timing-function: ease-in;
+  animation-fill-mode: forwards;
+}
+
+@keyframes dragon-temple-burn-char {
+  0% {
+    filter: none;
+    opacity: 1;
+    transform: scale(1);
+  }
+  45% {
+    filter: sepia(0.5) brightness(0.75);
+    opacity: 0.85;
+    transform: scale(0.96);
+  }
+  100% {
+    filter: sepia(0.7) brightness(0.45);
+    opacity: 0;
+    transform: scale(0.82);
+  }
+}
+
+/* Inner ember wash — drives animationend / burnPulseCount timing. */
 .dragon-temple__fire {
   position: absolute;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.35em;
+  z-index: 2;
+  border-radius: inherit;
   pointer-events: none;
+  background: radial-gradient(
+    circle at 50% 65%,
+    rgba(232, 200, 120, 0.5),
+    rgba(196, 106, 46, 0.35) 55%,
+    transparent 75%
+  );
   animation-name: dragon-temple-fire-pulse;
   animation-timing-function: ease-in-out;
-}
-
-.dragon-temple__fire .game-icon {
-  width: 1.4em;
-  height: 1.4em;
 }
 
 @keyframes dragon-temple-fire-pulse {
   0%,
   100% {
-    transform: scale(0.85);
-    opacity: 0.55;
+    transform: scale(0.92);
+    opacity: 0.45;
   }
   50% {
-    transform: scale(1.25);
+    transform: scale(1.08);
     opacity: 1;
   }
 }
 
+/* Rising ember dots — one rise each, delay set from JS. */
+.dragon-temple__ember {
+  position: absolute;
+  bottom: 18%;
+  z-index: 2;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: 50%;
+  background: #e8c878;
+  box-shadow: 0 0 5px rgba(196, 106, 46, 0.6);
+  pointer-events: none;
+  animation-name: dragon-temple-ember-rise;
+  animation-timing-function: ease-out;
+  animation-iteration-count: 1;
+  animation-fill-mode: both;
+}
+
+@keyframes dragon-temple-ember-rise {
+  0% {
+    transform: translate(0, 0) scale(0.7);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(var(--ember-dx, 6px), -1.6em) scale(0.35);
+    opacity: 0;
+  }
+}
+
+.dragon-temple--burning .dragon-temple__board {
+  box-shadow:
+    inset 0 2px 0 rgba(255, 236, 180, 0.35),
+    inset 0 -6px 14px rgba(40, 32, 18, 0.22),
+    0 4px 0 #4a4030,
+    0 10px 20px rgba(42, 36, 22, 0.18),
+    0 0 18px rgba(196, 106, 46, 0.35);
+}
+
 .dragon-temple__slot--drag-over {
   border-color: var(--ember);
-  background: rgba(248, 240, 234, 0.95);
-}
-
-.dragon-temple__burn-slot {
-  width: 100%;
-  min-height: var(--temple-burn-height);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.dragon-temple__burn-slot--placeholder {
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.dragon-temple__burn {
-  border: none;
-  border-radius: 10px;
-  padding: 0.45rem 1.15rem;
-  background: linear-gradient(180deg, #c88858, var(--ember));
-  color: #fff8f0;
-  font: inherit;
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-  flex-shrink: 0;
-  box-shadow: 0 2px 0 var(--ember-deep);
-  transition: filter 0.12s ease;
-}
-
-.dragon-temple__burn:hover:not(:disabled) {
-  filter: brightness(1.05);
-}
-
-.dragon-temple__burn--faded,
-.dragon-temple__burn:disabled {
-  background: #c5bba8;
-  color: #f7f4ec;
-  cursor: default;
-  opacity: 0.65;
-  box-shadow: none;
+  background-color: rgba(248, 240, 234, 0.95);
+  background-image: none;
   filter: none;
 }
 
@@ -478,12 +645,7 @@ body {
   gap: 0.25rem 0.35rem;
   align-items: center;
   justify-content: center;
-  /* Soft moss ground plane under farm + corner shrines */
   padding: 0.55rem 0.35rem 0.65rem;
-  border-radius: 1.1rem;
-  background:
-    linear-gradient(180deg, rgba(247, 252, 247, 0.22), rgba(168, 196, 168, 0.35));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .farm-board .farm-grid {
@@ -586,6 +748,26 @@ body {
   transition: filter 0.14s ease;
 }
 
+/* Dragon win blessing: thin amber silhouette rim (no bloom; bar untouched).
+   Rim lives on the icon so it is not expanded by the figure's soft ground blur. */
+.shrine--dragon-blessed .shrine__icon {
+  filter: drop-shadow(3px 0 0 rgb(245, 176, 40))
+    drop-shadow(-3px 0 0 rgb(245, 176, 40))
+    drop-shadow(0 3px 0 rgb(245, 176, 40))
+    drop-shadow(0 -3px 0 rgb(245, 176, 40));
+}
+
+.shrine--dragon-blessed.shrine--drag-over .shrine__figure {
+  filter: drop-shadow(0 0 8px rgba(95, 154, 114, 0.75));
+}
+
+.shrine--dragon-blessed.shrine--drag-over .shrine__icon {
+  filter: drop-shadow(3px 0 0 rgb(245, 176, 40))
+    drop-shadow(-3px 0 0 rgb(245, 176, 40))
+    drop-shadow(0 3px 0 rgb(245, 176, 40))
+    drop-shadow(0 -3px 0 rgb(245, 176, 40));
+}
+
 .shrine__icon {
   font-size: 1.75rem;
   line-height: 1;
@@ -595,24 +777,9 @@ body {
   min-height: 0;
 }
 
-.shrine__icon--reward-pulse {
-  animation-name: shrine-reward-pulse;
-  animation-timing-function: ease-in-out;
-}
-
-@keyframes shrine-reward-pulse {
-  0%,
-  100% {
-    transform: scale(0.85);
-    opacity: 0.55;
-  }
-  50% {
-    transform: scale(1.25);
-    opacity: 1;
-  }
-}
-
 .shrine__plaque {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 6.5rem;
   box-sizing: border-box;
@@ -689,7 +856,7 @@ body {
   min-width: 280px;
   max-width: 360px;
   width: 90%;
-  max-height: min(80dvh, 32rem);
+  max-height: 90dvh;
   overflow-y: auto;
 }
 
@@ -706,7 +873,7 @@ body {
   flex-wrap: wrap;
 }
 
-.shrine-detail__prefers {
+.shrine-detail__accepts {
   margin: 0 0 1rem;
   text-align: center;
   color: var(--muted);
@@ -714,6 +881,41 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+/* Icons use pointer-events: none globally; re-enable so hover tips work. */
+.shrine-detail__accepts-icon {
+  display: inline-flex;
+}
+
+.shrine-detail__accepts-icon .game-icon {
+  pointer-events: auto;
+}
+
+.shrine-crop-tip {
+  position: fixed;
+  transform: translateX(-50%);
+  z-index: 40;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  background: #fff;
+  color: #000;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(42, 90, 60, 0.22);
+}
+
+.shrine-detail__tier-accepts {
+  margin: 0.25rem 0 0.45rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
   flex-wrap: wrap;
   gap: 0.25rem;
 }
@@ -973,6 +1175,108 @@ body {
   }
   50% {
     transform: translateY(-3px);
+  }
+}
+
+.plot--napped {
+  cursor: default;
+  pointer-events: auto;
+}
+
+.plot--napped:hover {
+  transform: none;
+}
+
+.plot__napper {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  z-index: 3;
+  pointer-events: none;
+  font-size: 1.7rem;
+  line-height: 1;
+  transform: translate(-50%, -50%);
+  /* Pale rim separates brown fur from brown soil, then a ground shadow. */
+  filter:
+    drop-shadow(0 0 1px rgba(255, 250, 235, 0.75))
+    drop-shadow(0 0 3px rgba(255, 250, 235, 0.4))
+    drop-shadow(0 2px 3px rgba(22, 36, 28, 0.45));
+  animation-name: plot-napper-breathe;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  transform-origin: 50% 80%;
+}
+
+.plot__napper .game-icon--napper {
+  width: 1.7em;
+  height: 1.7em;
+}
+
+.plot__napper-zzz {
+  position: absolute;
+  top: 8%;
+  right: 14%;
+  z-index: 4;
+  pointer-events: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(252, 255, 250, 0.95);
+  text-shadow:
+    0 1px 2px rgba(20, 32, 26, 0.6),
+    0 0 4px rgba(20, 32, 26, 0.35);
+  animation-name: plot-napper-zzz;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+/* Enter / leave overlay — matches .plot__napper so the handoff is seamless */
+.tanuki-visitor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 40;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+  font-size: 1.7rem;
+  line-height: 1;
+  transform-origin: 50% 80%;
+  filter:
+    drop-shadow(0 0 1px rgba(255, 250, 235, 0.75))
+    drop-shadow(0 0 3px rgba(255, 250, 235, 0.4))
+    drop-shadow(0 2px 3px rgba(22, 36, 28, 0.45));
+}
+
+.tanuki-visitor .game-icon--tanuki-visitor {
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes plot-napper-breathe {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.03);
+  }
+}
+
+@keyframes plot-napper-zzz {
+  0% {
+    transform: translateY(0) scale(0.9);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-10px) scale(1.05);
+    opacity: 0;
   }
 }
 
@@ -1411,15 +1715,95 @@ body {
   box-shadow: none;
 }
 
-.inventory__item:not(.inventory__item--empty):hover {
+.inventory__item:not(.inventory__item--empty):not(.inventory__item--firefly):hover {
   transform: translateY(-2px) scale(1.04);
   box-shadow:
     inset 0 1px 2px rgba(47, 59, 42, 0.06),
     0 4px 10px rgba(47, 59, 42, 0.14);
 }
 
-.inventory__item:not(.inventory__item--empty):active {
+.inventory__item:not(.inventory__item--empty):not(.inventory__item--firefly):active {
   cursor: grabbing;
+}
+
+.inventory__item--firefly {
+  cursor: pointer;
+  /* Cool dusk tile so the yellow firefly glow reads from afar */
+  border-color: rgba(110, 150, 140, 0.95);
+  background: rgba(214, 232, 226, 0.96);
+  box-shadow:
+    inset 0 1px 2px rgba(30, 50, 45, 0.1),
+    0 0 8px rgba(80, 140, 120, 0.2);
+}
+
+.inventory__item--firefly:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow:
+    inset 0 1px 2px rgba(30, 50, 45, 0.12),
+    0 4px 12px rgba(50, 100, 85, 0.22);
+}
+
+.inventory__item--firefly:active {
+  cursor: pointer;
+}
+
+.inventory__icon--firefly {
+  animation-name: inventory-firefly-bob;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  /* Duration / delay set per visitor in JS so multiple fireflies desync */
+  animation-duration: 2.4s;
+  animation-delay: 0s;
+  filter: drop-shadow(0 0 5px rgba(255, 236, 90, 0.95))
+    drop-shadow(0 0 10px rgba(255, 200, 40, 0.55));
+  will-change: transform;
+}
+
+.inventory__icon--firefly .game-icon--firefly {
+  width: 1.45em;
+  height: 1.45em;
+}
+
+/* Sine-like hover (linear + sampled keyframes) — seamless loop, no pause at ends */
+@keyframes inventory-firefly-bob {
+  0% {
+    transform: translateY(0);
+  }
+  12.5% {
+    transform: translateY(-1.15px);
+  }
+  25% {
+    transform: translateY(-2.12px);
+  }
+  37.5% {
+    transform: translateY(-2.77px);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+  62.5% {
+    transform: translateY(-2.77px);
+  }
+  75% {
+    transform: translateY(-2.12px);
+  }
+  87.5% {
+    transform: translateY(-1.15px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.desk-gift-spark {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 45;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 1px 2px rgba(80, 60, 20, 0.25));
 }
 
 .inventory__item--dragging {
@@ -1864,41 +2248,201 @@ body {
   background: rgba(238, 245, 234, 0.95);
 }
 
+/* Mix is a painted mortar resting on the desk, not a UI button. Its layout
+   box stays var(--tile) tall so the desk height — and the calibrated
+   Discovery Log hotspot — never move; only the art overflows upward. */
 .alchemy__mix {
+  position: relative;
+  box-sizing: border-box;
+  display: block;
+  width: 8.5rem;
+  height: var(--tile);
+  padding: 0;
   border: none;
-  border-radius: 12px;
-  min-width: 4.25rem;
-  min-height: calc(var(--tile) * 0.85);
-  padding: 0.6rem 1.1rem;
-  background: linear-gradient(180deg, #8ec484, var(--moss));
-  color: #f7fff4;
-  font: inherit;
-  font-size: 1.05rem;
-  font-weight: 800;
-  letter-spacing: 0.02em;
+  background: transparent;
   cursor: pointer;
   flex-shrink: 0;
-  box-shadow:
-    0 3px 0 var(--moss-deep),
-    0 4px 10px rgba(63, 106, 72, 0.28);
-  transition: transform 0.12s ease, filter 0.12s ease, background 0.12s ease,
-    box-shadow 0.12s ease, opacity 0.12s ease;
+  overflow: visible;
 }
 
-.alchemy__mix:hover:not(:disabled) {
-  filter: brightness(1.06);
+/* Shadow lives on this static wrapper so the img can nudge without
+   re-rasterising a filtered bitmap every frame. */
+.alchemy__mix-art {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  height: 4.8rem;
+  width: auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1;
+  filter: drop-shadow(0 2px 3px rgba(47, 59, 42, 0.22));
+  transition: opacity 0.14s ease, filter 0.14s ease;
+}
+
+.game-icon--mix {
+  height: 100%;
+  width: auto;
+  display: block;
+  object-fit: contain;
+  overflow: visible;
+  /* No filter here — only translateY is animated when ready. */
+}
+
+.alchemy__mix--faded {
+  cursor: default;
+}
+
+.alchemy__mix--faded .alchemy__mix-art {
+  opacity: 0.55;
+  filter: saturate(0.55) drop-shadow(0 1px 2px rgba(47, 59, 42, 0.14));
+}
+
+/* Ready pair: soft honey under the mortar + a gentle vertical nudge
+   (same family as .plot__critter bob), not a scale pulse. */
+.alchemy__mix--ready::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -0.55rem;
+  width: calc(100% + 1.6rem);
+  height: 4.6rem;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 50% 62%,
+    rgba(245, 224, 140, 0.55) 0%,
+    rgba(235, 205, 100, 0.28) 40%,
+    rgba(230, 198, 90, 0.12) 62%,
+    transparent 78%
+  );
+  animation: alchemy-mix-glow 4.5s ease-in-out infinite;
+}
+
+.alchemy__mix--ready .game-icon--mix {
+  animation: alchemy-mix-nudge 4.5s ease-in-out infinite;
+}
+
+/* Lift on the button, not the art, so hovering never cancels the nudge. */
+.alchemy__mix--ready {
+  transition: transform 0.14s ease;
+}
+
+.alchemy__mix--ready:hover {
   transform: translateY(-2px);
 }
 
-.alchemy__mix--faded,
-.alchemy__mix:disabled {
-  background: rgba(232, 236, 228, 0.85);
-  color: rgba(95, 116, 102, 0.55);
+/* Successful Mix: brief pestle grind, then claim reveal (visual only). */
+.alchemy__row--ritual {
+  pointer-events: none;
+}
+
+.alchemy__mix--grinding {
   cursor: default;
-  opacity: 0.85;
-  box-shadow: inset 0 1px 2px rgba(47, 59, 42, 0.06);
-  transform: none;
-  filter: none;
+  pointer-events: none;
+}
+
+.alchemy__mix--grinding::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -0.55rem;
+  width: calc(100% + 1.6rem);
+  height: 4.6rem;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 50% 62%,
+    rgba(245, 224, 140, 0.7) 0%,
+    rgba(235, 205, 100, 0.36) 40%,
+    rgba(230, 198, 90, 0.14) 62%,
+    transparent 78%
+  );
+  animation: alchemy-mix-grind-glow 0.34s ease-out;
+}
+
+.alchemy__mix--grinding .game-icon--mix {
+  animation: alchemy-mix-grind 0.34s ease-in-out;
+}
+
+@keyframes alchemy-mix-grind {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  20% {
+    transform: translateY(-3px) rotate(-5deg);
+  }
+  45% {
+    transform: translateY(1px) rotate(4deg);
+  }
+  70% {
+    transform: translateY(-2px) rotate(-3deg);
+  }
+}
+
+@keyframes alchemy-mix-grind-glow {
+  0% {
+    opacity: 0.75;
+  }
+  45% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.85;
+  }
+}
+
+.alchemy-mix-spark {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 45;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 1px 2px rgba(120, 90, 30, 0.28));
+}
+
+.alchemy__result--appear {
+  animation: alchemy-result-appear 0.38s ease-out;
+}
+
+@keyframes alchemy-result-appear {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes alchemy-mix-glow {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Tiny settle-and-lift, planted on the desk — no scale. */
+@keyframes alchemy-mix-nudge {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
 }
 
 .alchemy__result {

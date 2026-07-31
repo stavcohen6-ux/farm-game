@@ -10,16 +10,14 @@ function parseCropDragData(raw) {
   return raw.slice(CROP_DRAG_PREFIX.length);
 }
 
-function timerFillPercent(temple, now = Date.now()) {
-  const msRemaining = Math.max(0, (temple.endsAt ?? now) - now);
-  const duration = DRAGON_TEMPLE.durationMs || 1;
-  return Math.min(100, (msRemaining / duration) * 100);
+function burnTotalMs() {
+  return DRAGON_TEMPLE.burnPulseMs * DRAGON_TEMPLE.burnPulseCount;
 }
 
-function progressFillPercent(temple) {
-  const required = DRAGON_TEMPLE.progressRequired || 1;
-  const current = temple.progress ?? 0;
-  return Math.min(100, (current / required) * 100);
+function wrathFillPercent(temple) {
+  const max = DRAGON_TEMPLE.wrathMax || 1;
+  const current = temple?.wrath ?? 0;
+  return Math.min(100, (current / max) * 100);
 }
 
 function setBarFill(fillEl, percent) {
@@ -27,14 +25,62 @@ function setBarFill(fillEl, percent) {
   fillEl.style.width = `${percent}%`;
 }
 
-// Updates only the time bar fill so a burning fire animation is not restarted.
-export function updateDragonTempleTimer(container, state) {
+// Updates only the wrath bar fill so a burning fire animation is not restarted.
+export function updateDragonTempleWrath(container, state) {
   const fill = container.querySelector('.dragon-temple__timer-fill');
   if (!fill || !state.dragonTemple?.active) return;
-  setBarFill(fill, timerFillPercent(state.dragonTemple));
+  setBarFill(fill, wrathFillPercent(state.dragonTemple));
 }
 
-function renderSlot(slotEl, held, slotIndex, onClear, onPlace, burning, now, interactive) {
+// Updates wrath (and filled-slot decay tints) without rebuilding the board, so
+// ready-edge / fire animations are not restarted. Returns false if the DOM is
+// out of sync with state (caller should full-render).
+export function updateDragonTempleLive(container, state) {
+  updateDragonTempleWrath(container, state);
+  const temple = state.dragonTemple;
+  if (!temple?.active || temple.burning || temple.pendingClose) return true;
+
+  const slotEls = container.querySelectorAll('.dragon-temple__slot');
+  if (slotEls.length !== DRAGON_TEMPLE.slotCount) return false;
+
+  const now = Date.now();
+  for (let i = 0; i < slotEls.length; i++) {
+    const held = temple.slots[i];
+    const cropId = getHeldCropId(held);
+    const slotEl = slotEls[i];
+    const shownFilled = slotEl.classList.contains('dragon-temple__slot--filled');
+    if (Boolean(cropId) !== shownFilled) return false;
+    if (!cropId) continue;
+
+    slotEl.querySelector('.crop-decay__wilt')?.remove();
+    const urgency = applyDecayUrgencyClass(
+      slotEl,
+      cropId,
+      getHeldExpiresAt(held),
+      now,
+    );
+    appendWiltMark(slotEl, urgency);
+  }
+  return true;
+}
+
+function demandCropAt(temple, slotIndex) {
+  const demand = temple?.demand;
+  if (!Array.isArray(demand)) return null;
+  return demand[slotIndex] ?? null;
+}
+
+function renderSlot(
+  slotEl,
+  held,
+  slotIndex,
+  demandCropId,
+  onClear,
+  onPlace,
+  burning,
+  now,
+  interactive,
+) {
   slotEl.className = 'dragon-temple__slot';
   slotEl.textContent = '';
   slotEl.ondragover = null;
@@ -49,6 +95,21 @@ function renderSlot(slotEl, held, slotIndex, onClear, onPlace, burning, now, int
     if (burning) {
       slotEl.classList.add('dragon-temple__slot--burning');
     }
+
+    const ready = document.createElement('span');
+    ready.className = 'dragon-temple__slot-ready';
+    if (burning) {
+      ready.classList.add('dragon-temple__slot-ready--burning');
+    }
+    ready.setAttribute('aria-hidden', 'true');
+    const glow = document.createElement('span');
+    glow.className =
+      'dragon-temple__slot-ready-spin dragon-temple__slot-ready-spin--glow';
+    const spin = document.createElement('span');
+    spin.className = 'dragon-temple__slot-ready-spin';
+    ready.appendChild(glow);
+    ready.appendChild(spin);
+    slotEl.appendChild(ready);
 
     const icon = document.createElement('span');
     icon.className = 'dragon-temple__slot-icon';
@@ -72,9 +133,28 @@ function renderSlot(slotEl, held, slotIndex, onClear, onPlace, burning, now, int
     if (burning) {
       const fire = document.createElement('span');
       fire.className = 'dragon-temple__fire';
-      setIcon(fire, { src: UI_ICONS.fire, emoji: '🔥', imgClass: 'game-icon' });
       fire.setAttribute('aria-hidden', 'true');
       slotEl.appendChild(fire);
+
+      const { burnEmberCount, burnEmberMs } = DRAGON_TEMPLE;
+      // Spread single rises across the burn so the last one lands on the last pulse.
+      const emberGap =
+        (burnTotalMs() - burnEmberMs) / Math.max(1, burnEmberCount - 1);
+      for (let i = 0; i < burnEmberCount; i++) {
+        const ember = document.createElement('span');
+        ember.className = 'dragon-temple__ember';
+        ember.style.animationDuration = `${burnEmberMs}ms`;
+        ember.style.animationDelay = `${i * emberGap}ms`;
+        // Spread across the slot floor (avoid edges): ~28% … ~72%.
+        const leftPct =
+          burnEmberCount === 1
+            ? 50
+            : 28 + (i / (burnEmberCount - 1)) * 44;
+        ember.style.left = `${leftPct}%`;
+        ember.style.setProperty('--ember-dx', i % 2 === 0 ? '6px' : '-5px');
+        ember.setAttribute('aria-hidden', 'true');
+        slotEl.appendChild(ember);
+      }
     }
 
     slotEl.title = burning
@@ -93,8 +173,18 @@ function renderSlot(slotEl, held, slotIndex, onClear, onPlace, burning, now, int
     return;
   }
 
-  slotEl.textContent = 'Drop';
-  slotEl.title = '';
+  const demandCrop = demandCropId ? getCrop(demandCropId) : null;
+  if (demandCrop) {
+    slotEl.classList.add('dragon-temple__slot--demand');
+    const ghost = document.createElement('span');
+    ghost.className = 'dragon-temple__slot-icon dragon-temple__slot-icon--ghost';
+    setCropIcon(ghost, demandCrop);
+    slotEl.appendChild(ghost);
+    slotEl.title = `Needs ${demandCrop.name}`;
+  } else {
+    slotEl.textContent = 'Drop';
+    slotEl.title = '';
+  }
 
   if (burning) {
     return;
@@ -154,23 +244,15 @@ function buildMeters(temple, active) {
     meters.setAttribute('aria-hidden', 'true');
   }
 
-  const timerTrack = document.createElement('div');
-  timerTrack.className = 'dragon-temple__timer-track';
-  timerTrack.title = active ? 'Time remaining' : '';
-  const timerFill = document.createElement('div');
-  timerFill.className = 'dragon-temple__timer-fill';
-  setBarFill(timerFill, active ? timerFillPercent(temple) : 100);
-  timerTrack.appendChild(timerFill);
-  meters.appendChild(timerTrack);
-
-  const progressTrack = document.createElement('div');
-  progressTrack.className = 'dragon-temple__progress-track';
-  progressTrack.title = active ? 'Sacrifice progress' : '';
-  const progressFill = document.createElement('div');
-  progressFill.className = 'dragon-temple__progress-fill';
-  setBarFill(progressFill, active ? progressFillPercent(temple) : 0);
-  progressTrack.appendChild(progressFill);
-  meters.appendChild(progressTrack);
+  // Reuse timer track/fill classes so wrath keeps the ember timer colors.
+  const wrathTrack = document.createElement('div');
+  wrathTrack.className = 'dragon-temple__timer-track';
+  wrathTrack.title = active ? "Dragon's wrath" : '';
+  const wrathFill = document.createElement('div');
+  wrathFill.className = 'dragon-temple__timer-fill';
+  setBarFill(wrathFill, active ? wrathFillPercent(temple) : 0);
+  wrathTrack.appendChild(wrathFill);
+  meters.appendChild(wrathTrack);
 
   return meters;
 }
@@ -186,6 +268,7 @@ function buildSlotsRow(temple, handlers, burning, now, interactive) {
       slotEl,
       interactive ? slots[i] ?? null : null,
       i,
+      interactive ? demandCropAt(temple, i) : null,
       onClear,
       onPlace,
       burning,
@@ -215,44 +298,18 @@ function wireBurnFires(slotsRow, onBurnComplete) {
     fires[i].style.animationDuration = `${DRAGON_TEMPLE.burnPulseMs}ms`;
     fires[i].style.animationIterationCount = String(DRAGON_TEMPLE.burnPulseCount);
   }
+
+  const burnMs = burnTotalMs();
+  slotsRow.querySelectorAll('.dragon-temple__slot--burning .dragon-temple__slot-icon')
+    .forEach((icon) => {
+      icon.style.animationDuration = `${burnMs}ms`;
+    });
 }
 
-function buildBurnSlot(temple, active, burning, onBurn) {
-  const burnSlot = document.createElement('div');
-  burnSlot.className = 'dragon-temple__burn-slot';
-  if (!active) {
-    burnSlot.classList.add('dragon-temple__burn-slot--placeholder');
-    burnSlot.setAttribute('aria-hidden', 'true');
-    const ghost = document.createElement('button');
-    ghost.type = 'button';
-    ghost.className = 'dragon-temple__burn';
-    ghost.textContent = 'Burn';
-    ghost.disabled = true;
-    burnSlot.appendChild(ghost);
-    return burnSlot;
-  }
-
-  const slots = temple.slots ?? [];
-  const burn = document.createElement('button');
-  burn.type = 'button';
-  burn.className = 'dragon-temple__burn';
-  burn.textContent = 'Burn';
-  const canBurn =
-    !burning &&
-    slots.length === DRAGON_TEMPLE.slotCount &&
-    slots.every((slot) => getHeldCropId(slot));
-  burn.disabled = !canBurn;
-  if (!canBurn) {
-    burn.classList.add('dragon-temple__burn--faded');
-  }
-  burn.onclick = () => onBurn();
-  burnSlot.appendChild(burn);
-  return burnSlot;
-}
-
-// Renders the Dragon Temple: meters above, figure + wall slots, Burn below.
+// Renders the Dragon Temple: wrath meter, roof dragon, 1×4 holy farm board.
+// When demand is fully matched, place handlers auto-start burn (no Burn button).
 export function renderDragonTemple(container, state, handlers) {
-  const { onBurn, onBurnComplete } = handlers;
+  const { onBurnComplete } = handlers;
   const temple = state.dragonTemple;
   const active = Boolean(temple?.active);
   const burning = Boolean(temple?.burning);
@@ -286,10 +343,13 @@ export function renderDragonTemple(container, state, handlers) {
     imgClass: 'game-icon game-icon--temple-object',
   });
   stage.appendChild(figure);
-
-  const slotsRow = buildSlotsRow(temple, handlers, burning, now, active);
-  stage.appendChild(slotsRow);
   container.appendChild(stage);
+
+  const board = document.createElement('div');
+  board.className = 'dragon-temple__board';
+  const slotsRow = buildSlotsRow(temple, handlers, burning, now, active);
+  board.appendChild(slotsRow);
+  container.appendChild(board);
 
   if (active && burning) {
     wireBurnFires(slotsRow, onBurnComplete);
@@ -298,6 +358,4 @@ export function renderDragonTemple(container, state, handlers) {
   if (active && !burning && !temple.pendingClose) {
     wireTempleDropTarget(container, handlers.onPlaceNext);
   }
-
-  container.appendChild(buildBurnSlot(temple, active, burning, onBurn));
 }

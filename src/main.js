@@ -4,10 +4,15 @@ import {
   harvestPlot,
   waterPlot,
   welcomeCritter,
+  welcomeDeskVisitor,
   applyPendingHarvest,
   isReady,
   needsWater,
   hasCritterVisit,
+  isPlotNapped,
+  reconcileDeskVisitors,
+  reconcilePlotNapper,
+  clearPlotNapper,
   offerCrop,
   placeAlchemySlot,
   placeAlchemyNextSlot,
@@ -17,7 +22,6 @@ import {
   placeDragonTempleSlot,
   placeDragonTempleNextSlot,
   clearDragonTempleSlot,
-  burnDragonTemple,
   completeDragonTempleBurn,
   finalizeDragonTempleClose,
   claimTempleWinReward,
@@ -25,6 +29,7 @@ import {
   tickCropDecay,
   getInventoryCount,
   getHeldCropId,
+  getDragonBonusOfferings,
   resetState,
 } from './state/gameState.js';
 import { load, save } from './state/persistence.js';
@@ -34,13 +39,19 @@ import { renderGrid } from './ui/farmGrid.js';
 import {
   renderInventory,
   pulseInventoryItem,
+  pulseInventorySlot,
   shakeInventoryFull,
 } from './ui/inventoryPanel.js';
 import { renderShrines } from './ui/shrinesPanel.js';
-import { renderAlchemy } from './ui/alchemyPanel.js';
+import { renderAlchemy, updateAlchemyLive } from './ui/alchemyPanel.js';
+import {
+  playAlchemyMixGrind,
+  playAlchemyResultReveal,
+} from './ui/alchemyMixRitual.js';
 import {
   renderDragonTemple,
-  updateDragonTempleTimer,
+  updateDragonTempleLive,
+  updateDragonTempleWrath,
 } from './ui/dragonTemplePanel.js';
 import { renderGameTextPanel } from './ui/gameTextPanel.js';
 import { openCropPicker } from './ui/cropPicker.js';
@@ -50,18 +61,26 @@ import { openDiscoveryLog } from './ui/discoveryLog.js';
 import { playHarvestCropFly } from './ui/bonusCropFly.js';
 import {
   playTempleRewardSparks,
-  pulseShrineIcon,
 } from './ui/templeRewardFly.js';
 import { playCritterFly } from './ui/critterFly.js';
+import { playDeskGiftSparks } from './ui/deskGiftSparks.js';
+import { playTanukiArrive, playTanukiLeave } from './ui/tanukiNap.js';
+import { findAlchemyResult } from './data/alchemyRecipes.js';
 
 const RENDER_INTERVAL_MS = 1000;
 const BONUS_FLY_DELAY_MS = 500;
 const WATERING_ANIM_MS = 1625;
 
 const state = load();
+let alchemyRitualPlaying = false;
 const unlockingPlotIds = new Set();
 const wateringPlotIds = new Set();
 const critterFlyingPlotIds = new Set();
+const deskGiftingVisitorIds = new Set();
+const tanukiArrivingPlotIds = new Set();
+const tanukiLeavingPlotIds = new Set();
+// Shrine ids whose Dragon-bonus glow is deferred until sparks land.
+const pendingBlessingVisualShrineIds = new Set();
 
 const appEl = document.getElementById('app');
 const boardEl = document.getElementById('farm-board');
@@ -77,7 +96,6 @@ const dragonTempleHandlers = {
   onPlace: handleDragonTemplePlace,
   onPlaceNext: handleDragonTemplePlaceNext,
   onClear: handleDragonTempleClear,
-  onBurn: handleDragonTempleBurn,
   onBurnComplete: handleDragonTempleBurnComplete,
 };
 
@@ -93,22 +111,43 @@ function renderFarm() {
     wateringPlotIds,
     critterFlyingPlotIds,
     handleFlowerPlot,
+    tanukiArrivingPlotIds,
+    tanukiLeavingPlotIds,
   );
+}
+
+function renderInventoryPanel() {
+  renderInventory(inventoryEl, state, handleDeskVisitorClick);
+}
+
+function alchemyHandlers() {
+  return {
+    onPlace: handleAlchemyPlace,
+    onPlaceNext: handleAlchemyPlaceNext,
+    onClear: handleAlchemyClear,
+    onMix: handleAlchemyMix,
+    onClaim: handleAlchemyClaim,
+  };
+}
+
+function renderAlchemyPanel() {
+  if (alchemyRitualPlaying) return;
+  renderAlchemy(alchemyEl, state, alchemyHandlers());
 }
 
 function render() {
   renderFarm();
   renderGameTextPanel(gameTextEl, state);
   renderDragonTemple(dragonTempleEl, state, dragonTempleHandlers);
-  renderInventory(inventoryEl, state);
-  renderAlchemy(alchemyEl, state, {
-    onPlace: handleAlchemyPlace,
-    onPlaceNext: handleAlchemyPlaceNext,
-    onClear: handleAlchemyClear,
-    onMix: handleAlchemyMix,
-    onClaim: handleAlchemyClaim,
-  });
-  renderShrines(boardEl, state, handleOffer, handleShrineClick);
+  renderInventoryPanel();
+  renderAlchemyPanel();
+  renderShrines(
+    boardEl,
+    state,
+    handleOffer,
+    handleShrineClick,
+    pendingBlessingVisualShrineIds,
+  );
 }
 
 // Keep #app scroll stable across harvest renders (avoids jump during fly).
@@ -133,6 +172,9 @@ function handlePlotClick(plotId) {
   if (!plot || plot.locked || unlockingPlotIds.has(plotId)) return;
   if (wateringPlotIds.has(plotId)) return;
   if (critterFlyingPlotIds.has(plotId)) return;
+  if (tanukiArrivingPlotIds.has(plotId)) return;
+  if (tanukiLeavingPlotIds.has(plotId)) return;
+  if (isPlotNapped(state, plotId)) return;
 
   if (!plot.crop) {
     const plotEl = gridEl.querySelector(`[data-plot-id="${plotId}"]`);
@@ -261,7 +303,12 @@ function handleUnlockAnimationEnd() {
 
 function handleOffer(shrineId, cropId) {
   const result = offerCrop(state, shrineId, cropId);
-  if (!result) return;
+  if (!result) {
+    // Allowlist rejects set game text; re-render so the message shows.
+    save(state);
+    render();
+    return;
+  }
 
   for (const plotId of result.unlockedPlotIds) {
     unlockingPlotIds.add(plotId);
@@ -269,6 +316,32 @@ function handleOffer(shrineId, cropId) {
 
   save(state);
   render();
+}
+
+function handleDeskVisitorClick(visitorId) {
+  if (!visitorId || deskGiftingVisitorIds.has(visitorId)) return;
+
+  const item = inventoryEl.querySelector(
+    `[data-desk-visitor-id="${visitorId}"]`,
+  );
+  if (!item) return;
+
+  deskGiftingVisitorIds.add(visitorId);
+  // Sparks while firefly still occupies the slot; gift lands on complete.
+  playDeskGiftSparks({
+    targetEl: item,
+    onComplete: () => {
+      const result = welcomeDeskVisitor(state, visitorId);
+      deskGiftingVisitorIds.delete(visitorId);
+      save(state);
+      render();
+      if (typeof result?.slotIndex === 'number') {
+        pulseInventorySlot(inventoryEl, result.slotIndex);
+      } else if (result?.cropId) {
+        pulseInventoryItem(inventoryEl, result.cropId);
+      }
+    },
+  });
 }
 
 function handleShrineClick(shrineId) {
@@ -298,10 +371,33 @@ function handleAlchemyClear(slot) {
   if (cropId) pulseInventoryItem(inventoryEl, cropId);
 }
 
+function alchemyPairCanMix() {
+  return Boolean(
+    findAlchemyResult(
+      getHeldCropId(state.alchemy?.slotA ?? null),
+      getHeldCropId(state.alchemy?.slotB ?? null),
+    ),
+  );
+}
+
 function handleAlchemyMix() {
-  if (!mixAlchemy(state)) return;
-  save(state);
-  render();
+  if (alchemyRitualPlaying) return;
+  if (!alchemyPairCanMix()) return;
+
+  alchemyRitualPlaying = true;
+  playAlchemyMixGrind(alchemyEl, {
+    onGrindDone: ({ fromRect }) => {
+      if (!mixAlchemy(state)) {
+        alchemyRitualPlaying = false;
+        render();
+        return;
+      }
+      save(state);
+      alchemyRitualPlaying = false;
+      renderAlchemyPanel();
+      playAlchemyResultReveal(alchemyEl, { fromRect });
+    },
+  });
 }
 
 function handleAlchemyClaim() {
@@ -338,12 +434,6 @@ function handleDragonTempleClear(slotIndex) {
   if (cropId) pulseInventoryItem(inventoryEl, cropId);
 }
 
-function handleDragonTempleBurn() {
-  if (!burnDragonTemple(state)) return;
-  save(state);
-  render();
-}
-
 function handleDragonTempleBurnComplete() {
   if (!completeDragonTempleBurn(state)) return;
   save(state);
@@ -362,7 +452,7 @@ function handleDragonTempleBurnComplete() {
 }
 
 function playTempleWinPrize() {
-  // Grant shrine progress immediately so a refresh mid-animation cannot lose it.
+  // Grant blessing uses immediately so a refresh mid-animation cannot lose them.
   const claim = claimTempleWinReward(state);
   if (!claim) return;
 
@@ -371,27 +461,70 @@ function playTempleWinPrize() {
   }
 
   save(state);
-  render();
 
   const { shrineId, maxed } = claim;
+  // Defer glow only for a fresh blessing; keep an existing glow while stacking.
+  if (
+    !maxed &&
+    getDragonBonusOfferings(state, shrineId) <=
+      DRAGON_TEMPLE.rewardBonusOfferings
+  ) {
+    pendingBlessingVisualShrineIds.add(shrineId);
+  }
+  render();
+
   const shrineEl = boardEl.querySelector(`#shrine-${shrineId}`);
   const iconEl = shrineEl?.querySelector('.shrine__icon');
-  if (!iconEl) return;
+  if (!iconEl) {
+    pendingBlessingVisualShrineIds.delete(shrineId);
+    render();
+    return;
+  }
 
   playTempleRewardSparks({
     sourceEl: dragonTempleEl,
     targetIconEl: iconEl,
     onComplete: () => {
-      if (maxed) return;
+      pendingBlessingVisualShrineIds.delete(shrineId);
+      render();
+    },
+  });
+}
 
-      // Icon may have been rebuilt by an intervening render.
-      const pulseTarget =
-        boardEl.querySelector(`#shrine-${shrineId} .shrine__icon`) ?? iconEl;
+function beginTanukiArrive(plotId) {
+  if (tanukiArrivingPlotIds.has(plotId) || tanukiLeavingPlotIds.has(plotId)) {
+    return;
+  }
+  tanukiArrivingPlotIds.add(plotId);
+  renderFarm();
 
-      pulseShrineIcon(pulseTarget, () => {
-        // Progress already applied in claimTempleWinReward; pulse is visual only.
-        render();
-      });
+  const plotEl = gridEl.querySelector(`[data-plot-id="${plotId}"]`);
+  const targetRect = plotEl?.getBoundingClientRect();
+
+  playTanukiArrive({
+    targetRect,
+    onComplete: () => {
+      tanukiArrivingPlotIds.delete(plotId);
+      renderFarm();
+    },
+  });
+}
+
+function beginTanukiLeave(plotId) {
+  if (tanukiLeavingPlotIds.has(plotId)) return;
+  tanukiLeavingPlotIds.add(plotId);
+  renderFarm();
+
+  const plotEl = gridEl.querySelector(`[data-plot-id="${plotId}"]`);
+  const sourceRect = plotEl?.getBoundingClientRect();
+
+  playTanukiLeave({
+    sourceRect,
+    onComplete: () => {
+      tanukiLeavingPlotIds.delete(plotId);
+      clearPlotNapper(state);
+      save(state);
+      renderFarm();
     },
   });
 }
@@ -399,11 +532,32 @@ function playTempleWinPrize() {
 function tick() {
   const now = Date.now();
   const spoiled = tickCropDecay(state, now);
-  if (Object.keys(spoiled).length > 0) {
+  let dirty = Object.keys(spoiled).length > 0;
+
+  if (reconcileDeskVisitors(state, now)) {
+    dirty = true;
+  }
+
+  const napperResult = reconcilePlotNapper(state, now);
+  if (napperResult.changed) {
+    dirty = true;
+  }
+
+  if (dirty) {
     save(state);
   }
 
-  if (tickDragonTemple(state, now)) {
+  if (napperResult.arrivedPlotId != null) {
+    beginTanukiArrive(napperResult.arrivedPlotId);
+  } else if (
+    state.plotNapper?.status === 'waking' &&
+    typeof state.plotNapper.plotId === 'number' &&
+    !tanukiLeavingPlotIds.has(state.plotNapper.plotId)
+  ) {
+    beginTanukiLeave(state.plotNapper.plotId);
+  }
+
+  if (tickDragonTemple(state)) {
     save(state);
     render();
     return;
@@ -411,18 +565,20 @@ function tick() {
 
   renderFarm();
   // Refresh perishable UI every tick so urgency tints track wall-clock time.
-  renderInventory(inventoryEl, state);
-  renderAlchemy(alchemyEl, state, {
-    onPlace: handleAlchemyPlace,
-    onPlaceNext: handleAlchemyPlaceNext,
-    onClear: handleAlchemyClear,
-    onMix: handleAlchemyMix,
-    onClaim: handleAlchemyClaim,
-  });
+  renderInventoryPanel();
+  // In-place alchemy update keeps the Mix ready animation running (same
+  // pattern as updateDragonTempleLive for the temple ready-edge).
+  // Skip while the Mix ritual owns the board DOM.
+  if (!alchemyRitualPlaying) {
+    if (!updateAlchemyLive(alchemyEl, state)) {
+      renderAlchemyPanel();
+    }
+  }
   if (state.dragonTemple?.active) {
     if (state.dragonTemple.burning) {
-      updateDragonTempleTimer(dragonTempleEl, state);
-    } else {
+      updateDragonTempleWrath(dragonTempleEl, state);
+    } else if (!updateDragonTempleLive(dragonTempleEl, state)) {
+      // Slot set changed (e.g. spoil) — rebuild; otherwise keep edge animation.
       renderDragonTemple(dragonTempleEl, state, dragonTempleHandlers);
     }
   }
@@ -430,8 +586,12 @@ function tick() {
 
 function handleResetGame() {
   openResetConfirm(() => {
+    alchemyRitualPlaying = false;
     resetState(state);
     unlockingPlotIds.clear();
+    deskGiftingVisitorIds.clear();
+    tanukiArrivingPlotIds.clear();
+    tanukiLeavingPlotIds.clear();
     save(state);
     render();
   });

@@ -14,8 +14,11 @@ Facing (toward farm):
 
 ## Dragon Temple
 
-- `dragon_temple_rest.png` — sleeping dragon; five empty wall niches
-- `dragon_temple_awake.png` — awake dragon; same shrine body and niches
+- `dragon_temple_rest.png` — sleeping dragon on a short roof platform only
+- `dragon_temple_awake.png` — awake dragon; same roof stone
+  (roof base must stay pixel-identical; only the dragon changes)
+- Interactive demand slots are a DOM 1×4 holy farm-style board under the art
+  (farm_frame + brighter locked-plot tiles). No painted niches.
 
 ## Farm board textures
 

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <base href="../" />
+  <title>Mix ready state — real CSS</title>
+  <link rel="stylesheet" href="style.css?v=mix-nudge" />
+  <style>
+    /* Preview chrome only. No .alchemy__mix overrides: this page renders the
+       real shipped classes so clipping/animation issues show up honestly. */
+    html, body { height: auto; overflow: auto; }
+    body {
+      background: linear-gradient(180deg, #d8f0e0 0%, #b8dcc8 50%, #9ecab0 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.5rem 1rem 3rem;
+      font-family: 'Quicksand', 'Nunito', system-ui, sans-serif;
+      color: var(--ink);
+    }
+    #app { max-height: none; max-width: none; overflow: visible; padding: 0; }
+    .caption {
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em;
+      text-transform: uppercase; color: var(--muted); align-self: flex-start;
+    }
+    .block { display: flex; flex-direction: column; gap: 0.35rem; }
+    .mock-slot-icon { width: 70%; height: 70%; object-fit: contain; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="block">
+      <div class="caption">Ready</div>
+      <div class="player-desk" id="desk-ready">
+        <aside class="inventory"><ul class="inventory__list"></ul></aside>
+        <div class="player-desk__work">
+          <aside class="alchemy">
+            <div class="alchemy__row">
+              <div class="alchemy__slot alchemy__slot--filled">
+                <span class="alchemy__slot-icon">
+                  <img class="game-icon mock-slot-icon" src="assets/icons/wheat.png" alt="" />
+                </span>
+              </div>
+              <button type="button" class="alchemy__mix alchemy__mix--ready" aria-label="Mix" title="Mix">
+                <span class="alchemy__mix-art">
+                  <img class="game-icon game-icon--mix" src="assets/icons/mortar.png" alt="" draggable="false" />
+                </span>
+              </button>
+              <div class="alchemy__slot alchemy__slot--filled">
+                <span class="alchemy__slot-icon">
+                  <img class="game-icon mock-slot-icon" src="assets/icons/turnip.png" alt="" />
+                </span>
+              </div>
+            </div>
+          </aside>
+        </div>
+        <button type="button" class="discovery-log-btn" aria-label="Discovery Log"></button>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="caption">Quiet</div>
+      <div class="player-desk" id="desk-quiet">
+        <aside class="inventory"><ul class="inventory__list"></ul></aside>
+        <div class="player-desk__work">
+          <aside class="alchemy">
+            <div class="alchemy__row">
+              <div class="alchemy__slot alchemy__slot--empty">Drop</div>
+              <button type="button" class="alchemy__mix alchemy__mix--faded" disabled aria-label="Mix">
+                <span class="alchemy__mix-art">
+                  <img class="game-icon game-icon--mix" src="assets/icons/mortar.png" alt="" draggable="false" />
+                </span>
+              </button>
+              <div class="alchemy__slot alchemy__slot--empty">Drop</div>
+            </div>
+          </aside>
+        </div>
+        <button type="button" class="discovery-log-btn" aria-label="Discovery Log"></button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    const SHELF = ['wheat', 'turnip', 'blueberry', null, null, null];
+    for (const list of document.querySelectorAll('.inventory__list')) {
+      SHELF.forEach((cropId, i) => {
+        const li = document.createElement('li');
+        li.dataset.slotIndex = String(i);
+        if (!cropId) {
+          li.className = 'inventory__item inventory__item--empty';
+          li.setAttribute('aria-hidden', 'true');
+        } else {
+          li.className = 'inventory__item';
+          const icon = document.createElement('span');
+          icon.className = 'inventory__icon';
+          const img = document.createElement('img');
+          img.className = 'game-icon';
+          img.src = `assets/icons/${cropId}.png`;
+          img.alt = '';
+          icon.appendChild(img);
+          const count = document.createElement('span');
+          count.className = 'inventory__count';
+          count.textContent = '3';
+          li.append(icon, count);
+        }
+        list.appendChild(li);
+      });
+    }
+  </script>
+</body>
+</html>
