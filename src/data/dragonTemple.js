@@ -1,9 +1,9 @@
-// Dragon Temple event config. Matched tribute + harvest-fueled wrath.
+// Dragon Temple event config. Matched tribute + plant-fueled wrath.
 // See docs/GAME_DESIGN.md → Dragon Temple.
 export const DRAGON_TEMPLE = {
   slotCount: 4, // demand board slots; auto-burn when all match
   wrathMax: 8, // wrath at or above this loses the event
-  wrathPerHarvest: 1, // added per successful plot harvest while awake
+  wrathPerPlant: 1, // added per successful plant while awake
   wrathPerShrineOffer: 3, // added when offering to an animal shrine while awake
   burnPulseMs: 1200, // half of ready-crop pulse (2.4s); one fire pulse
   burnPulseCount: 3, // fire pulses before slotted crops disappear

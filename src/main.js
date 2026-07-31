@@ -50,6 +50,7 @@ import { installStageFit } from './ui/stageFit.js';
 
 const RENDER_INTERVAL_MS = 1000;
 const WATERING_ANIM_MS = 1625;
+const UPROOT_ANIM_MS = 1000;
 
 const state = load();
 const unlockingPlotIds = new Set();
@@ -57,6 +58,7 @@ const wateringPlotIds = new Set();
 const critterFlyingPlotIds = new Set();
 const tanukiArrivingPlotIds = new Set();
 const tanukiLeavingPlotIds = new Set();
+const uprootingPlotIds = new Set();
 // Shrine ids whose Dragon-bonus glow is deferred until sparks land.
 const pendingBlessingVisualShrineIds = new Set();
 
@@ -91,6 +93,7 @@ function renderFarm() {
     tanukiLeavingPlotIds,
     handlePlotCropDrop,
     handleUprootHold,
+    uprootingPlotIds,
   );
 }
 
@@ -114,6 +117,7 @@ function handlePlotClick(plotId) {
   if (critterFlyingPlotIds.has(plotId)) return;
   if (tanukiArrivingPlotIds.has(plotId)) return;
   if (tanukiLeavingPlotIds.has(plotId)) return;
+  if (uprootingPlotIds.has(plotId)) return;
   if (isPlotNapped(state, plotId)) return;
 
   if (!plot.crop) {
@@ -189,13 +193,24 @@ function handleUprootHold(plotId) {
   if (critterFlyingPlotIds.has(plotId)) return;
   if (tanukiArrivingPlotIds.has(plotId)) return;
   if (tanukiLeavingPlotIds.has(plotId)) return;
+  if (uprootingPlotIds.has(plotId)) return;
   if (isPlotNapped(state, plotId)) return;
 
   const plotEl = gridEl.querySelector(`[data-plot-id="${plotId}"]`);
   openUprootConfirm(plotEl, () => {
-    if (!uprootCrop(state, plotId)) return;
-    save(state);
-    render();
+    if (!plot.crop || uprootingPlotIds.has(plotId)) return;
+    uprootingPlotIds.add(plotId);
+    renderFarm();
+    window.setTimeout(() => {
+      if (!uprootingPlotIds.has(plotId)) return;
+      uprootingPlotIds.delete(plotId);
+      if (!uprootCrop(state, plotId)) {
+        render();
+        return;
+      }
+      save(state);
+      render();
+    }, UPROOT_ANIM_MS);
   });
 }
 
@@ -436,6 +451,7 @@ function handleResetGame() {
     unlockingPlotIds.clear();
     tanukiArrivingPlotIds.clear();
     tanukiLeavingPlotIds.clear();
+    uprootingPlotIds.clear();
     save(state);
     render();
   });

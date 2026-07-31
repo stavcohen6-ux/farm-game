@@ -9,6 +9,7 @@ import {
   needsWater,
   hasCritterVisit,
   isPlotNapped,
+  getMixBridgeSides,
 } from '../state/gameState.js';
 import { CROP_DRAG_TYPE, parseCropDragData } from './shrinesPanel.js';
 import { wireReadyCropPointerDrag } from './plotPointerDrag.js';
@@ -38,6 +39,9 @@ let suppressPlotClickAfterDrag = false;
 // `tanukiArrivingPlotIds` / `tanukiLeavingPlotIds` hide the in-tile napper
 // while the fixed overlay plays arrive / leave.
 //
+// `uprootingPlotIds` holds plots mid vanish animation after uproot confirm;
+// the crop stays in state until the animation finishes.
+//
 // `onFlowerPlot(plotId, cropId)` — drop a plantable on an empty plot to flower it.
 // `onPlotCropDrop({ cropId, fromPlotId, clientX, clientY })` — pointer drag end.
 // `onUprootHold(plotId)` — long-press on an occupied plot (confirm separately).
@@ -55,6 +59,7 @@ export function renderGrid(
   tanukiLeavingPlotIds = new Set(),
   onPlotCropDrop = null,
   onUprootHold = null,
+  uprootingPlotIds = new Set(),
 ) {
   container.style.gridTemplateColumns = `repeat(${BOARD_COLS}, var(--tile))`;
   container.style.gridTemplateRows = `repeat(${BOARD_ROWS}, var(--tile))`;
@@ -72,6 +77,7 @@ export function renderGrid(
     const critterFlying = critterFlyingPlotIds.has(plot.id);
     const napArriving = tanukiArrivingPlotIds.has(plot.id);
     const napLeaving = tanukiLeavingPlotIds.has(plot.id);
+    const uprooting = uprootingPlotIds.has(plot.id);
     const key = plotKey(
       plot,
       state,
@@ -81,6 +87,7 @@ export function renderGrid(
       critterFlying,
       napArriving,
       napLeaving,
+      uprooting,
     );
     const existing = existingById.get(plot.id);
     if (existing && existing.dataset.plotKey === key) {
@@ -100,6 +107,7 @@ export function renderGrid(
         critterFlying,
         napArriving,
         napLeaving,
+        uprooting,
       );
       if (unlocking && onUnlockAnimationEnd) {
         wireUnlockAnimation(el, plot.id, unlockingPlotIds, onUnlockAnimationEnd);
@@ -130,8 +138,9 @@ export function renderGrid(
       onPlotCropDrop?.(payload);
     },
     onUprootHold,
+    uprootingPlotIds,
   );
-  wireGrowingPlotUprootHold(container, state, now, onUprootHold);
+  wireGrowingPlotUprootHold(container, state, now, onUprootHold, uprootingPlotIds);
 }
 
 function applyPlotPlacement(el, plotId) {
@@ -208,6 +217,7 @@ function plotKey(
   critterFlying,
   napArriving,
   napLeaving,
+  uprooting,
 ) {
   const flower = plot.flowered ? 'flowered' : 'plain';
   if (plot.locked || unlocking) return unlocking ? 'unlocking' : 'locked';
@@ -222,10 +232,14 @@ function plotKey(
   }
   const crop = getCrop(plot.crop.cropId);
   if (!crop) return `empty:${flower}`;
+  if (uprooting) return `uprooting:${crop.id}:${flower}`;
   if (watering) return `growing:${crop.id}:watering:${flower}`;
   if (critterFlying) return `growing:${crop.id}:critter-fly:${flower}`;
   const ready = isReady(plot, now);
-  if (ready) return `ready:${crop.id}:${flower}`;
+  if (ready) {
+    const mix = getMixBridgeSides(state, plot.id, now).join('');
+    return `ready:${crop.id}:${flower}:mix:${mix}`;
+  }
   const thirsty = needsWater(plot, now);
   const critter = hasCritterVisit(plot, now);
   const watered = plot.crop.watered === true;
@@ -341,6 +355,7 @@ function renderPlot(
   critterFlying,
   napArriving,
   napLeaving,
+  uprooting,
 ) {
   const el = document.createElement('div');
   el.dataset.plotId = plot.id;
@@ -383,6 +398,16 @@ function renderPlot(
     return el;
   }
 
+  // Mid-uproot: icon only, shrinks into tile center (no cues / ready chrome).
+  if (uprooting) {
+    el.classList.add('plot--uprooting');
+    const icon = document.createElement('span');
+    icon.className = 'plot__icon';
+    setCropIcon(icon, crop);
+    el.appendChild(icon);
+    return el;
+  }
+
   // Mid-water: keep dry patch + sprinkle; defer ready styling until anim ends.
   const ready = !watering && !critterFlying && isReady(plot, now);
   const thirsty = watering || (!ready && needsWater(plot, now));
@@ -420,6 +445,10 @@ function renderPlot(
     appendWaterSprinkle(el);
   }
 
+  if (ready) {
+    appendMixBridges(el, getMixBridgeSides(state, plot.id, now));
+  }
+
   if (!ready) {
     const elapsed = now - plot.crop.plantedAt;
     const growthMs =
@@ -437,4 +466,13 @@ function renderPlot(
   }
 
   return el;
+}
+
+function appendMixBridges(el, sides) {
+  for (const side of sides) {
+    const bridge = document.createElement('span');
+    bridge.className = `plot__mix-bridge plot__mix-bridge--${side}`;
+    bridge.setAttribute('aria-hidden', 'true');
+    el.appendChild(bridge);
+  }
 }

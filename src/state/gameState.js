@@ -259,6 +259,37 @@ export function areAdjacentPlots(plotIdA, plotIdB) {
 }
 
 /**
+ * Idle mix-hint edges owned by this plot (east/south only so each shared
+ * seam is drawn once). Empty unless this plot and that neighbor are both
+ * ready and match an alchemy recipe.
+ */
+export function getMixBridgeSides(state, plotId, now = Date.now()) {
+  const plot = state.plots.find((p) => p.id === plotId);
+  if (!plot?.crop || plot.locked || !isReady(plot, now)) return [];
+  if (isPlotNapped(state, plotId)) return [];
+
+  const layout = getPlotLayout(plotId);
+  if (!layout) return [];
+
+  const sides = [];
+  for (const [side, dRow, dCol] of [
+    ['e', 0, 1],
+    ['s', 1, 0],
+  ]) {
+    const neighborLayout = FARM_PLOTS.find(
+      (p) => p.row === layout.row + dRow && p.col === layout.col + dCol,
+    );
+    if (!neighborLayout) continue;
+    const neighbor = state.plots.find((p) => p.id === neighborLayout.id);
+    if (!neighbor?.crop || neighbor.locked || !isReady(neighbor, now)) continue;
+    if (isPlotNapped(state, neighbor.id)) continue;
+    if (!findAlchemyResult(plot.crop.cropId, neighbor.crop.cropId)) continue;
+    sides.push(side);
+  }
+  return sides;
+}
+
+/**
  * Remove a ready crop from a plot. Does not touch inventory.
  * Returns `{ cropId, plotId }` or null.
  */
@@ -452,6 +483,8 @@ export function plantCrop(state, plotId, cropId) {
     critterWelcomed: critter.critterWelcomed,
     critterVisitAt: critter.critterVisitAt,
   };
+
+  addDragonTempleWrath(state, DRAGON_TEMPLE.wrathPerPlant);
 }
 
 // Optional water: shortens remaining growth by crop.waterTimeSavedSeconds.
@@ -577,9 +610,6 @@ export function harvestPlot(state, plotId) {
   if (bonus) {
     pendingIds.push(enqueuePendingHarvest(state, cropId, 1));
   }
-
-  // One harvest action = one wrath tick; Tiger bonus crop does not add more.
-  addDragonTempleWrath(state, DRAGON_TEMPLE.wrathPerHarvest);
 
   maybeSchedulePlotNapperFromHarvest(state);
 

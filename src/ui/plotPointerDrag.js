@@ -25,11 +25,14 @@ export function wireReadyCropPointerDrag(
   now,
   onDrop,
   onLongPress = null,
+  uprootingPlotIds = new Set(),
 ) {
   for (const el of container.querySelectorAll('[data-plot-id]')) {
     const plotId = Number(el.dataset.plotId);
     const plot = state.plots.find((p) => p.id === plotId);
-    const ready = Boolean(plot?.crop && isReady(plot, now));
+    const ready =
+      Boolean(plot?.crop && isReady(plot, now)) &&
+      !uprootingPlotIds.has(plotId);
 
     el.classList.remove('plot--drag-over', 'plot--dragging');
     el.draggable = false;

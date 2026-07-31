@@ -1,6 +1,7 @@
 import { CROPS, getCrop } from '../data/crops.js';
 import { getAlchemyRecipeByResultId } from '../data/alchemyRecipes.js';
 import { SHRINES } from '../data/shrines.js';
+import { bindCropTip, hideCropTip } from './cropTip.js';
 import { FIELD_NOTES_TITLE } from './gameTextPanel.js';
 import { logShrineIconSrc, setCropIcon, setIcon, UI_ICONS } from './icon.js';
 
@@ -59,7 +60,7 @@ export function openDiscoveryLog(state, onReset = null) {
   if (entries.length === 0) {
     const empty = document.createElement('p');
     empty.className = 'discovery-log__empty';
-    empty.textContent = 'Grow crops to ready to fill your log';
+    empty.textContent = 'Grow and explore new crops to fill your log';
     modal.appendChild(empty);
   } else {
     const plantables = entries.filter((crop) => crop.plantable);
@@ -83,7 +84,7 @@ export function openDiscoveryLog(state, onReset = null) {
     const resetBtn = document.createElement('button');
     resetBtn.type = 'button';
     resetBtn.className = 'reset-game';
-    resetBtn.textContent = 'Reset';
+    resetBtn.textContent = 'Reset Game';
     resetBtn.addEventListener('click', (event) => {
       event.stopPropagation();
       close();
@@ -101,6 +102,7 @@ export function openDiscoveryLog(state, onReset = null) {
   });
 
   function close() {
+    hideCropTip();
     overlay.remove();
   }
 }
@@ -236,9 +238,11 @@ function renderShrineValues(container, crop) {
 }
 
 function recipeIcon(cropId) {
+  const crop = getCrop(cropId);
   const icon = document.createElement('span');
   icon.className = 'discovery-log__origin-icon';
-  setCropIcon(icon, getCrop(cropId), 'game-icon game-icon--log-ingredient');
+  setCropIcon(icon, crop, 'game-icon game-icon--log-ingredient');
+  if (crop?.name) bindCropTip(icon, crop.name);
   return icon;
 }
 

@@ -1,31 +1,8 @@
 import { getCrop } from '../data/crops.js';
 import { getShrine } from '../data/shrines.js';
 import { getActiveShrineTier, isShrineMaxed } from '../state/gameState.js';
+import { bindCropTip, hideCropTip } from './cropTip.js';
 import { setCropIcon, setIcon, logShrineIconSrc } from './icon.js';
-
-let cropTipEl = null;
-
-function ensureCropTip() {
-  if (cropTipEl) return cropTipEl;
-  cropTipEl = document.createElement('div');
-  cropTipEl.className = 'shrine-crop-tip';
-  cropTipEl.hidden = true;
-  document.body.appendChild(cropTipEl);
-  return cropTipEl;
-}
-
-function showCropTip(anchor, name) {
-  const tip = ensureCropTip();
-  tip.textContent = name;
-  tip.hidden = false;
-  const rect = anchor.getBoundingClientRect();
-  tip.style.left = `${rect.left + rect.width / 2}px`;
-  tip.style.top = `${rect.bottom + 6}px`;
-}
-
-function hideCropTip() {
-  if (cropTipEl) cropTipEl.hidden = true;
-}
 
 // Shows a centered modal listing every tier for a shrine: name, effect,
 // accepted crops, and progress (Complete / live / Locked). Click outside
@@ -96,8 +73,7 @@ function appendAcceptedIcons(parent, tier) {
     const icon = document.createElement('span');
     icon.className = 'shrine-detail__accepts-icon';
     setCropIcon(icon, crop, 'game-icon game-icon--inline');
-    icon.addEventListener('pointerenter', () => showCropTip(icon, crop.name));
-    icon.addEventListener('pointerleave', hideCropTip);
+    bindCropTip(icon, crop.name);
     parent.appendChild(icon);
   });
 }

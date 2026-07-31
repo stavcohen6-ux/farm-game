@@ -76,6 +76,9 @@ body {
   --frame-pad: 14px;
   --grove-pad-x: 0.75rem;
   --grove-pad-y: 0.55rem;
+  --grove-gap: 0.65rem;
+  --shrine-nudge-top: 18px;
+  --shrine-nudge-bottom: 10px;
   --radius: 0.75rem;
   --dock-pad: 0.75rem;
   --inventory-slots-inner: calc(6 * var(--tile) + 5 * var(--gap));
@@ -90,7 +93,7 @@ body {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 100vw;
+  max-width: 100%;
   height: 100dvh;
   max-height: 100dvh;
 
@@ -123,7 +126,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.65rem;
+  gap: var(--grove-gap, 0.65rem);
   padding: var(--grove-pad-y, 0.55rem) var(--grove-pad-x, 0.75rem) 0.75rem;
   border-radius: 1.25rem;
   overflow: visible;
@@ -771,7 +774,9 @@ body {
       (var(--tile) - var(--shrine-col)) / 2 - var(--shrine-bar-width) -
         var(--shrine-bar-gap)
     ),
-    calc((var(--tile) - var(--shrine-figure)) / 2 - 18px)
+    calc(
+      (var(--tile) - var(--shrine-figure)) / 2 - var(--shrine-nudge-top, 18px)
+    )
   );
 }
 
@@ -783,7 +788,9 @@ body {
   right: auto;
   transform: translate(
     calc((var(--tile) - var(--shrine-col)) / 2),
-    calc((var(--tile) - var(--shrine-figure)) / 2 - 18px)
+    calc(
+      (var(--tile) - var(--shrine-figure)) / 2 - var(--shrine-nudge-top, 18px)
+    )
   );
 }
 
@@ -798,7 +805,10 @@ body {
       (var(--tile) - var(--shrine-col)) / 2 - var(--shrine-bar-width) -
         var(--shrine-bar-gap)
     ),
-    calc((var(--tile) - var(--shrine-figure)) / 2 + 10px)
+    calc(
+      (var(--tile) - var(--shrine-figure)) / 2 +
+        var(--shrine-nudge-bottom, 10px)
+    )
   );
 }
 
@@ -813,7 +823,10 @@ body {
   right: auto;
   transform: translate(
     calc((var(--tile) - var(--shrine-col)) / 2),
-    calc((var(--tile) - var(--shrine-figure)) / 2 + 10px)
+    calc(
+      (var(--tile) - var(--shrine-figure)) / 2 +
+        var(--shrine-nudge-bottom, 10px)
+    )
   );
 }
 
@@ -1035,7 +1048,7 @@ body {
   pointer-events: auto;
 }
 
-.shrine-crop-tip {
+.crop-tip {
   position: fixed;
   transform: translateX(-50%);
   z-index: 40;
@@ -1227,6 +1240,68 @@ body {
 
 .plot--dragging {
   opacity: 0.55;
+}
+
+/* Idle mix hint: moss seam between recipe-valid ready neighbors.
+   Drawn once per pair (east/south owner). Hidden while any crop is dragging.
+   Length pulse via transform (no layout clipping) + breathing moss glow. */
+.plot__mix-bridge {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: 2px;
+  background: var(--moss);
+  transform-origin: center center;
+  opacity: 0.9;
+}
+
+.plot__mix-bridge--e {
+  top: 18%;
+  bottom: 18%;
+  width: 5px;
+  right: calc(-0.5 * var(--plot-gap) - 2.5px);
+  animation: mix-bridge-pulse-e 2.6s ease-in-out infinite;
+}
+
+.plot__mix-bridge--s {
+  left: 18%;
+  right: 18%;
+  height: 5px;
+  bottom: calc(-0.5 * var(--plot-gap) - 2.5px);
+  animation: mix-bridge-pulse-s 2.6s ease-in-out infinite;
+}
+
+.farm-grid:has(.plot--dragging) .plot__mix-bridge {
+  opacity: 0;
+  animation: none;
+}
+
+@keyframes mix-bridge-pulse-e {
+  0%,
+  100% {
+    transform: scaleY(0.7);
+    box-shadow: 0 0 4px rgba(95, 154, 114, 0.4);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scaleY(1.12);
+    box-shadow: 0 0 12px rgba(95, 154, 114, 0.85);
+    opacity: 1;
+  }
+}
+
+@keyframes mix-bridge-pulse-s {
+  0%,
+  100% {
+    transform: scaleX(0.7);
+    box-shadow: 0 0 4px rgba(95, 154, 114, 0.4);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scaleX(1.12);
+    box-shadow: 0 0 12px rgba(95, 154, 114, 0.85);
+    opacity: 1;
+  }
 }
 
 .plot-drag-ghost {
@@ -2299,6 +2374,10 @@ body {
   line-height: 0;
 }
 
+.discovery-log__origin-icon .game-icon {
+  pointer-events: auto;
+}
+
 .discovery-log__recipe-op {
   color: var(--muted);
   font-size: 0.8rem;
@@ -2762,52 +2841,112 @@ body {
 
 .uproot-confirm {
   position: fixed;
-  min-width: 200px;
-  max-width: min(280px, calc(100vw - 16px));
-  padding: 1.25rem 1.35rem;
+  min-width: 220px;
+  max-width: min(300px, calc(100vw - 16px));
+  padding: 0.85rem;
   z-index: 21;
 }
 
-.uproot-confirm__message {
-  font-size: 1.125rem;
-  font-weight: 700;
-  margin: 0 0 1rem;
-  text-align: center;
-  line-height: 1.3;
-}
-
-.uproot-confirm__actions {
+.uproot-confirm__track {
+  position: relative;
   display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 0.75rem;
-}
-
-.uproot-confirm__btn {
+  min-height: 48px;
+  width: 240px;
+  max-width: 100%;
+  overflow: hidden;
   border: 2px solid #b5d9c0;
-  border-radius: 10px;
-  padding: 0.65rem 1.35rem;
-  min-height: 44px;
-  font: inherit;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
+  border-radius: 999px;
   background: var(--parchment);
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+}
+
+.uproot-confirm__track--dragging {
+  cursor: grabbing;
+}
+
+.uproot-confirm__fill {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 0%;
+  border-radius: inherit;
+  background: linear-gradient(270deg, #dce8c8, #c8d9ae);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.uproot-confirm__shimmer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(255, 248, 220, 0.75) 50%,
+    transparent 60%,
+    transparent 100%
+  );
+  background-size: 220% 100%;
+  animation: uproot-shimmer 1.6s linear infinite;
+}
+
+.uproot-confirm__track--dragging .uproot-confirm__shimmer {
+  animation-play-state: paused;
+  opacity: 0.35;
+}
+
+.uproot-confirm__label {
+  position: relative;
+  z-index: 2;
+  font-size: 1.05rem;
+  font-weight: 700;
   color: var(--ink);
-  transition: transform 0.12s ease, background 0.12s ease;
+  letter-spacing: 0.04em;
+  pointer-events: none;
 }
 
-.uproot-confirm__btn:hover {
-  background: #e2f2e6;
-  transform: translateY(-1px);
+.uproot-confirm__thumb {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  bottom: 4px;
+  width: 40px;
+  border-radius: 999px;
+  z-index: 3;
+  background: linear-gradient(180deg, #e8f0d8, #c8d9ae);
+  border: 2px solid #a8c088;
+  box-shadow: 0 1px 3px rgba(42, 90, 60, 0.22);
+  pointer-events: none;
 }
 
-.uproot-confirm__btn--yes {
-  background: linear-gradient(180deg, #dce8c8, #c8d9ae);
-  border-color: #a8c088;
+.uproot-confirm__thumb::after {
+  content: '‹';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1;
 }
 
-.uproot-confirm__btn--yes:hover {
-  background: linear-gradient(180deg, #d2e0bc, #bdd1a2);
+@keyframes uproot-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
 }
 
 .plot--uproot-hold {
@@ -2832,5 +2971,25 @@ body {
     opacity: 1;
     transform: scale(1);
     border-color: rgba(212, 176, 80, 0.95);
+  }
+}
+
+.plot--uprooting {
+  pointer-events: none;
+  cursor: default;
+}
+
+.plot--uprooting .plot__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center center;
+  animation: plot-uproot-vanish 1s ease-in forwards;
+}
+
+@keyframes plot-uproot-vanish {
+  to {
+    transform: scale(0);
+    opacity: 0;
   }
 }

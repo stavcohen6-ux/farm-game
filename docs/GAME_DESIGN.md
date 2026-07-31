@@ -332,6 +332,11 @@ Drag a ready crop to:
 - an **adjacent ready crop** (up/down/left/right only) — if the pair matches
   a recipe, mix immediately: source plot clears, result sits ready on the
   target plot; invalid pairs snap back with no change
+- Idle hint: when two orthogonally adjacent ready crops match a recipe, a
+  quiet moss seam appears on the shared plot edge (no badges or second ring).
+  The seam gently compresses and expands along the edge with a soft moss glow.
+  Seam hides while a ready crop is being dragged; valid drop targets still
+  use the moss drag-over outline.
 
 To discard a ready crop instead of offering or mixing, long-press to
 **Uproot** (see Uproot).
@@ -347,12 +352,17 @@ Players can clear an unwanted crop from the farm without offering it.
 - **Gesture:** Press and hold on the plot (~500ms). If the pointer moves past
   the existing ready-crop drag threshold (~8px), cancel the hold; ready crops
   keep press-and-move drag as today.
-- **Confirm:** Plot-anchored confirm overlay: **Uproot?** with confirm /
-  cancel. Large touch-friendly targets. No tool mode, no trash dock.
-  Optional subtle hold progress ring for discoverability (not hover-only).
-- **On confirm:** Clear the plot immediately. Free. No inventory grant, no
-  wrath, no shrine/temple progress, discovery unchanged. Cancel leaves the
-  crop as-is.
+- **Confirm:** Plot-anchored overlay with a swipe track labeled **Uproot**.
+  Swipe **right → left** across the track to confirm (about 80% of the
+  track). A looping light/shimmer runs right → left to hint the gesture.
+  Incomplete swipe snaps back. Tap/press anywhere outside the track closes
+  with no uproot. No Cancel/Uproot buttons, no tool mode, no trash dock.
+  Subtle hold progress ring on the plot while long-pressing.
+- **On confirm:** Plant shrinks into the tile center over ~1s, then the plot
+  clears and becomes plantable. Free. No inventory grant, no wrath, no
+  shrine/temple progress, discovery unchanged. Dismiss (tap outside the
+  track) leaves the crop as-is. Mid-vanish plots are ignored like other
+  mid-animation plots.
 - **Care cues:** Short tap still waters / welcomes first. Long-press is still
   allowed so a plant can be cleared without waiting out growth.
 - Copy uses **Uproot** (not delete / sell / trash).
@@ -377,8 +387,8 @@ reset confirm).
   `N` is the unique discovered union. No locked silhouettes; undiscovered
   content appears only as remaining count in that progress line.
 - Discovered items are the union of crops that have been **ready on a plot**
-  and successfully mixed alchemy results. Empty copy when none: “Grow crops
-  to ready to fill your log” (progress still shows `0 / M`).
+  and successfully mixed alchemy results. Empty copy when none: “Grow
+  and explore new crops to fill your log” (progress still shows `0 / M`).
 - Two sections when there is at least one discovery: **Harvested crops**
   (`plantable: true`) then **Alchemy mixes** (`plantable: false`). Omit a
   section if it has no discovered rows. Order within each section follows
@@ -405,7 +415,8 @@ reset confirm).
 Desk Mix UI remains **parked**. Live mixing is **on-plot**: drag one ready
 crop onto an orthogonally adjacent ready crop. Recipes in
 `src/data/alchemyRecipes.js` (order-independent). Instant mix; no Mix button.
-Result is ready on the drop target plot; source plot empties.
+Result is ready on the drop target plot; source plot empties. Matching ready
+pairs show a shared-edge moss accent while idle (see Harvesting).
 
 ### Recipes (current)
 | Inputs | Result | Icon |
@@ -542,11 +553,11 @@ apex: Wildroot)
 
 **Tiger — Fortune** (+1 offering chance when dragging a ready crop to a
 shrine; 20 / 30 / 45 / 60 = 155; apex: Solar Gourd)
-1. Young Tiger — +25% bonus crops — wheat, turnip
-2. Hunting Tiger — +50% bonus crops — blueberry, forest_bread, wildroot
-3. Golden Tiger — +75% bonus crops — moonflower, moonlit_loaf, moonroot,
+1. Young Tiger — 25% for a bonus crop — wheat, turnip
+2. Hunting Tiger — 50% for a bonus crop — blueberry, forest_bread, wildroot
+3. Golden Tiger — 75% for a bonus crop — moonflower, moonlit_loaf, moonroot,
    moonberry
-4. Spirit Tiger — +100% bonus crops — golden_pumpkin, sunfruit, golden_loaf,
+4. Spirit Tiger — 100% for a bonus crop — golden_pumpkin, sunfruit, golden_loaf,
    golden_bloom, solar_gourd
 
 Bonus: a second same-type offering applies immediately; a spark-fly VFX
@@ -555,7 +566,7 @@ arcs from the (now empty) plot to the shrine. No bonus on mix or temple.
 ## Dragon Temple
 Matched-tribute challenge above the farm plot grid (not including shrines).
 Not part of shrine progression — a separate challenge on the main screen.
-No wall-clock timer; lose via harvest-fueled wrath.
+No wall-clock timer; lose via plant-fueled wrath.
 
 | Layer | Path |
 |-------|------|
@@ -570,7 +581,7 @@ No wall-clock timer; lose via harvest-fueled wrath.
 |-----|---------|---------|
 | `slotCount` | Demand board slots to match before auto-burn | 4 |
 | `wrathMax` | Wrath at or above this loses the event | 8 |
-| `wrathPerHarvest` | Wrath added per successful plot harvest | 1 |
+| `wrathPerPlant` | Wrath added per successful plant while awake | 1 |
 | `wrathPerShrineOffer` | Wrath added when offering to an animal shrine while awake | 3 |
 | `burnPulseMs` | Length of one ember-wash pulse | 1.2s (half ready-crop pulse) |
 | `burnPulseCount` | Ember-wash pulses before crops clear | 3 |
@@ -675,7 +686,7 @@ hidden (`triggerChance`, never shown in UI) and persists across refresh/reload.
   inner ember wash pulses `burnPulseCount` times at `burnPulseMs` each; the
   crop icon chars and fades; `burnEmberCount` ember dots rise once each
   (staggered across the burn). While burning, crops cannot be removed or
-  replaced; temple drops are ignored; harvest/offer wrath is not applied.
+  replaced; temple drops are ignored; plant/offer wrath is not applied.
 - After the burn animation ends: slotted crops are consumed (cleared, not
   returned) and the event wins (`pendingClose: 'success'`).
 - Before win close, keep the active temple UI for `resultRevealMs` (500ms),
@@ -702,12 +713,11 @@ hidden (`triggerChance`, never shown in UI) and persists across refresh/reload.
 
 ### Wrath (lose condition)
 While active and not burning / pending close:
-- Each successful **plot harvest** (`harvestPlot`) adds `wrathPerHarvest`.
-  Tiger bonus extra crop from the same harvest does **not** add extra wrath
-  (one harvest action = one tick).
+- Each successful **plant** (`plantCrop`) adds `wrathPerPlant`.
 - Offering to an animal shrine adds `wrathPerShrineOffer`.
-- Planting, watering, critter welcome, alchemy mix, inventory moves, and
-  temple slotting add **no** wrath. AFK adds none.
+- Watering, uproot, critter welcome, alchemy mix, inventory moves, harvest,
+  and temple slotting add **no** wrath. AFK adds none. Crops already growing
+  when the dragon wakes do not add wrath until the player plants anew.
 - When `wrath >= wrathMax` → lose immediately: apply shrine-burn penalty,
   close temple to rest, set lose game text.
 - Wrath meter uses the same ember fill colors as the former timer bar; fill
@@ -915,7 +925,7 @@ status: 'approaching' | 'sleeping' | 'waking', plotId?, wakeAt? }`.
   text), plus blessing field (`growthSpeedBonus` | `researchBonus` |
   `plotsToUnlock` | `bonusHarvestChance`)
 - Alchemy recipe: `{ inputs: [id, id], resultId }` (order-independent)
-- Dragon Temple config: `slotCount`, `wrathMax`, `wrathPerHarvest`,
+- Dragon Temple config: `slotCount`, `wrathMax`, `wrathPerPlant`,
   `wrathPerShrineOffer`, `burnPulseMs`, `burnPulseCount`, `burnEmberCount`,
   `burnEmberMs`, `resultRevealMs`, `rewardBonusOfferings`,
   `rewardProgressMultiplier`, `rewardSparkCount`,

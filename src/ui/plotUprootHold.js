@@ -7,7 +7,13 @@ export const UPROOT_MOVE_THRESHOLD_PX = 8;
  * Long-press on growing (non-ready) occupied plots. Ready plots use the
  * hold path inside plotPointerDrag so drag and uproot share one gesture.
  */
-export function wireGrowingPlotUprootHold(container, state, now, onUprootHold) {
+export function wireGrowingPlotUprootHold(
+  container,
+  state,
+  now,
+  onUprootHold,
+  uprootingPlotIds = new Set(),
+) {
   for (const el of container.querySelectorAll('[data-plot-id]')) {
     const plotId = Number(el.dataset.plotId);
     const plot = state.plots.find((p) => p.id === plotId);
@@ -17,6 +23,7 @@ export function wireGrowingPlotUprootHold(container, state, now, onUprootHold) {
       Boolean(plot?.crop) &&
       !plot.locked &&
       !ready &&
+      !uprootingPlotIds.has(plotId) &&
       !isPlotNapped(state, plotId);
 
     if (!canHold) {
