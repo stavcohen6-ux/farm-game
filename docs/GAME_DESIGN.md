@@ -140,8 +140,8 @@ recolored parent crop):
 ### Motion
 Keep existing fly / pulse / urgency feedback. Prefer soft tactile hover
 (slight lift or scale) over new flashy effects (except shrines: no hover
-lift; shrine art does not pulse or move on tier-up — rising overlay sparks
-only). Farm stays primary; chrome stays quiet.
+lift; shrine art does not pulse or move on tier-up or dragon burn — rising
+overlay sparks / fire only). Farm stays primary; chrome stays quiet.
 
 ## Core loop
 Choose a crop → Plant it → Wait (optional water if the plant asks;
@@ -334,12 +334,14 @@ Drag a ready crop to:
 - the **Dragon Temple** — fills a matching demand slot from the plot
 - an **adjacent ready crop** (up/down/left/right only) — if the pair matches
   a recipe, mix immediately: source plot clears, result sits ready on the
-  target plot; invalid pairs snap back with no change
+  target plot; invalid pairs snap back with no change. After every successful
+  mix (not discovery-only), the target plot shines brightly for ~1.5s.
 - Idle hint: when two orthogonally adjacent ready crops match a recipe, a
-  quiet moss seam appears on the shared plot edge (no badges or second ring).
-  The seam gently compresses and expands along the edge with a soft moss glow.
-  Seam hides while a ready crop is being dragged; valid drop targets still
-  use the moss drag-over outline.
+  dual-tone moss seam appears on the shared plot edge (darker core, soft
+  lighter outer edge; no badges or second ring). The seam gently compresses
+  and expands along the edge with a soft moss glow. Seam hides while a ready
+  crop is being dragged; valid drop targets still use the moss drag-over
+  outline.
 
 To discard a ready crop instead of offering or mixing, long-press to
 **Uproot** (see Uproot).
@@ -419,7 +421,7 @@ Desk Mix UI remains **parked**. Live mixing is **on-plot**: drag one ready
 crop onto an orthogonally adjacent ready crop. Recipes in
 `src/data/alchemyRecipes.js` (order-independent). Instant mix; no Mix button.
 Result is ready on the drop target plot; source plot empties. Matching ready
-pairs show a shared-edge moss accent while idle (see Harvesting).
+pairs show a dual-tone shared-edge moss accent while idle (see Harvesting).
 
 ### Recipes (current)
 | Inputs | Result | Icon |
@@ -549,10 +551,10 @@ apex: Moonberry)
 **Fox — Expansion** (`plotsToUnlock` 2 / 2 / 2 / 2; unlock order from
 `farmLayout.js` by unlock tier — see Farm sketch; 15 / 25 / 35 / 50 = 125;
 apex: Wildroot)
-1. Forest Fox — More land (2) — turnip, root_loaf
-2. Valley Fox — More land (2) — blueberry, forest_bread, wildroot
-3. Mountain Fox — More land (2) — moonflower, moonroot, moonberry
-4. Guardian Fox — Final land unlock (2) — golden_pumpkin,
+1. Forest Fox — Open more farming plots (2) — turnip, root_loaf
+2. Valley Fox — Still more plots (2) — blueberry, forest_bread, wildroot
+3. Mountain Fox — Even more plots (2) — moonflower, moonroot, moonberry
+4. Guardian Fox — Last plots unlocked (2) — golden_pumpkin,
    golden_root, enchanted_jam, sunberry
 
 **Tiger — Fortune** (+1 offering chance when dragging a ready crop to a
@@ -587,10 +589,9 @@ No wall-clock timer; lose via plant-fueled wrath.
 | `wrathMax` | Wrath at or above this loses the event | 8 |
 | `wrathPerPlant` | Wrath added per successful plant while awake | 1 |
 | `wrathPerShrineOffer` | Wrath added when offering to an animal shrine while awake | 3 |
-| `burnPulseMs` | Length of one ember-wash pulse | 1.2s (half ready-crop pulse) |
-| `burnPulseCount` | Ember-wash pulses before crops clear | 3 |
-| `burnEmberCount` | Rising ember dots per burning slot | 3 |
-| `burnEmberMs` | Duration of one ember rise (once each) | 1400ms |
+| `burnPulseMs` | Length of one rising-square particle wave | 1.1s |
+| `burnPulseCount` | Particle waves before crops clear | 3 |
+| `burnParticleCount` | Rising squares per burning slot | 9 |
 | `resultRevealMs` | Pause after burn before win close | 500ms |
 | `rewardBonusOfferings` | Bonus offerings granted by a win prize | 3 |
 | `rewardProgressMultiplier` | Progress multiplier while bonus offerings remain | 2 (100% bonus) |
@@ -602,7 +603,7 @@ No wall-clock timer; lose via plant-fueled wrath.
 One matched auto-burn calms the dragon (no multi-round progress points). Each
 board slot asks for a specific discovered crop; slots are equal steps (rarity
 does not weight the tribute). Total burn animation ≈
-`burnPulseMs × burnPulseCount` (currently 3.6s).
+`burnPulseMs × burnPulseCount` (currently 3.3s).
 
 ### Layout
 - Lives inside `#grove-stage` directly above `#farm-board` with a small
@@ -686,10 +687,10 @@ hidden (`triggerChance`, never shown in UI) and persists across refresh/reload.
 - When the last matching crop is placed (all board slots correct), the impatient
   dragon auto-takes the tribute: burn starts immediately (no Burn button;
   players do not touch the dragon). Place sweeps expired slots first.
-- On burn: slots stay filled and locked. The ready fire-edge escalates; an
-  inner ember wash pulses `burnPulseCount` times at `burnPulseMs` each; the
-  crop icon chars and fades; `burnEmberCount` ember dots rise once each
-  (staggered across the burn). While burning, crops cannot be removed or
+- On burn: slots stay filled and locked. The ready fire-edge escalates;
+  `burnParticleCount` small square sparks rise through each slot
+  `burnPulseCount` times at `burnPulseMs` each (staggered within a wave);
+  the crop icon chars and fades. While burning, crops cannot be removed or
   replaced; temple drops are ignored; plant/offer wrath is not applied.
 - After the burn animation ends: slotted crops are consumed (cleared, not
   returned) and the event wins (`pendingClose: 'success'`).
@@ -734,6 +735,9 @@ On lose: pick one random shrine that has progress (`tier > 0` or
 (if any). If already at tier 0 with bar progress only, stay at
 tier 0 and clear the bar. The player can offer again from the new tier’s
 bar. If none have progress, skip the burn (message line 1 only).
+UI: when a shrine is burned from plant or offer wrath, rising fire overlays
+climb that shrine icon once (same timing as tier-up sparks; shrine art stays
+still). Lucky lose (nothing to burn) and load/tick catch-up skip the VFX.
 Per-shrine revoke (only the lost tier’s blessing):
 - Frog — growth speed blessing steps down one tier (live via
   `getActiveBlessing`); at tier 0, new plants use base growth. Crops
@@ -752,7 +756,7 @@ Per-shrine revoke (only the lost tier’s blessing):
   snap-finishes the event and claims `pendingReward` so the blessing is
   not lost (spark animation may be skipped; glow shows from remaining
   uses). Lose penalties apply on wrath max (including load if still
-  active at/over max).
+  active at/over max; fire overlay is skipped on that catch-up path).
 
 ### State
 `dragonTemple: { active, demand, wrath, slots, lastResult, burning,
@@ -856,6 +860,8 @@ Triggers:
 - Dragon Temple win: `The Dragon blesses your grove.`
 - Dragon Temple lose with burn:
   `The Dragon burnt your {Frog|Monkey|Fox|Tiger} shrine.`
+  UI also plays rising fire overlays on that shrine (once; shrine art stays
+  still). Plant and offer wrath paths only — load/tick catch-up skips VFX.
 - Dragon Temple lose with nothing to burn:
   `The Dragon's wrath fades - you got lucky.`
 - Critter welcome and desk firefly welcome do not set game text (except when
@@ -949,8 +955,8 @@ status: 'approaching' | 'sleeping' | 'waking', plotId?, wakeAt? }`.
   `plotsToUnlock` | `bonusHarvestChance`)
 - Alchemy recipe: `{ inputs: [id, id], resultId }` (order-independent)
 - Dragon Temple config: `slotCount`, `wrathMax`, `wrathPerPlant`,
-  `wrathPerShrineOffer`, `burnPulseMs`, `burnPulseCount`, `burnEmberCount`,
-  `burnEmberMs`, `resultRevealMs`, `rewardBonusOfferings`,
+  `wrathPerShrineOffer`, `burnPulseMs`, `burnPulseCount`, `burnParticleCount`,
+  `resultRevealMs`, `rewardBonusOfferings`,
   `rewardProgressMultiplier`, `rewardSparkCount`,
   `rewardSparkIcon`, `defaultTriggerChance`,
   `shrineTriggerChanceIncrease`

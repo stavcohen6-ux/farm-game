@@ -633,63 +633,33 @@ body {
   }
 }
 
-/* Inner ember wash — drives animationend / burnPulseCount timing. */
-.dragon-temple__fire {
+/* Rising square sparks — waves via animation-iteration-count (burnPulseCount). */
+.dragon-temple__spark {
   position: absolute;
-  inset: 0;
+  bottom: 28%;
   z-index: 2;
-  border-radius: inherit;
-  pointer-events: none;
-  background: radial-gradient(
-    circle at 50% 65%,
-    rgba(232, 200, 120, 0.5),
-    rgba(196, 106, 46, 0.35) 55%,
-    transparent 75%
-  );
-  animation-name: dragon-temple-fire-pulse;
-  animation-timing-function: ease-in-out;
-}
-
-@keyframes dragon-temple-fire-pulse {
-  0%,
-  100% {
-    transform: scale(0.92);
-    opacity: 0.45;
-  }
-  50% {
-    transform: scale(1.08);
-    opacity: 1;
-  }
-}
-
-/* Rising ember dots — one rise each, delay set from JS. */
-.dragon-temple__ember {
-  position: absolute;
-  bottom: 18%;
-  z-index: 2;
-  width: 4px;
-  height: 4px;
-  margin-left: -2px;
-  border-radius: 50%;
+  width: 3px;
+  height: 3px;
+  margin-left: -1.5px;
+  border-radius: 0;
   background: #e8c878;
-  box-shadow: 0 0 5px rgba(196, 106, 46, 0.6);
+  box-shadow: 0 0 4px rgba(196, 106, 46, 0.7);
   pointer-events: none;
-  animation-name: dragon-temple-ember-rise;
+  animation-name: dragon-temple-spark-rise;
   animation-timing-function: ease-out;
-  animation-iteration-count: 1;
   animation-fill-mode: both;
 }
 
-@keyframes dragon-temple-ember-rise {
+@keyframes dragon-temple-spark-rise {
   0% {
-    transform: translate(0, 0) scale(0.7);
+    transform: translate(0, 0) scale(0.6);
     opacity: 0;
   }
-  15% {
-    opacity: 0.9;
+  12% {
+    opacity: 1;
   }
   100% {
-    transform: translate(var(--ember-dx, 6px), -1.6em) scale(0.35);
+    transform: translate(var(--spark-dx, 4px), -1.8em) scale(0.4);
     opacity: 0;
   }
 }
@@ -973,27 +943,11 @@ body {
   box-shadow: inset 0 1px 1px rgba(20, 28, 24, 0.2);
 }
 
-.shrine--frog .shrine__progress-fill {
-  background: linear-gradient(180deg, #7aaa72, #5a8e6a);
-}
-
-.shrine--monkey .shrine__progress-fill {
-  background: linear-gradient(180deg, #c4a078, #a07a52);
-}
-
-.shrine--fox .shrine__progress-fill {
-  background: linear-gradient(180deg, #d49058, #b8683a);
-}
-
-.shrine--tiger .shrine__progress-fill {
-  background: linear-gradient(180deg, #d4b050, #b89030);
-}
-
 .shrine__progress-fill {
   width: 100%;
   height: 0;
   border-radius: 999px;
-  background: linear-gradient(180deg, #7aaa72, var(--moss));
+  background: linear-gradient(180deg, #d4b050, #b89030);
 }
 
 /* Shrine detail modal */
@@ -1044,18 +998,6 @@ body {
   justify-content: center;
   gap: 0.35rem;
   flex-wrap: wrap;
-}
-
-.shrine-detail__accepts {
-  margin: 0 0 1rem;
-  text-align: center;
-  color: var(--muted);
-  font-size: 0.85rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.25rem;
 }
 
 /* Icons use pointer-events: none globally; re-enable so hover tips work. */
@@ -1133,7 +1075,7 @@ body {
 .shrine-detail__progress-fill {
   height: 100%;
   border-radius: 3px;
-  background: linear-gradient(90deg, var(--moss), #7aaa72);
+  background: linear-gradient(90deg, #d4b050, #b89030);
 }
 
 .shrine-detail__progress-label {
@@ -1264,17 +1206,20 @@ body {
   opacity: 0.55;
 }
 
-/* Idle mix hint: moss seam between recipe-valid ready neighbors.
-   Drawn once per pair (east/south owner). Hidden while any crop is dragging.
-   Length pulse via transform (no layout clipping) + breathing moss glow. */
+/* Idle mix hint: dual-tone moss seam between recipe-valid ready neighbors.
+   Darker core + soft lighter outer rim. Drawn once per pair (east/south
+   owner). Hidden while any crop is dragging. Length pulse via transform
+   (no layout clipping); rim + soft glow stay in keyframes. */
 .plot__mix-bridge {
   position: absolute;
   z-index: 2;
   pointer-events: none;
   border-radius: 2px;
-  background: var(--moss);
+  background: var(--moss-deep);
   transform-origin: center center;
-  opacity: 0.9;
+  opacity: 0.95;
+  /* Lighter rim (--moss) outside the deep core; glow layered in keyframes. */
+  box-shadow: 0 0 0 1.5px rgba(95, 154, 114, 0.85);
 }
 
 .plot__mix-bridge--e {
@@ -1302,12 +1247,16 @@ body {
   0%,
   100% {
     transform: scaleY(0.7);
-    box-shadow: 0 0 4px rgba(95, 154, 114, 0.4);
-    opacity: 0.8;
+    box-shadow:
+      0 0 0 1.5px rgba(95, 154, 114, 0.75),
+      0 0 5px rgba(95, 154, 114, 0.35);
+    opacity: 0.9;
   }
   50% {
     transform: scaleY(1.12);
-    box-shadow: 0 0 12px rgba(95, 154, 114, 0.85);
+    box-shadow:
+      0 0 0 1.5px rgba(95, 154, 114, 0.95),
+      0 0 10px rgba(95, 154, 114, 0.7);
     opacity: 1;
   }
 }
@@ -1316,12 +1265,16 @@ body {
   0%,
   100% {
     transform: scaleX(0.7);
-    box-shadow: 0 0 4px rgba(95, 154, 114, 0.4);
-    opacity: 0.8;
+    box-shadow:
+      0 0 0 1.5px rgba(95, 154, 114, 0.75),
+      0 0 5px rgba(95, 154, 114, 0.35);
+    opacity: 0.9;
   }
   50% {
     transform: scaleX(1.12);
-    box-shadow: 0 0 12px rgba(95, 154, 114, 0.85);
+    box-shadow:
+      0 0 0 1.5px rgba(95, 154, 114, 0.95),
+      0 0 10px rgba(95, 154, 114, 0.7);
     opacity: 1;
   }
 }
@@ -1774,6 +1727,61 @@ body {
   transform: translateY(-2px) scale(1.05);
 }
 
+/* Brief bright flash after a successful on-plot alchemy mix. */
+@keyframes mix-shine {
+  0% {
+    box-shadow:
+      0 0 0 4px var(--honey-glow),
+      0 0 28px rgba(240, 216, 120, 0.95),
+      0 0 48px rgba(230, 198, 90, 0.55),
+      inset 0 3px 6px rgba(20, 12, 8, 0.35),
+      inset 0 -2px 0 rgba(240, 220, 160, 0.35);
+    filter: brightness(1.35);
+  }
+  40% {
+    box-shadow:
+      0 0 0 3px var(--honey-glow),
+      0 0 22px rgba(240, 216, 120, 0.75),
+      0 0 36px rgba(230, 198, 90, 0.4),
+      inset 0 3px 6px rgba(20, 12, 8, 0.35),
+      inset 0 -2px 0 rgba(240, 220, 160, 0.3);
+    filter: brightness(1.2);
+  }
+  100% {
+    box-shadow:
+      0 0 0 3px var(--honey),
+      0 0 14px rgba(230, 198, 90, 0.5),
+      inset 0 3px 6px rgba(20, 12, 8, 0.35),
+      inset 0 -2px 0 rgba(240, 220, 160, 0.22);
+    filter: brightness(1);
+  }
+}
+
+.plot--mix-shine {
+  animation: mix-shine 1.5s ease-out;
+}
+
+.plot--mix-shine .plot__icon {
+  animation:
+    ready-pulse 2.4s ease-in-out infinite,
+    mix-shine-icon 1.5s ease-out;
+}
+
+@keyframes mix-shine-icon {
+  0% {
+    filter: brightness(1.45);
+    transform: scale(1.35);
+  }
+  50% {
+    filter: brightness(1.2);
+    transform: scale(1.22);
+  }
+  100% {
+    filter: brightness(1);
+    transform: scale(1);
+  }
+}
+
 @keyframes ready-pulse {
   0%,
   100% {
@@ -2073,6 +2081,17 @@ body {
   display: grid;
   place-items: center;
   filter: drop-shadow(0 1px 2px rgba(80, 60, 20, 0.25));
+}
+
+.shrine-burn-flame {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 1px 3px rgba(180, 60, 10, 0.45));
 }
 
 .inventory__item--dragging {

@@ -536,7 +536,8 @@ export function plantCrop(state, plotId, cropId) {
     critterVisitAt: critter.critterVisitAt,
   };
 
-  addDragonTempleWrath(state, DRAGON_TEMPLE.wrathPerPlant);
+  const lose = addDragonTempleWrath(state, DRAGON_TEMPLE.wrathPerPlant);
+  if (lose) return lose;
 }
 
 // Optional water: shortens remaining growth by crop.waterTimeSavedSeconds.
@@ -1309,7 +1310,9 @@ function templeAcceptsWrath(temple) {
   );
 }
 
-// Adds wrath while the temple is awake. Returns true if the event was lost.
+// Adds wrath while the temple is awake.
+// Returns false if not lost, or `{ burnedShrineId }` when lost
+// (`burnedShrineId` is the burnt shrine id, or null if none had progress).
 export function addDragonTempleWrath(state, amount) {
   if (!state.dragonTemple) {
     state.dragonTemple = createInitialDragonTemple();
@@ -1326,9 +1329,9 @@ export function addDragonTempleWrath(state, amount) {
   if (temple.wrath < DRAGON_TEMPLE.wrathMax) return false;
 
   temple.lastResult = 'failed';
-  applyDragonTempleLosePenalty(state);
+  const burnedShrineId = applyDragonTempleLosePenalty(state);
   closeDragonTempleEvent(state);
-  return true;
+  return { burnedShrineId };
 }
 
 export function offerCrop(state, shrineId, cropId, sourcePlotId = null) {
@@ -1387,19 +1390,28 @@ export function offerCrop(state, shrineId, cropId, sourcePlotId = null) {
     }
   }
 
+  let burnedShrineId;
   if (templeWasActive) {
-    addDragonTempleWrath(state, DRAGON_TEMPLE.wrathPerShrineOffer);
+    const lose = addDragonTempleWrath(
+      state,
+      DRAGON_TEMPLE.wrathPerShrineOffer,
+    );
+    if (lose) burnedShrineId = lose.burnedShrineId;
   } else {
     maybeTriggerDragonTempleFromOffering(state, shrineId, cropId);
   }
   maybeScheduleDeskVisitorFromOffering(state);
-  return {
+  const result = {
     unlockedPlotIds,
     tiersGained,
     bonus,
     cropId,
     plotId: sourcePlotId,
   };
+  if (burnedShrineId !== undefined) {
+    result.burnedShrineId = burnedShrineId;
+  }
+  return result;
 }
 
 /** Apply one offering's progress (and one Dragon-bonus use if any). */

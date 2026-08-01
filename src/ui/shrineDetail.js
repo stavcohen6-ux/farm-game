@@ -1,6 +1,6 @@
 import { getCrop } from '../data/crops.js';
 import { getShrine } from '../data/shrines.js';
-import { getActiveShrineTier, isShrineMaxed } from '../state/gameState.js';
+import { isShrineMaxed } from '../state/gameState.js';
 import { bindCropTip, hideCropTip } from './cropTip.js';
 import { setCropIcon, setIcon, logShrineIconSrc } from './icon.js';
 
@@ -13,7 +13,6 @@ export function openShrineDetail(state, shrineId) {
   if (!shrine || !progress) return;
 
   const maxed = isShrineMaxed(state, shrineId);
-  const activeTier = getActiveShrineTier(state, shrineId);
 
   const overlay = document.createElement('div');
   overlay.className = 'shrine-detail-overlay';
@@ -35,17 +34,8 @@ export function openShrineDetail(state, shrineId) {
   title.append(` ${shrine.name} — ${shrine.theme}`);
   modal.appendChild(title);
 
-  if (activeTier) {
-    const accepts = document.createElement('p');
-    accepts.className = 'shrine-detail__accepts';
-    accepts.append('Accepts: ');
-    appendAcceptedIcons(accepts, activeTier);
-    modal.appendChild(accepts);
-  }
-
   const list = document.createElement('div');
   list.className = 'shrine-detail__list';
-
   shrine.tiers.forEach((tier, index) => {
     list.appendChild(renderTierRow(tier, index, progress, maxed));
   });

@@ -42,6 +42,8 @@ let suppressPlotClickAfterDrag = false;
 // `uprootingPlotIds` holds plots mid vanish animation after uproot confirm;
 // the crop stays in state until the animation finishes.
 //
+// `mixShinePlotIds` holds plots briefly flashing after a successful on-plot mix.
+//
 // `onFlowerPlot(plotId, cropId)` — drop a plantable on an empty plot to flower it.
 // `onPlotCropDrop({ cropId, fromPlotId, clientX, clientY })` — pointer drag end.
 // `onUprootHold(plotId)` — long-press on an occupied plot (confirm separately).
@@ -60,6 +62,7 @@ export function renderGrid(
   onPlotCropDrop = null,
   onUprootHold = null,
   uprootingPlotIds = new Set(),
+  mixShinePlotIds = new Set(),
 ) {
   container.style.gridTemplateColumns = `repeat(${BOARD_COLS}, var(--tile))`;
   container.style.gridTemplateRows = `repeat(${BOARD_ROWS}, var(--tile))`;
@@ -78,6 +81,7 @@ export function renderGrid(
     const napArriving = tanukiArrivingPlotIds.has(plot.id);
     const napLeaving = tanukiLeavingPlotIds.has(plot.id);
     const uprooting = uprootingPlotIds.has(plot.id);
+    const mixShine = mixShinePlotIds.has(plot.id);
     const key = plotKey(
       plot,
       state,
@@ -88,6 +92,7 @@ export function renderGrid(
       napArriving,
       napLeaving,
       uprooting,
+      mixShine,
     );
     const existing = existingById.get(plot.id);
     if (existing && existing.dataset.plotKey === key) {
@@ -108,6 +113,7 @@ export function renderGrid(
         napArriving,
         napLeaving,
         uprooting,
+        mixShine,
       );
       if (unlocking && onUnlockAnimationEnd) {
         wireUnlockAnimation(el, plot.id, unlockingPlotIds, onUnlockAnimationEnd);
@@ -218,6 +224,7 @@ function plotKey(
   napArriving,
   napLeaving,
   uprooting,
+  mixShine,
 ) {
   const flower = plot.flowered ? 'flowered' : 'plain';
   if (plot.locked || unlocking) return unlocking ? 'unlocking' : 'locked';
@@ -238,7 +245,8 @@ function plotKey(
   const ready = isReady(plot, now);
   if (ready) {
     const mix = getMixBridgeSides(state, plot.id, now).join('');
-    return `ready:${crop.id}:${flower}:mix:${mix}`;
+    const shine = mixShine ? ':mix-shine' : '';
+    return `ready:${crop.id}:${flower}:mix:${mix}${shine}`;
   }
   const thirsty = needsWater(plot, now);
   const critter = hasCritterVisit(plot, now);
@@ -356,6 +364,7 @@ function renderPlot(
   napArriving,
   napLeaving,
   uprooting,
+  mixShine,
 ) {
   const el = document.createElement('div');
   el.dataset.plotId = plot.id;
@@ -413,6 +422,9 @@ function renderPlot(
   const thirsty = watering || (!ready && needsWater(plot, now));
   const critter = !critterFlying && !ready && hasCritterVisit(plot, now);
   el.classList.add(ready ? 'plot--ready' : 'plot--growing');
+  if (ready && mixShine) {
+    el.classList.add('plot--mix-shine');
+  }
   if (thirsty) {
     el.classList.add('plot--needs-water');
   }

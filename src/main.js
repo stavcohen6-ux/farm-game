@@ -46,6 +46,7 @@ import {
 } from './ui/templeRewardFly.js';
 import { playCritterFly } from './ui/critterFly.js';
 import { playShrineTierUp } from './ui/shrineTierUp.js';
+import { playShrineBurn } from './ui/shrineBurn.js';
 import { playTanukiArrive, playTanukiLeave } from './ui/tanukiNap.js';
 import { resolvePlotCropDrop } from './ui/plotPointerDrag.js';
 import { installStageFit } from './ui/stageFit.js';
@@ -53,6 +54,7 @@ import { installStageFit } from './ui/stageFit.js';
 const RENDER_INTERVAL_MS = 1000;
 const WATERING_ANIM_MS = 1625;
 const UPROOT_ANIM_MS = 1000;
+const MIX_SHINE_MS = 1500;
 
 const state = load();
 const unlockingPlotIds = new Set();
@@ -61,6 +63,7 @@ const critterFlyingPlotIds = new Set();
 const tanukiArrivingPlotIds = new Set();
 const tanukiLeavingPlotIds = new Set();
 const uprootingPlotIds = new Set();
+const mixShinePlotIds = new Set();
 // Shrine ids whose Dragon-bonus glow is deferred until sparks land.
 const pendingBlessingVisualShrineIds = new Set();
 
@@ -96,6 +99,7 @@ function renderFarm() {
     handlePlotCropDrop,
     handleUprootHold,
     uprootingPlotIds,
+    mixShinePlotIds,
   );
 }
 
@@ -126,9 +130,15 @@ function handlePlotClick(plotId) {
     const plotEl = gridEl.querySelector(`[data-plot-id="${plotId}"]`);
     if (!plotEl) return;
     openCropPicker(state, plotEl, (cropId) => {
-      plantCrop(state, plotId, cropId);
+      const plantResult = plantCrop(state, plotId, cropId);
       save(state);
       render();
+      if (plantResult?.burnedShrineId) {
+        const shrineEl = boardEl.querySelector(
+          `#shrine-${plantResult.burnedShrineId}`,
+        );
+        playShrineBurn({ shrineEl });
+      }
     });
     return;
   }
@@ -226,8 +236,14 @@ function handleUnlockAnimationEnd() {
 
 function handleMixReadyPlots(fromPlotId, toPlotId) {
   if (!mixAdjacentReadyPlots(state, fromPlotId, toPlotId)) return;
+  mixShinePlotIds.add(toPlotId);
   save(state);
   render();
+  window.setTimeout(() => {
+    if (!mixShinePlotIds.has(toPlotId)) return;
+    mixShinePlotIds.delete(toPlotId);
+    render();
+  }, MIX_SHINE_MS);
 }
 
 function handlePlotCropDrop(payload) {
@@ -280,6 +296,13 @@ function handleOffer(shrineId, cropId, plotId = null) {
   if ((result.tiersGained ?? 0) > 0) {
     const shrineEl = boardEl.querySelector(`#shrine-${shrineId}`);
     playShrineTierUp({ shrineEl });
+  }
+
+  if (result.burnedShrineId) {
+    const burnedEl = boardEl.querySelector(
+      `#shrine-${result.burnedShrineId}`,
+    );
+    playShrineBurn({ shrineEl: burnedEl });
   }
 
   if (result.bonus) {
@@ -468,6 +491,7 @@ function handleResetGame() {
     tanukiArrivingPlotIds.clear();
     tanukiLeavingPlotIds.clear();
     uprootingPlotIds.clear();
+    mixShinePlotIds.clear();
     save(state);
     render();
   });

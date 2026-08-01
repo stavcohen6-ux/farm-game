@@ -20,7 +20,7 @@ function setBarFill(fillEl, percent) {
   fillEl.style.width = `${percent}%`;
 }
 
-// Updates only the wrath bar fill so a burning fire animation is not restarted.
+// Updates only the wrath bar fill so a burning spark animation is not restarted.
 export function updateDragonTempleWrath(container, state) {
   const fill = container.querySelector('.dragon-temple__timer-fill');
   if (!fill || !state.dragonTemple?.active) return;
@@ -28,7 +28,7 @@ export function updateDragonTempleWrath(container, state) {
 }
 
 // Updates wrath (and filled-slot decay tints) without rebuilding the board, so
-// ready-edge / fire animations are not restarted. Returns false if the DOM is
+// ready-edge / spark animations are not restarted. Returns false if the DOM is
 // out of sync with state (caller should full-render).
 export function updateDragonTempleLive(container, state) {
   updateDragonTempleWrath(container, state);
@@ -126,29 +126,26 @@ function renderSlot(
     }
 
     if (burning) {
-      const fire = document.createElement('span');
-      fire.className = 'dragon-temple__fire';
-      fire.setAttribute('aria-hidden', 'true');
-      slotEl.appendChild(fire);
-
-      const { burnEmberCount, burnEmberMs } = DRAGON_TEMPLE;
-      // Spread single rises across the burn so the last one lands on the last pulse.
-      const emberGap =
-        (burnTotalMs() - burnEmberMs) / Math.max(1, burnEmberCount - 1);
-      for (let i = 0; i < burnEmberCount; i++) {
-        const ember = document.createElement('span');
-        ember.className = 'dragon-temple__ember';
-        ember.style.animationDuration = `${burnEmberMs}ms`;
-        ember.style.animationDelay = `${i * emberGap}ms`;
-        // Spread across the slot floor (avoid edges): ~28% … ~72%.
+      const { burnParticleCount } = DRAGON_TEMPLE;
+      // Short within-wave stagger so squares don’t rise as a rigid grid.
+      const staggerMs = 70;
+      const dxValues = ['5px', '-4px', '3px', '-6px', '2px', '-3px', '6px', '-5px', '4px'];
+      for (let i = 0; i < burnParticleCount; i++) {
+        const spark = document.createElement('span');
+        spark.className = 'dragon-temple__spark';
+        spark.style.animationDelay = `${i * staggerMs}ms`;
+        // Spread through the crop band (avoid edges): ~25% … ~75%.
         const leftPct =
-          burnEmberCount === 1
+          burnParticleCount === 1
             ? 50
-            : 28 + (i / (burnEmberCount - 1)) * 44;
-        ember.style.left = `${leftPct}%`;
-        ember.style.setProperty('--ember-dx', i % 2 === 0 ? '6px' : '-5px');
-        ember.setAttribute('aria-hidden', 'true');
-        slotEl.appendChild(ember);
+            : 25 + (i / (burnParticleCount - 1)) * 50;
+        spark.style.left = `${leftPct}%`;
+        spark.style.setProperty(
+          '--spark-dx',
+          dxValues[i % dxValues.length],
+        );
+        spark.setAttribute('aria-hidden', 'true');
+        slotEl.appendChild(spark);
       }
     }
 
@@ -276,24 +273,22 @@ function buildSlotsRow(temple, handlers, burning, now, interactive) {
   return slotsRow;
 }
 
-function wireBurnFires(slotsRow, onBurnComplete) {
-  const fires = slotsRow.querySelectorAll('.dragon-temple__fire');
-  const firstFire = fires[0];
-  if (firstFire) {
-    firstFire.style.animationDuration = `${DRAGON_TEMPLE.burnPulseMs}ms`;
-    firstFire.style.animationIterationCount = String(DRAGON_TEMPLE.burnPulseCount);
-    firstFire.addEventListener(
-      'animationend',
-      () => {
-        onBurnComplete();
-      },
-      { once: true },
-    );
-  }
-  for (let i = 1; i < fires.length; i++) {
-    fires[i].style.animationDuration = `${DRAGON_TEMPLE.burnPulseMs}ms`;
-    fires[i].style.animationIterationCount = String(DRAGON_TEMPLE.burnPulseCount);
-  }
+function wireBurnSparks(slotsRow, onBurnComplete) {
+  const sparks = slotsRow.querySelectorAll('.dragon-temple__spark');
+  const { burnPulseMs, burnPulseCount } = DRAGON_TEMPLE;
+  sparks.forEach((spark, index) => {
+    spark.style.animationDuration = `${burnPulseMs}ms`;
+    spark.style.animationIterationCount = String(burnPulseCount);
+    if (index === 0) {
+      spark.addEventListener(
+        'animationend',
+        () => {
+          onBurnComplete();
+        },
+        { once: true },
+      );
+    }
+  });
 
   const burnMs = burnTotalMs();
   slotsRow.querySelectorAll('.dragon-temple__slot--burning .dragon-temple__slot-icon')
@@ -348,7 +343,7 @@ export function renderDragonTemple(container, state, handlers) {
   container.appendChild(board);
 
   if (active && burning) {
-    wireBurnFires(slotsRow, onBurnComplete);
+    wireBurnSparks(slotsRow, onBurnComplete);
   }
 
   if (active && !burning && !temple.pendingClose) {
