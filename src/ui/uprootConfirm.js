@@ -44,6 +44,7 @@ export function openUprootConfirm(plotEl, onConfirm) {
   document.body.appendChild(overlay);
   positionModal(modal, plotEl);
   resetThumb(track, thumb, fill);
+  window.getSelection()?.removeAllRanges();
 
   let swiping = false;
   let startX = 0;
@@ -52,6 +53,7 @@ export function openUprootConfirm(plotEl, onConfirm) {
 
   track.addEventListener('pointerdown', (event) => {
     if (event.button != null && event.button !== 0) return;
+    event.preventDefault();
     event.stopPropagation();
     swiping = true;
     travel = 0;

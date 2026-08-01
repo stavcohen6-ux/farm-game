@@ -20,6 +20,7 @@ import {
   tickCropDecay,
   getDragonBonusOfferings,
   markReadyCropsDiscovered,
+  maybeShowShrineEpilogue,
   resetState,
   uprootCrop,
 } from './state/gameState.js';
@@ -44,6 +45,7 @@ import {
   playTempleRewardSparks,
 } from './ui/templeRewardFly.js';
 import { playCritterFly } from './ui/critterFly.js';
+import { playShrineTierUp } from './ui/shrineTierUp.js';
 import { playTanukiArrive, playTanukiLeave } from './ui/tanukiNap.js';
 import { resolvePlotCropDrop } from './ui/plotPointerDrag.js';
 import { installStageFit } from './ui/stageFit.js';
@@ -180,6 +182,10 @@ function handlePlotClick(plotId) {
       targetRect,
       onComplete: () => {
         critterFlyingPlotIds.delete(plotId);
+        if ((result.tiersGained ?? 0) > 0 && shrineId) {
+          const shrineEl = boardEl.querySelector(`#shrine-${shrineId}`);
+          playShrineTierUp({ shrineEl });
+        }
         render();
       },
     });
@@ -270,6 +276,11 @@ function handleOffer(shrineId, cropId, plotId = null) {
 
   save(state);
   render();
+
+  if ((result.tiersGained ?? 0) > 0) {
+    const shrineEl = boardEl.querySelector(`#shrine-${shrineId}`);
+    playShrineTierUp({ shrineEl });
+  }
 
   if (result.bonus) {
     const shrineIconEl = boardEl.querySelector(
@@ -413,6 +424,11 @@ function tick() {
   const napperResult = reconcilePlotNapper(state, now);
   if (napperResult.changed) {
     dirty = true;
+  }
+
+  if (maybeShowShrineEpilogue(state, now)) {
+    dirty = true;
+    renderGameTextPanel(gameTextEl, state);
   }
 
   if (dirty) {

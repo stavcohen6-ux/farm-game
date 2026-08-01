@@ -1,6 +1,8 @@
 // Shared fixed-position crop name tip (shrine accepts, discovery log origin).
+// Mouse: hover to show. Touch/pen: tap to pin until tap again or tap elsewhere.
 
 let cropTipEl = null;
+let pinnedEl = null;
 
 function ensureCropTip() {
   if (cropTipEl) return cropTipEl;
@@ -9,6 +11,24 @@ function ensureCropTip() {
   cropTipEl.hidden = true;
   document.body.appendChild(cropTipEl);
   return cropTipEl;
+}
+
+function onDocPointerDown(event) {
+  if (pinnedEl && pinnedEl.contains(event.target)) return;
+  hideCropTip();
+}
+
+function setPinned(el) {
+  if (!pinnedEl) {
+    document.addEventListener('pointerdown', onDocPointerDown, true);
+  }
+  pinnedEl = el;
+}
+
+function clearPinned() {
+  if (!pinnedEl) return;
+  document.removeEventListener('pointerdown', onDocPointerDown, true);
+  pinnedEl = null;
 }
 
 export function showCropTip(anchor, name) {
@@ -21,10 +41,30 @@ export function showCropTip(anchor, name) {
 }
 
 export function hideCropTip() {
+  clearPinned();
   if (cropTipEl) cropTipEl.hidden = true;
 }
 
+function isTouchLike(event) {
+  return event.pointerType === 'touch' || event.pointerType === 'pen';
+}
+
 export function bindCropTip(el, name) {
-  el.addEventListener('pointerenter', () => showCropTip(el, name));
-  el.addEventListener('pointerleave', hideCropTip);
+  el.addEventListener('pointerenter', (event) => {
+    if (event.pointerType !== 'mouse') return;
+    showCropTip(el, name);
+  });
+  el.addEventListener('pointerleave', (event) => {
+    if (event.pointerType !== 'mouse') return;
+    hideCropTip();
+  });
+  el.addEventListener('pointerup', (event) => {
+    if (!isTouchLike(event)) return;
+    if (pinnedEl === el) {
+      hideCropTip();
+      return;
+    }
+    showCropTip(el, name);
+    setPinned(el);
+  });
 }

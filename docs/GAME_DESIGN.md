@@ -140,7 +140,8 @@ recolored parent crop):
 ### Motion
 Keep existing fly / pulse / urgency feedback. Prefer soft tactile hover
 (slight lift or scale) over new flashy effects (except shrines: no hover
-lift). Farm stays primary; chrome stays quiet.
+lift; shrine art does not pulse or move on tier-up — rising overlay sparks
+only). Farm stays primary; chrome stays quiet.
 
 ## Core loop
 Choose a crop → Plant it → Wait (optional water if the plant asks;
@@ -317,8 +318,10 @@ welcome clears with no shrine progress.
   `critterWelcomed: true`, then butterfly flies to the neediest shrine
   at a constant gentle speed (nearer plots arrive sooner). Shrine progress
   bar updates when it lands (no shrine pulse). No game-text message unless a
-  tier-up occurs (then the normal shrine upgrade text applies). If all shrines
-  are already maxed, welcome clears the visit with no progress and no message.
+  tier-up occurs (then the normal shrine upgrade text applies, and rising
+  overlay sparks play on that shrine when the butterfly lands — shrine art
+  stays still). If all shrines are already maxed, welcome clears the visit
+  with no progress and no message.
 - Ignore water or critter → full normal growth / no shrine gift. Offline: if
   still growing and still asking on return, cues wait; if already ready, the
   crop sits ready for drag / uproot as usual.
@@ -509,7 +512,9 @@ Corner cards show icon, name, next/max tier name, and active-tier progress.
   Overflow carries to the next tier. Dragon bonus multiplier still applies.
 - Starts at tier 0 (no blessing). Completing a bar unlocks the next tier and
   applies that blessing immediately. Same-shrine tiers replace earlier ones;
-  different shrines stack.
+  different shrines stack. On tier-up, rising overlay sparks climb the shrine
+  icon (shrine art does not pulse or move); multi-tier overflow in one grant
+  plays the VFX once.
 - Maxed shrines reject offerings.
 - Mid/late Frog / Fox / Tiger tiers demand researched crops, so Monkey is a
   natural progression gate. Every alchemy mix appears on at least one tier.
@@ -588,7 +593,7 @@ No wall-clock timer; lose via plant-fueled wrath.
 | `burnEmberCount` | Rising ember dots per burning slot | 3 |
 | `burnEmberMs` | Duration of one ember rise (once each) | 1400ms |
 | `resultRevealMs` | Pause after burn before win close | 500ms |
-| `rewardBonusOfferings` | Bonus offerings granted by a win prize | 5 |
+| `rewardBonusOfferings` | Bonus offerings granted by a win prize | 3 |
 | `rewardProgressMultiplier` | Progress multiplier while bonus offerings remain | 2 (100% bonus) |
 | `rewardSparkCount` | Sparks that fly temple → shrine | 4 |
 | `rewardSparkIcon` | Spark emoji | ✨ |
@@ -694,7 +699,7 @@ hidden (`triggerChance`, never shown in UI) and persists across refresh/reload.
 - Closing (win or lose) returns any leftover non-burning slotted crops to
   inventory.
 - After a win (temple already back to resting): a shrine blessing of
-  `rewardBonusOfferings` (5) doubled-progress offerings is applied immediately
+  `rewardBonusOfferings` (3) doubled-progress offerings is applied immediately
   and flagged via `pendingReward` until claimed. Uses stack if the same shrine
   is blessed again before they are spent. Then ~4 spark emojis (✨) fly from the
   temple to the chosen shrine (visual only). Prefer a non-maxed shrine; if every
@@ -831,10 +836,23 @@ HUD message area for explaining what is going on.
 - Persists with save/load.
 
 Triggers:
-- Shrine tier-up (any path through `addShrineProgress`, including offerings,
-  Dragon Temple win rewards, and critter welcome gifts):
+- Shrine tier-up (any path through `addShrineProgress`, including offerings
+  and critter welcome gifts):
   `{shrine name} upgraded — {tier tooltip}`. If one grant jumps multiple
-  tiers, only the highest tier reached is shown.
+  tiers, only the highest tier reached is shown. UI also plays rising
+  overlay sparks on that shrine (once per grant; shrine art stays still).
+  Critter path: sparks when the butterfly lands.
+- Shrine completion epilogue: when a tier-up leaves all four shrines maxed
+  and the epilogue has not yet been successfully displayed this playthrough,
+  arm `shrineEpilogueDueAt` (`now + SHRINE_EPILOGUE_DELAY_MS`, currently
+  6000). The upgrade line above still shows first. When due (1s tick or
+  load catch-up): if all shrines are still maxed, set
+  `Every shrine stands complete. The farm is legendary.` and set
+  `shrineEpilogueShown`. If shrines are no longer all maxed at due time
+  (e.g. Dragon burn in the wait), clear `dueAt` only — do not set
+  `shown`; a later all-maxed can arm again. `shown` is set only when the
+  epilogue text is actually written. Dragon burn clears a pending `dueAt`
+  immediately when shrines drop below all-maxed.
 - Dragon Temple wake: `Dragon awakens! Offer crops or face its wrath.`
 - Dragon Temple win: `The Dragon blesses your grove.`
 - Dragon Temple lose with burn:
@@ -846,7 +864,9 @@ Triggers:
 - Tanuki nap arrival, sleep, and departure do not set game text.
 
 API (`src/state/gameState.js`): `setGameText(state, text)`,
-`clearGameText(state)`. UI: `src/ui/gameTextPanel.js`.
+`clearGameText(state)`, `maybeShowShrineEpilogue(state, now)`.
+UI: `src/ui/gameTextPanel.js`. Delay / line constants:
+`SHRINE_EPILOGUE_DELAY_MS`, `SHRINE_EPILOGUE_LINE` in `src/data/shrines.js`.
 
 ## Flowered plots (land care)
 **Parked** (no inventory to spend). Flowered soil art
@@ -912,6 +932,9 @@ status: 'approaching' | 'sleeping' | 'waking', plotId?, wakeAt? }`.
   pendingClose, pendingReward, triggerChance }` — `demand` is `cropId[]`;
   `slots` are `{ cropId, expiresAt }` or null
 - Game text: `gameText` (`null` | string) — top panel message
+- Shrine epilogue: `shrineEpilogueShown` (boolean, sticky until Reset; true
+  only after the epilogue line was displayed), `shrineEpilogueDueAt`
+  (`null` | epoch ms while a wait is armed)
 - Discovery: `discoveredCropIds: string[]`,
   `discoveredAlchemyResultIds: string[]` — sticky until full Reset
 - State: `researchLevel`,
@@ -919,7 +942,8 @@ status: 'approaching' | 'sleeping' | 'waking', plotId?, wakeAt? }`.
   `dragonTemple`, `pendingHarvests`, `deskVisitors`, `deskGiftLand`,
   `plotNapper`,
   `discoveredCropIds`,
-  `discoveredAlchemyResultIds`, `gameText`
+  `discoveredAlchemyResultIds`, `gameText`,
+  `shrineEpilogueShown`, `shrineEpilogueDueAt`
 - Shrine def: `{ id, name, icon, theme, corner, tiers[] }`
 - Tier: `name`, `progressRequired`, `acceptedCropIds`, `tooltip` (effect
   text), plus blessing field (`growthSpeedBonus` | `researchBonus` |
@@ -935,7 +959,8 @@ status: 'approaching' | 'sleeping' | 'waking', plotId?, wakeAt? }`.
 ## Persistence
 `localStorage` JSON (`saveVersion: 2` = desk-less / plot-held crops). After
 plant / water / critter welcome / offer / temple actions / Reset, and on the
-1s tick when crops spoil or a tanuki napper arrives/wakes/is lost.
+1s tick when crops spoil, a tanuki napper arrives/wakes/is lost, or a pending
+shrine epilogue is due.
 
 On load for `saveVersion < 2` (or missing): wipe `inventory`,
 `pendingHarvests`, desk alchemy slots, desk visitors, clear `flowered` flags,
@@ -944,6 +969,9 @@ Then run the usual normalizers. Ready crops on plots are marked discovered
 (`markReadyCropsDiscovered`). Missing `discoveredCropIds` seeded from crops
 currently on plots / held slots; missing `discoveredAlchemyResultIds`
 backfilled to `[]`. Missing or invalid `gameText` backfilled to `null`.
+Missing or invalid `shrineEpilogueShown` → `false`; invalid
+`shrineEpilogueDueAt` → `null`. On load, `maybeShowShrineEpilogue` runs so
+a due wait past its time can fire (or cancel) immediately.
 Plot count must match `TOTAL_PLOTS` (12) or the save is replaced.
 
 No server. Player can wipe progress via Reset (confirm required). On Yes,

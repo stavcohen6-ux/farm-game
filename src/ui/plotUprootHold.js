@@ -77,6 +77,7 @@ function beginGrowingHold(event, el, plotId, onUprootHold) {
   let moved = false;
   let fired = false;
 
+  event.preventDefault();
   showUprootHoldRing(el);
   el.setPointerCapture(pointerId);
 
@@ -85,6 +86,10 @@ function beginGrowingHold(event, el, plotId, onUprootHold) {
     fired = true;
     clearUprootHoldRing(el);
   }, UPROOT_HOLD_MS);
+
+  function onContextMenu(e) {
+    e.preventDefault();
+  }
 
   function onMove(e) {
     if (e.pointerId !== pointerId || moved || fired) return;
@@ -113,6 +118,7 @@ function beginGrowingHold(event, el, plotId, onUprootHold) {
     el.removeEventListener('pointermove', onMove);
     el.removeEventListener('pointerup', onUp);
     el.removeEventListener('pointercancel', onUp);
+    el.removeEventListener('contextmenu', onContextMenu);
     try {
       el.releasePointerCapture(pointerId);
     } catch {
@@ -123,4 +129,5 @@ function beginGrowingHold(event, el, plotId, onUprootHold) {
   el.addEventListener('pointermove', onMove);
   el.addEventListener('pointerup', onUp);
   el.addEventListener('pointercancel', onUp);
+  el.addEventListener('contextmenu', onContextMenu);
 }

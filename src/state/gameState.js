@@ -13,7 +13,14 @@ import {
   getAlchemyRecipeByResultId,
   isAlchemyResultId,
 } from '../data/alchemyRecipes.js';
-import { getShrine, getShrineMaxTier, SHRINES, tierAcceptsCrop } from '../data/shrines.js';
+import {
+  getShrine,
+  getShrineMaxTier,
+  SHRINES,
+  SHRINE_EPILOGUE_DELAY_MS,
+  SHRINE_EPILOGUE_LINE,
+  tierAcceptsCrop,
+} from '../data/shrines.js';
 import { DRAGON_TEMPLE } from '../data/dragonTemple.js';
 import {
   DESK_VISITOR,
@@ -117,6 +124,10 @@ export function createInitialState() {
     plotNapper: null,
     // Player-facing message for the info-band text panel; null = empty
     gameText: null,
+    // Shrine completion epilogue: shown only after a successful display
+    shrineEpilogueShown: false,
+    // Epoch ms when the epilogue may fire; null when not armed
+    shrineEpilogueDueAt: null,
   };
 }
 
@@ -137,6 +148,8 @@ export function resetState(state) {
   state.deskGiftLand = fresh.deskGiftLand;
   state.plotNapper = fresh.plotNapper;
   state.gameText = fresh.gameText;
+  state.shrineEpilogueShown = fresh.shrineEpilogueShown;
+  state.shrineEpilogueDueAt = fresh.shrineEpilogueDueAt;
 }
 
 /** Set the top text panel message. Empty/whitespace clears to null. */
@@ -177,6 +190,55 @@ export function isShrineMaxed(state, shrineId) {
   const progress = state.shrines?.[shrineId];
   if (!progress) return true;
   return progress.tier >= getShrineMaxTier(shrineId);
+}
+
+export function areAllShrinesMaxed(state) {
+  return SHRINES.every((shrine) => isShrineMaxed(state, shrine.id));
+}
+
+/** Arm delayed epilogue when all shrines just became maxed (once until shown). */
+function maybeArmShrineEpilogue(state, now = Date.now()) {
+  if (state.shrineEpilogueShown) return;
+  if (state.shrineEpilogueDueAt != null) return;
+  if (!areAllShrinesMaxed(state)) return;
+  state.shrineEpilogueDueAt = now + SHRINE_EPILOGUE_DELAY_MS;
+}
+
+/**
+ * Fire or cancel a pending shrine epilogue when due.
+ * Returns true if state changed (caller should save / refresh game text).
+ */
+export function maybeShowShrineEpilogue(state, now = Date.now()) {
+  const dueAt = state.shrineEpilogueDueAt;
+  if (dueAt == null) return false;
+
+  if (typeof dueAt !== 'number' || !Number.isFinite(dueAt)) {
+    state.shrineEpilogueDueAt = null;
+    return true;
+  }
+
+  if (state.shrineEpilogueShown) {
+    state.shrineEpilogueDueAt = null;
+    return true;
+  }
+
+  if (now < dueAt) return false;
+
+  state.shrineEpilogueDueAt = null;
+  if (!areAllShrinesMaxed(state)) {
+    return true;
+  }
+
+  setGameText(state, SHRINE_EPILOGUE_LINE);
+  state.shrineEpilogueShown = true;
+  return true;
+}
+
+/** Drop a pending epilogue wait if shrines are no longer all maxed. */
+function clearShrineEpilogueDueIfNeeded(state) {
+  if (state.shrineEpilogueDueAt == null) return;
+  if (areAllShrinesMaxed(state)) return;
+  state.shrineEpilogueDueAt = null;
 }
 
 // Active unfinished tier def, or null when missing / maxed.
@@ -556,8 +618,8 @@ export function pickNeediestShrine(state) {
 }
 
 // Welcome a waiting critter: safe shrine progress, never wakes the Dragon.
-// Returns `{ shrineId, unlockedPlotIds }` (shrineId null if none feedable),
-// or null if there was no visit to welcome.
+// Returns `{ shrineId, unlockedPlotIds, tiersGained }` (shrineId null if none
+// feedable), or null if there was no visit to welcome.
 export function welcomeCritter(state, plotId, now = Date.now()) {
   const plot = state.plots.find((p) => p.id === plotId);
   if (!plot || !hasCritterVisit(plot, now)) return null;
@@ -566,7 +628,7 @@ export function welcomeCritter(state, plotId, now = Date.now()) {
 
   const shrineId = pickNeediestShrine(state);
   if (!shrineId) {
-    return { shrineId: null, unlockedPlotIds: [] };
+    return { shrineId: null, unlockedPlotIds: [], tiersGained: 0 };
   }
 
   const crop = getCrop(plot.crop.cropId);
@@ -575,10 +637,14 @@ export function welcomeCritter(state, plotId, now = Date.now()) {
     amount > 0 ? addShrineProgress(state, shrineId, amount) : false;
 
   if (!result) {
-    return { shrineId: null, unlockedPlotIds: [] };
+    return { shrineId: null, unlockedPlotIds: [], tiersGained: 0 };
   }
 
-  return { shrineId, unlockedPlotIds: result.unlockedPlotIds ?? [] };
+  return {
+    shrineId,
+    unlockedPlotIds: result.unlockedPlotIds ?? [],
+    tiersGained: result.tiersGained ?? 0,
+  };
 }
 
 // Harvests a ready plot: clears the crop and enqueues pending inventory grants.
@@ -1071,7 +1137,8 @@ function applyTierBlessing(state, shrineId, tierIndex) {
 }
 
 // Adds shrine progress (same tier-up / blessing rules as offerings).
-// Returns `{ unlockedPlotIds }` or false if the shrine is maxed / missing.
+// Returns `{ unlockedPlotIds, tiersGained }` or false if the shrine is maxed /
+// missing.
 export function addShrineProgress(state, shrineId, amount) {
   if (isShrineMaxed(state, shrineId)) return false;
   if (typeof amount !== 'number' || amount <= 0) return false;
@@ -1100,7 +1167,9 @@ export function addShrineProgress(state, shrineId, amount) {
     progress.dragonBonusOfferings = 0;
   }
 
-  if (progress.tier > tierBefore) {
+  const tiersGained = progress.tier - tierBefore;
+
+  if (tiersGained > 0) {
     const tier = shrine.tiers[progress.tier - 1];
     if (tier?.tooltip) {
       setGameText(
@@ -1108,9 +1177,10 @@ export function addShrineProgress(state, shrineId, amount) {
         `${shrine.name} upgraded — ${tier.tooltip}`,
       );
     }
+    maybeArmShrineEpilogue(state);
   }
 
-  return { unlockedPlotIds };
+  return { unlockedPlotIds, tiersGained };
 }
 
 // Prefer a random non-maxed shrine; if all are maxed, any random shrine.
@@ -1175,6 +1245,7 @@ export function burnShrine(state, shrineId) {
     }
   }
 
+  clearShrineEpilogueDueIfNeeded(state);
   return true;
 }
 
@@ -1311,12 +1382,19 @@ export function offerCrop(state, shrineId, cropId, sourcePlotId = null) {
     sourcePlotId != null && chance > 0 && Math.random() < chance;
 
   const unlockedPlotIds = [];
+  let tiersGained = 0;
   const first = applyOfferingProgress(state, shrineId, cropId, baseAmount);
-  if (first) unlockedPlotIds.push(...first.unlockedPlotIds);
+  if (first) {
+    unlockedPlotIds.push(...first.unlockedPlotIds);
+    tiersGained += first.tiersGained ?? 0;
+  }
 
   if (bonus && !isShrineMaxed(state, shrineId)) {
     const second = applyOfferingProgress(state, shrineId, cropId, baseAmount);
-    if (second) unlockedPlotIds.push(...second.unlockedPlotIds);
+    if (second) {
+      unlockedPlotIds.push(...second.unlockedPlotIds);
+      tiersGained += second.tiersGained ?? 0;
+    }
   }
 
   if (templeWasActive) {
@@ -1327,6 +1405,7 @@ export function offerCrop(state, shrineId, cropId, sourcePlotId = null) {
   maybeScheduleDeskVisitorFromOffering(state);
   return {
     unlockedPlotIds,
+    tiersGained,
     bonus,
     cropId,
     plotId: sourcePlotId,

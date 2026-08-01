@@ -11,7 +11,7 @@ export const DRAGON_TEMPLE = {
   burnEmberMs: 1400, // one ember rise, played once per dot
   resultRevealMs: 500, // pause after burn before win close
   // Win prize: next N offerings to the blessed shrine grant multiplied points
-  rewardBonusOfferings: 5,
+  rewardBonusOfferings: 3,
   rewardProgressMultiplier: 2, // 100% bonus = double offering progress
   rewardSparkCount: 4, // spark emojis that fly temple → shrine
   rewardSparkIcon: '✨',

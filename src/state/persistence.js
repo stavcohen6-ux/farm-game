@@ -10,6 +10,7 @@ import {
   tickCropDecay,
   markCropDiscovered,
   markReadyCropsDiscovered,
+  maybeShowShrineEpilogue,
   collectHeldCropIds,
   reconcilePlotNapper,
   STARTING_RESEARCH_LEVEL,
@@ -480,6 +481,23 @@ export function load() {
       parsed.gameText = parsed.gameText.trim();
     }
 
+    if (parsed.shrineEpilogueShown !== true) {
+      if (parsed.shrineEpilogueShown !== false) {
+        dirty = true;
+      }
+      parsed.shrineEpilogueShown = false;
+    }
+
+    if (
+      typeof parsed.shrineEpilogueDueAt !== 'number' ||
+      !Number.isFinite(parsed.shrineEpilogueDueAt)
+    ) {
+      if (parsed.shrineEpilogueDueAt != null) {
+        dirty = true;
+      }
+      parsed.shrineEpilogueDueAt = null;
+    }
+
     // Catch up perishable crops after offline time.
     const spoiled = tickCropDecay(parsed, Date.now());
     if (Object.keys(spoiled).length > 0) {
@@ -512,6 +530,9 @@ export function load() {
       dirty = true;
     }
     if (markReadyCropsDiscovered(parsed, Date.now())) {
+      dirty = true;
+    }
+    if (maybeShowShrineEpilogue(parsed, Date.now())) {
       dirty = true;
     }
     if (dirty) {
