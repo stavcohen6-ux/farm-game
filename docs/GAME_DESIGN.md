@@ -1,8 +1,12 @@
-# Farm Game — Design Doc
+# Harmony Grove — Design Doc
 
 This doc is the source of truth for decided scope. Sections are filled in
 incrementally, one milestone at a time. Nothing here should be invented ahead
 of an explicit decision.
+
+## Product name
+**Harmony Grove** (confirmed). HTML document title and opening-screen heading
+use this name.
 
 ## Genre
 Cozy, relaxing farming game. Not an action or skill-based game — no
@@ -791,6 +795,16 @@ pendingClose, pendingReward, triggerChance }`
   `wrath >= wrathMax` (and not mid-burn/reveal) → resolve as a loss and save.
 
 ## Screens
+**Opening screen** then main farm. Opening (`#opening-screen`) shows on every
+fresh page load and again after confirmed **Reset game**. Journey-trail art
+(`assets/opening/opening_journey.png`) depicts the four guardian animals free
+in the forest (walking party — not shrine pedestal icons). Title **Harmony
+Grove** at the top; soft large **Play** button raised in the lower third
+(CSS only; background art unchanged). Play stays muted until critical assets
+preload (timeout fallback), then pulses gently; `prefers-reduced-motion`
+disables pulse/scene breathe. Play fades the opening out and reveals the main
+grove. Reset clears progress then re-shows the opening (no full page reload).
+
 Main farm in a scenic grove stage + info band (Field Notes game-text plank) +
 Dragon Temple. Overlays: radial crop picker (anchored to the clicked plot),
 uproot confirm (anchored to the held plot), shrine detail, Field Notes modal,
@@ -815,7 +829,7 @@ reset confirm. No separate menus. Reset is at the bottom of Field Notes.
   (mouse + touch) to shrines / temple / adjacent ready crops to mix.
   Long-press (mouse + touch) opens Uproot confirm on occupied plots.
 - **Reset** lives at the bottom of the Field Notes modal (confirm overlay
-  unchanged).
+  unchanged). Confirming reset returns the player to the opening screen.
 
 ## Game text panel
 HUD message area for explaining what is going on.

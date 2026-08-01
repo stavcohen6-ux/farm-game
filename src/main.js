@@ -50,6 +50,7 @@ import { playShrineBurn } from './ui/shrineBurn.js';
 import { playTanukiArrive, playTanukiLeave } from './ui/tanukiNap.js';
 import { resolvePlotCropDrop } from './ui/plotPointerDrag.js';
 import { installStageFit } from './ui/stageFit.js';
+import { installOpeningScreen } from './ui/openingScreen.js';
 
 const RENDER_INTERVAL_MS = 1000;
 const WATERING_ANIM_MS = 1625;
@@ -490,12 +491,15 @@ function handleResetGame() {
   openResetConfirm(() => {
     resetState(state);
     unlockingPlotIds.clear();
+    wateringPlotIds.clear();
+    critterFlyingPlotIds.clear();
     tanukiArrivingPlotIds.clear();
     tanukiLeavingPlotIds.clear();
     uprootingPlotIds.clear();
     mixShinePlotIds.clear();
+    pendingBlessingVisualShrineIds.clear();
     save(state);
-    render();
+    opening.show();
   });
 }
 
@@ -507,5 +511,14 @@ if (gameTextEl) {
   gameTextEl.onclick = handleDiscoveryLog;
 }
 
-render();
-setInterval(tick, RENDER_INTERVAL_MS);
+let gameStarted = false;
+
+const opening = installOpeningScreen({
+  onEnter() {
+    render();
+    if (!gameStarted) {
+      gameStarted = true;
+      setInterval(tick, RENDER_INTERVAL_MS);
+    }
+  },
+});
