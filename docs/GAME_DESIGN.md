@@ -358,12 +358,12 @@ Players can clear an unwanted crop from the farm without offering it.
 - **Gesture:** Press and hold on the plot (~500ms). If the pointer moves past
   the existing ready-crop drag threshold (~8px), cancel the hold; ready crops
   keep press-and-move drag as today.
-- **Confirm:** Plot-anchored overlay with a swipe track labeled **Uproot**.
-  Swipe **right → left** across the track to confirm (about 80% of the
-  track). A looping light/shimmer runs right → left to hint the gesture.
-  Incomplete swipe snaps back. Tap/press anywhere outside the track closes
-  with no uproot. No Cancel/Uproot buttons, no tool mode, no trash dock.
-  Subtle hold progress ring on the plot while long-pressing.
+- **Confirm:** Plot-anchored overlay with a swipe track labeled **Uproot**
+  (track only — no panel chrome). Swipe **right → left** across the track to
+  confirm (about 80% of the track). A looping light/shimmer runs right → left
+  to hint the gesture. Incomplete swipe snaps back. Tap/press anywhere outside
+  the track closes with no uproot. No Cancel/Uproot buttons, no tool mode, no
+  trash dock. Subtle hold progress ring on the plot while long-pressing.
 - **On confirm:** Plant shrinks into the tile center over ~1s, then the plot
   clears and becomes plantable. Free. No inventory grant, no wrath, no
   shrine/temple progress, discovery unchanged. Dismiss (tap outside the

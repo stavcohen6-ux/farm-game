@@ -83,7 +83,8 @@ function renderTierRow(tier, index, progress, maxed) {
 
   const name = document.createElement('div');
   name.className = 'shrine-detail__tier-name';
-  name.textContent = tier.name;
+  name.textContent =
+    status === 'completed' ? `${tier.name} - completed` : tier.name;
   row.appendChild(name);
 
   const effect = document.createElement('div');

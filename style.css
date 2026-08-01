@@ -971,8 +971,7 @@ body {
 
 .shrine-detail,
 .discovery-log,
-.reset-confirm,
-.uproot-confirm {
+.reset-confirm {
   background: var(--linen);
   border: 3px solid var(--frame);
   border-radius: 16px;
@@ -1491,7 +1490,7 @@ body {
   position: fixed;
   left: 0;
   top: 0;
-  z-index: 40;
+  z-index: 15;
   pointer-events: none;
   display: grid;
   place-items: center;
@@ -1775,14 +1774,15 @@ body {
     inset 0 -2px 0 rgba(240, 220, 160, 0.22);
 }
 
-/* Brief bright wash inside the tile after a successful on-plot alchemy mix. */
-.plot--mix-shine::after {
+/* Brief bright wash under the crop after a successful on-plot alchemy mix.
+   ::before (not ::after) so the icon needs no z-index / position override —
+   that stacking context was clipping ready-pulse while row filters apply. */
+.plot--mix-shine::before {
   content: '';
   position: absolute;
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  z-index: 2;
   background: radial-gradient(
     circle at center,
     rgba(255, 248, 210, 0.95) 0%,
@@ -1802,11 +1802,6 @@ body {
   100% {
     opacity: 0;
   }
-}
-
-.plot--mix-shine .plot__icon {
-  position: relative;
-  z-index: 3;
 }
 
 @keyframes ready-pulse {
@@ -2924,7 +2919,11 @@ body {
   position: fixed;
   min-width: 220px;
   max-width: min(300px, calc(100vw - 16px));
-  padding: 0.85rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
   z-index: 21;
   user-select: none;
   -webkit-user-select: none;
@@ -2940,7 +2939,7 @@ body {
   width: 240px;
   max-width: 100%;
   overflow: hidden;
-  border: 2px solid #b5d9c0;
+  border: 3px solid #b5d9c0;
   border-radius: 999px;
   background: var(--parchment);
   touch-action: none;
@@ -3011,7 +3010,7 @@ body {
   border-radius: 999px;
   z-index: 3;
   background: linear-gradient(180deg, #e8f0d8, #c8d9ae);
-  border: 2px solid #a8c088;
+  border: 3px solid #a8c088;
   box-shadow: 0 1px 3px rgba(42, 90, 60, 0.22);
   pointer-events: none;
 }

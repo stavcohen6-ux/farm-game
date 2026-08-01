@@ -97,34 +97,42 @@ function renderShrine(
   if (showBlessingGlow) {
     container.classList.add('shrine--dragon-blessed');
   }
-  container.innerHTML = '';
 
-  const figure = document.createElement('div');
-  figure.className = 'shrine__figure';
+  let figure = container.querySelector(':scope > .shrine__figure');
+  let icon = figure?.querySelector(':scope > .shrine__icon');
+  let fill = container.querySelector(':scope > .shrine__plaque .shrine__progress-fill');
 
-  const icon = document.createElement('div');
-  icon.className = 'shrine__icon';
+  if (!figure || !icon || !fill) {
+    container.replaceChildren();
+
+    figure = document.createElement('div');
+    figure.className = 'shrine__figure';
+
+    icon = document.createElement('div');
+    icon.className = 'shrine__icon';
+    figure.appendChild(icon);
+    container.appendChild(figure);
+
+    const plaque = document.createElement('div');
+    plaque.className = 'shrine__plaque';
+
+    const track = document.createElement('div');
+    track.className = 'shrine__progress-track';
+    fill = document.createElement('div');
+    fill.className = 'shrine__progress-fill';
+    track.appendChild(fill);
+    plaque.appendChild(track);
+
+    container.appendChild(plaque);
+  }
+
   setIcon(icon, {
     src: shrineIconSrc(shrine.id),
     emoji: shrine.icon,
     alt: shrine.name,
     imgClass: 'game-icon game-icon--shrine-object',
   });
-  figure.appendChild(icon);
-  container.appendChild(figure);
-
-  const plaque = document.createElement('div');
-  plaque.className = 'shrine__plaque';
-
-  const track = document.createElement('div');
-  track.className = 'shrine__progress-track';
-  const fill = document.createElement('div');
-  fill.className = 'shrine__progress-fill';
   fill.style.height = `${percent}%`;
-  track.appendChild(fill);
-  plaque.appendChild(track);
-
-  container.appendChild(plaque);
 
   let suppressClick = false;
   container.onclick = () => {

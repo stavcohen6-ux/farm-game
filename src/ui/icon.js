@@ -65,12 +65,25 @@ export const UI_ICONS = {
 
 /**
  * Fill a container with an icon image (preferred) or emoji fallback.
+ * Reuses an existing <img> when `src` is unchanged so large PNGs are not
+ * re-decoded on every UI refresh.
  * @param {HTMLElement} container
  * @param {{ src?: string|null, emoji?: string, alt?: string, imgClass?: string }} opts
  */
 export function setIcon(container, { src = null, emoji = '', alt = '', imgClass = 'game-icon' } = {}) {
-  container.replaceChildren();
   if (src) {
+    const existing = container.firstElementChild;
+    if (
+      existing?.tagName === 'IMG' &&
+      existing.getAttribute('src') === src &&
+      container.childElementCount === 1
+    ) {
+      existing.alt = alt;
+      existing.draggable = false;
+      existing.className = imgClass;
+      return;
+    }
+    container.replaceChildren();
     const img = document.createElement('img');
     img.src = src;
     img.alt = alt;
@@ -79,6 +92,7 @@ export function setIcon(container, { src = null, emoji = '', alt = '', imgClass 
     container.appendChild(img);
     return;
   }
+  container.replaceChildren();
   if (emoji) {
     container.textContent = emoji;
   }

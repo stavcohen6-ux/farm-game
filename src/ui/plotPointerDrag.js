@@ -37,8 +37,14 @@ export function wireReadyCropPointerDrag(
     const ready =
       Boolean(plot?.crop && isReady(plot, now)) &&
       !uprootingPlotIds.has(plotId);
+    // Keep the in-flight drag plot intact across the 1s farm tick so we
+    // don't strip plot--dragging or drop its pointer handlers mid-gesture.
+    const isActiveDrag = session?.drag?.plotId === plotId;
 
-    el.classList.remove('plot--drag-over', 'plot--dragging');
+    el.classList.remove('plot--drag-over');
+    if (!isActiveDrag) {
+      el.classList.remove('plot--dragging');
+    }
     el.draggable = false;
     el.ondragstart = null;
     el.ondragend = null;
@@ -47,7 +53,9 @@ export function wireReadyCropPointerDrag(
     el.ondrop = null;
 
     if (!ready) {
-      el.onpointerdown = null;
+      if (!isActiveDrag) {
+        el.onpointerdown = null;
+      }
       continue;
     }
 

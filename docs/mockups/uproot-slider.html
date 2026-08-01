@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Uproot slider mockup — pick</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&family=Quicksand:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --moss: #5f9a72;
+      --moss-deep: #3d7a52;
+      --soil: #5f4634;
+      --frame: #6a7a68;
+      --frame-deep: #3d4a42;
+      --parchment: #f4faf4;
+      --linen: #f7fcf7;
+      --ink: #2a3d30;
+      --muted: #5f7466;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100dvh;
+      font-family: 'Nunito', system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 90% 70% at 50% 0%, #e8fff0 0%, transparent 55%),
+        radial-gradient(ellipse 60% 50% at 85% 10%, rgba(200, 228, 240, 0.55) 0%, transparent 45%),
+        linear-gradient(180deg, #d8f0e0 0%, #b8dcc8 50%, #9ecab0 100%);
+      padding: 1.5rem 1.25rem 3rem;
+    }
+
+    .page { max-width: 640px; margin: 0 auto; }
+
+    h1 {
+      font-family: 'Quicksand', 'Nunito', system-ui, sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+    }
+
+    .lede {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.45;
+      margin-bottom: 1.35rem;
+      max-width: 40rem;
+    }
+
+    .card {
+      background: var(--linen);
+      border: 3px solid var(--frame);
+      border-radius: 16px;
+      padding: 1.1rem 1.15rem 1.25rem;
+      box-shadow:
+        0 2px 0 var(--frame-deep),
+        0 12px 28px rgba(42, 90, 60, 0.18);
+      margin-bottom: 1rem;
+    }
+
+    .card--current {
+      opacity: 0.88;
+      border-style: dashed;
+    }
+
+    .card__head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.35rem;
+      flex-wrap: wrap;
+    }
+
+    .card__title {
+      font-family: 'Quicksand', 'Nunito', system-ui, sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .tag {
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .tag--pick {
+      color: var(--moss-deep);
+      background: #dff0e4;
+      border: 1px solid #b5d9c0;
+      border-radius: 6px;
+      padding: 0.15rem 0.45rem;
+    }
+
+    .card__note {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.4;
+      margin-bottom: 0.9rem;
+    }
+
+    .stage {
+      display: flex;
+      justify-content: center;
+      padding: 1.15rem 0.5rem 0.9rem;
+      border-radius: 12px;
+      background:
+        radial-gradient(ellipse 70% 80% at 50% 40%, rgba(255, 255, 255, 0.35), transparent 70%),
+        rgba(95, 70, 52, 0.08);
+    }
+
+    .hint {
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.65rem;
+    }
+
+    .hint.ok { color: var(--moss-deep); font-weight: 700; }
+
+    .swipe {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 240px;
+      max-width: 100%;
+      min-height: 48px;
+      overflow: hidden;
+      touch-action: none;
+      cursor: grab;
+      user-select: none;
+    }
+    .swipe:active { cursor: grabbing; }
+    .swipe__fill,
+    .swipe__shimmer,
+    .swipe__label,
+    .swipe__thumb { pointer-events: none; }
+    .swipe__fill {
+      position: absolute;
+      top: 0; right: 0; bottom: 0;
+      width: 0%;
+      z-index: 0;
+    }
+    .swipe__shimmer {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+    .swipe__label {
+      position: relative;
+      z-index: 2;
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--ink);
+    }
+    .swipe__thumb {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      bottom: 4px;
+      width: 40px;
+      z-index: 3;
+    }
+
+    /* ── Current (A) ── */
+    .a.swipe {
+      border: 2px solid #b5d9c0;
+      border-radius: 999px;
+      background: var(--parchment);
+    }
+    .a .swipe__fill {
+      border-radius: inherit;
+      background: linear-gradient(270deg, #dce8c8, #c8d9ae);
+    }
+    .a .swipe__shimmer {
+      border-radius: inherit;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        transparent 40%,
+        rgba(255, 248, 220, 0.75) 50%,
+        transparent 60%,
+        transparent 100%
+      );
+      background-size: 220% 100%;
+      animation: shimmer 1.6s linear infinite;
+    }
+    .a.swipe.is-drag .swipe__shimmer { animation-play-state: paused; opacity: 0.35; }
+    .a .swipe__thumb {
+      border-radius: 999px;
+      background: linear-gradient(180deg, #e8f0d8, #c8d9ae);
+      border: 2px solid #a8c088;
+      box-shadow: 0 1px 3px rgba(42, 90, 60, 0.22);
+    }
+    .a .swipe__thumb::after {
+      content: '‹';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1;
+    }
+
+    /* ── Pick: plank rail + flat wooden peg ── */
+    .pick.swipe {
+      min-height: 54px;
+      border: 3px solid #7a6a52;
+      border-radius: 12px;
+      background-image: url('../../assets/scene/game_text_plank.png');
+      background-size: cover;
+      background-position: center;
+      box-shadow:
+        0 2px 0 #5a4a38,
+        inset 0 1px 0 rgba(255, 255, 240, 0.35);
+    }
+    .pick .swipe__fill {
+      border-radius: inherit;
+      background: linear-gradient(
+        270deg,
+        rgba(95, 154, 114, 0.3),
+        rgba(61, 122, 82, 0.4)
+      );
+    }
+    .pick .swipe__shimmer {
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        transparent 40%,
+        rgba(255, 255, 240, 0.55) 50%,
+        transparent 60%,
+        transparent 100%
+      );
+      background-size: 220% 100%;
+      animation: shimmer 1.7s linear infinite;
+    }
+    .pick.swipe.is-drag .swipe__shimmer { animation-play-state: paused; opacity: 0.3; }
+    .pick .swipe__label {
+      font-family: 'Quicksand', 'Nunito', system-ui, sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      color: #3a3228;
+      text-shadow: 0 1px 0 rgba(255, 255, 240, 0.35);
+    }
+    .pick .swipe__thumb {
+      width: 42px;
+      top: 5px;
+      right: 5px;
+      bottom: 5px;
+      border-radius: 10px;
+      /* Flat wood — soft wash, no carved inset / drop shadow */
+      background: #b89568;
+      border: 2px solid #7a5534;
+      box-shadow: none;
+    }
+    .pick .swipe__thumb::after {
+      content: '‹';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: #3a2614;
+      line-height: 1;
+      text-shadow: none;
+    }
+
+    @keyframes shimmer {
+      from { background-position: 100% 0; }
+      to { background-position: -100% 0; }
+    }
+
+    .footer {
+      margin-top: 1.1rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Uproot slider — your pick</h1>
+    <p class="lede">
+      Plank rail (C) + wooden peg (B), with a flatter peg and a smaller,
+      regular-weight “Uproot” label. Still mock only.
+    </p>
+
+    <section class="card">
+      <div class="card__head">
+        <h2 class="card__title">Plank + flat wood peg</h2>
+        <span class="tag tag--pick">Candidate</span>
+      </div>
+      <p class="card__note">
+        Weathered plank track. Flat wooden thumb, larger chevron, no inner square.
+        Label at ~0.9rem, weight 500.
+      </p>
+      <div class="stage">
+        <div class="swipe pick" data-mock="pick" role="slider" aria-label="Uproot">
+          <div class="swipe__fill"></div>
+          <div class="swipe__shimmer"></div>
+          <span class="swipe__label">Uproot</span>
+          <div class="swipe__thumb"></div>
+        </div>
+      </div>
+      <p class="hint" data-hint="pick">Swipe left to try</p>
+    </section>
+
+    <section class="card card--current">
+      <div class="card__head">
+        <h2 class="card__title">Current (live)</h2>
+        <span class="tag">For comparison</span>
+      </div>
+      <div class="stage">
+        <div class="swipe a" data-mock="a" role="slider" aria-label="Uproot">
+          <div class="swipe__fill"></div>
+          <div class="swipe__shimmer"></div>
+          <span class="swipe__label">Uproot</span>
+          <div class="swipe__thumb"></div>
+        </div>
+      </div>
+      <p class="hint" data-hint="a">Swipe left to try</p>
+    </section>
+
+    <p class="footer">
+      Live game unchanged. Say if this is good to ship, or tweak further.
+    </p>
+  </div>
+
+  <script>
+    const COMPLETE = 0.8;
+
+    document.querySelectorAll('.swipe').forEach((track) => {
+      const thumb = track.querySelector('.swipe__thumb');
+      const fill = track.querySelector('.swipe__fill');
+      const hint = document.querySelector(`[data-hint="${track.dataset.mock}"]`);
+      let swiping = false;
+      let startX = 0;
+      let travel = 0;
+
+      function maxTravel() {
+        return Math.max(0, track.clientWidth - thumb.offsetWidth - 8);
+      }
+
+      function apply(t) {
+        const max = maxTravel();
+        const clamped = Math.min(t, max);
+        const ratio = max > 0 ? clamped / max : 0;
+        thumb.style.transform = `translateX(${-clamped}px)`;
+        fill.style.width = `${Math.min(100, ratio * 100)}%`;
+      }
+
+      function reset() {
+        travel = 0;
+        apply(0);
+      }
+
+      track.addEventListener('pointerdown', (e) => {
+        if (e.button != null && e.button !== 0) return;
+        e.preventDefault();
+        swiping = true;
+        travel = 0;
+        startX = e.clientX;
+        track.classList.add('is-drag');
+        track.setPointerCapture(e.pointerId);
+        if (hint) {
+          hint.textContent = 'Swipe left to try';
+          hint.classList.remove('ok');
+        }
+      });
+
+      track.addEventListener('pointermove', (e) => {
+        if (!swiping) return;
+        travel = Math.max(0, startX - e.clientX);
+        apply(travel);
+      });
+
+      function finish() {
+        if (!swiping) return;
+        swiping = false;
+        track.classList.remove('is-drag');
+        const max = maxTravel();
+        if (travel >= max * COMPLETE) {
+          apply(max);
+          if (hint) {
+            hint.textContent = 'Would uproot';
+            hint.classList.add('ok');
+          }
+          setTimeout(reset, 450);
+          return;
+        }
+        reset();
+      }
+
+      track.addEventListener('pointerup', finish);
+      track.addEventListener('pointercancel', finish);
+    });
+  </script>
+</body>
+</html>

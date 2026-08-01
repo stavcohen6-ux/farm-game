@@ -280,9 +280,11 @@ function handleOffer(shrineId, cropId, plotId = null) {
 
   const result = offerCrop(state, shrineId, cropId, plotId);
   if (!result) {
-    // Allowlist rejects set game text; re-render so the message shows.
+    // Allowlist rejects set game text / may tick decay; refresh farm + text
+    // only — skip shrine/temple remounts (progress and temple unchanged).
     save(state);
-    render();
+    renderFarm();
+    renderGameTextPanel(gameTextEl, state);
     return;
   }
 
