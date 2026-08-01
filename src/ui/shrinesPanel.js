@@ -1,9 +1,16 @@
 import { getShrine } from '../data/shrines.js';
-import { getDragonBonusOfferings, isShrineMaxed } from '../state/gameState.js';
+import {
+  canOfferCropToShrine,
+  getDragonBonusOfferings,
+  isShrineMaxed,
+} from '../state/gameState.js';
 import { setIcon, shrineIconSrc } from './icon.js';
 
 const CROP_DRAG_TYPE = 'text/plain';
 const CROP_DRAG_PREFIX = 'farm-crop:';
+
+/** In-flight HTML5 crop drag (getData is unreliable during dragover). */
+let activeCropDrag = null;
 
 export { CROP_DRAG_TYPE, CROP_DRAG_PREFIX };
 
@@ -25,6 +32,13 @@ export function parseCropDragData(raw) {
   const plotId = Number(rest.slice(sep + 6));
   if (!cropId || !Number.isInteger(plotId)) return null;
   return { cropId, plotId };
+}
+
+/** @param {{ cropId: string, plotId?: number|null } | null} drag */
+export function setActiveCropDrag(drag) {
+  activeCropDrag = drag
+    ? { cropId: drag.cropId, plotId: drag.plotId ?? null }
+    : null;
 }
 
 // Renders the four corner shrines and wires click + drop targets for offerings.
@@ -131,7 +145,15 @@ function renderShrine(
   container.ondragover = (event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
-    container.classList.add('shrine--drag-over');
+    const cropId = activeCropDrag?.cropId;
+    if (
+      cropId &&
+      canOfferCropToShrine(state, shrine.id, cropId)
+    ) {
+      container.classList.add('shrine--drag-over');
+    } else {
+      container.classList.remove('shrine--drag-over');
+    }
   };
 
   container.ondragleave = () => {
@@ -142,6 +164,7 @@ function renderShrine(
     event.preventDefault();
     container.classList.remove('shrine--drag-over');
     const drag = parseCropDragData(event.dataTransfer.getData(CROP_DRAG_TYPE));
+    setActiveCropDrag(null);
     if (!drag) return;
     suppressClick = true;
     onOffer(shrine.id, drag.cropId, drag.plotId);

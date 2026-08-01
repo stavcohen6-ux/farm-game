@@ -92,13 +92,17 @@ export function renderGrid(
       napArriving,
       napLeaving,
       uprooting,
-      mixShine,
     );
     const existing = existingById.get(plot.id);
     if (existing && existing.dataset.plotKey === key) {
       applyPlotPlacement(existing, plot.id);
       if (key.startsWith('growing:')) {
         updateProgress(existing, plot, now);
+      }
+      // Shine is not part of plotKey so clearing it does not remount and
+      // cut ready-pulse mid-cycle; sync the class on the reused node.
+      if (key.startsWith('ready:')) {
+        existing.classList.toggle('plot--mix-shine', mixShine);
       }
       nextEls.push(existing);
     } else {
@@ -224,7 +228,6 @@ function plotKey(
   napArriving,
   napLeaving,
   uprooting,
-  mixShine,
 ) {
   const flower = plot.flowered ? 'flowered' : 'plain';
   if (plot.locked || unlocking) return unlocking ? 'unlocking' : 'locked';
@@ -245,8 +248,7 @@ function plotKey(
   const ready = isReady(plot, now);
   if (ready) {
     const mix = getMixBridgeSides(state, plot.id, now).join('');
-    const shine = mixShine ? ':mix-shine' : '';
-    return `ready:${crop.id}:${flower}:mix:${mix}${shine}`;
+    return `ready:${crop.id}:${flower}:mix:${mix}`;
   }
   const thirsty = needsWater(plot, now);
   const critter = hasCritterVisit(plot, now);

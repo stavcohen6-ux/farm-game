@@ -1,5 +1,9 @@
 import { getCrop } from '../data/crops.js';
-import { areAdjacentPlots, isReady } from '../state/gameState.js';
+import {
+  areAdjacentPlots,
+  canOfferCropToShrine,
+  isReady,
+} from '../state/gameState.js';
 import { findAlchemyResult } from '../data/alchemyRecipes.js';
 import { setCropIcon } from './icon.js';
 import {
@@ -240,6 +244,9 @@ function resolveHighlightEl(clientX, clientY, sess) {
     return sess.container.querySelector(`[data-plot-id="${target.toPlotId}"]`);
   }
   if (target.type === 'shrine') {
+    if (!canOfferCropToShrine(sess.state, target.shrineId, sess.drag.cropId)) {
+      return null;
+    }
     return document.getElementById(`shrine-${target.shrineId}`);
   }
   if (target.type === 'temple-slot') {

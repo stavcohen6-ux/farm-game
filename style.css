@@ -607,6 +607,7 @@ body {
 
 .dragon-temple__slot--burning {
   cursor: default;
+  overflow: hidden;
 }
 
 .dragon-temple__slot--burning .dragon-temple__slot-icon {
@@ -636,7 +637,7 @@ body {
 /* Rising square sparks — waves via animation-iteration-count (burnPulseCount). */
 .dragon-temple__spark {
   position: absolute;
-  bottom: 28%;
+  bottom: 0;
   z-index: 2;
   width: calc(var(--tile) * 0.2);
   height: calc(var(--tile) * 0.2);
@@ -661,7 +662,7 @@ body {
     opacity: 1;
   }
   100% {
-    transform: translate(var(--spark-dx, 4px), -2.6em) scale(0.55);
+    transform: translate(var(--spark-dx, 4px), -1.8em) scale(0.55);
     opacity: 0;
   }
 }
@@ -1806,21 +1807,6 @@ body {
 .plot--mix-shine .plot__icon {
   position: relative;
   z-index: 3;
-  animation:
-    ready-pulse 2.4s ease-in-out infinite,
-    mix-shine-icon 1.5s ease-out;
-}
-
-@keyframes mix-shine-icon {
-  0% {
-    filter: brightness(1.55);
-  }
-  40% {
-    filter: brightness(1.25);
-  }
-  100% {
-    filter: brightness(1);
-  }
 }
 
 @keyframes ready-pulse {

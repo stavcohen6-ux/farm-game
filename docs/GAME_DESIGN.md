@@ -532,10 +532,10 @@ and future tiers omit Accepts and progress (future tiers stay faded). When
 maxed, every tier is name + effect only.
 
 ### Tiers
-Progress required escalates within each shrine (medium pacing; total 491).
+Progress required escalates within each shrine (medium pacing; total 474).
 Each tier lists `acceptedCropIds`.
 
-**Frog — Growth** (15 / 25 / 40 / 55 = 135; apex: Sunbread)
+**Frog — Growth** (12 / 24 / 40 / 52 = 128; apex: Sunbread)
 1. Sleeping Frog — 25% faster crop growth — wheat, root_loaf
 2. Rainkeeper Frog — 50% faster crop growth — wheat, turnip, root_loaf
 3. Ancient River Frog — 75% faster crop growth — blueberry, forest_bread, moonlit_loaf
@@ -550,7 +550,7 @@ apex: Moonberry)
    moonroot, moonberry
 
 **Fox — Expansion** (`plotsToUnlock` 2 / 2 / 2 / 2; unlock order from
-`farmLayout.js` by unlock tier — see Farm sketch; 15 / 25 / 35 / 50 = 125;
+`farmLayout.js` by unlock tier — see Farm sketch; 12 / 24 / 36 / 50 = 122;
 apex: Wildroot)
 1. Forest Fox — Open more farming plots (2) — turnip, root_loaf
 2. Valley Fox — Still more plots (2) — blueberry, forest_bread, wildroot
@@ -559,7 +559,7 @@ apex: Wildroot)
    golden_root, enchanted_jam, sunberry
 
 **Tiger — Fortune** (+1 offering chance when dragging a ready crop to a
-shrine; 20 / 30 / 45 / 60 = 155; apex: Solar Gourd)
+shrine; 14 / 30 / 44 / 60 = 148; apex: Solar Gourd)
 1. Young Tiger — 25% for a bonus crop — wheat, turnip
 2. Hunting Tiger — 50% for a bonus crop — blueberry, forest_bread, wildroot
 3. Golden Tiger — 75% for a bonus crop — moonflower, moonlit_loaf, moonroot,
@@ -590,8 +590,8 @@ No wall-clock timer; lose via plant-fueled wrath.
 | `wrathMax` | Wrath at or above this loses the event | 8 |
 | `wrathPerPlant` | Wrath added per successful plant while awake | 1 |
 | `wrathPerShrineOffer` | Wrath added when offering to an animal shrine while awake | 3 |
-| `burnPulseMs` | Length of one rising-square particle wave | 1.1s |
-| `burnPulseCount` | Particle waves before crops clear | 3 |
+| `burnPulseMs` | Length of one rising-square particle wave | 3.3s |
+| `burnPulseCount` | Particle waves before crops clear | 2 |
 | `burnParticleCount` | Rising squares per burning slot | 9 |
 | `resultRevealMs` | Pause after burn before win close | 500ms |
 | `rewardBonusOfferings` | Bonus offerings granted by a win prize | 3 |
@@ -604,7 +604,7 @@ No wall-clock timer; lose via plant-fueled wrath.
 One matched auto-burn calms the dragon (no multi-round progress points). Each
 board slot asks for a specific discovered crop; slots are equal steps (rarity
 does not weight the tribute). Total burn animation ≈
-`burnPulseMs × burnPulseCount` (currently 3.3s).
+`burnPulseMs × burnPulseCount` (currently 6.6s).
 
 ### Layout
 - Lives inside `#grove-stage` directly above `#farm-board` with a small

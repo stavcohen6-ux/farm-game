@@ -12,14 +12,14 @@ export const SHRINES = [
     tiers: [
       {
         name: 'Sleeping Frog',
-        progressRequired: 15,
+        progressRequired: 12,
         acceptedCropIds: ['wheat', 'root_loaf'],
         growthSpeedBonus: 0.25,
         tooltip: '25% faster crop growth',
       },
       {
         name: 'Rainkeeper Frog',
-        progressRequired: 25,
+        progressRequired: 24,
         acceptedCropIds: ['wheat', 'turnip', 'root_loaf'],
         growthSpeedBonus: 0.5,
         tooltip: '50% faster crop growth',
@@ -33,7 +33,7 @@ export const SHRINES = [
       },
       {
         name: 'Spirit Frog',
-        progressRequired: 55,
+        progressRequired: 52,
         acceptedCropIds: [
           'sunfruit',
           'sunbread',
@@ -90,21 +90,21 @@ export const SHRINES = [
     tiers: [
       {
         name: 'Forest Fox',
-        progressRequired: 15,
+        progressRequired: 12,
         acceptedCropIds: ['turnip', 'root_loaf'],
         plotsToUnlock: 2,
         tooltip: 'Open more farming plots',
       },
       {
         name: 'Valley Fox',
-        progressRequired: 25,
+        progressRequired: 24,
         acceptedCropIds: ['blueberry', 'forest_bread', 'wildroot'],
         plotsToUnlock: 2,
         tooltip: 'Still more plots',
       },
       {
         name: 'Mountain Fox',
-        progressRequired: 35,
+        progressRequired: 36,
         acceptedCropIds: ['moonflower', 'moonroot', 'moonberry'],
         plotsToUnlock: 2,
         tooltip: 'Even more plots',
@@ -132,7 +132,7 @@ export const SHRINES = [
     tiers: [
       {
         name: 'Young Tiger',
-        progressRequired: 20,
+        progressRequired: 14,
         acceptedCropIds: ['wheat', 'turnip'],
         bonusHarvestChance: 0.25,
         tooltip: '25% for a bonus crop',
@@ -146,7 +146,7 @@ export const SHRINES = [
       },
       {
         name: 'Golden Tiger',
-        progressRequired: 45,
+        progressRequired: 44,
         acceptedCropIds: [
           'moonflower',
           'moonlit_loaf',

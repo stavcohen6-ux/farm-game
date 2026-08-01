@@ -5,7 +5,7 @@ import {
   takeDeskGiftLand,
   INVENTORY_SLOT_COUNT,
 } from '../state/gameState.js';
-import { CROP_DRAG_TYPE, encodeCropDrag } from './shrinesPanel.js';
+import { CROP_DRAG_TYPE, encodeCropDrag, setActiveCropDrag } from './shrinesPanel.js';
 import { applyDecayUrgencyClass, appendWiltMark } from './decayUrgency.js';
 import { setCropIcon, setIcon, UI_ICONS } from './icon.js';
 
@@ -120,10 +120,12 @@ function appendCropStack(item, stack, now) {
       encodeCropDrag({ cropId }),
     );
     event.dataTransfer.effectAllowed = 'move';
+    setActiveCropDrag({ cropId });
     item.classList.add('inventory__item--dragging');
   };
 
   item.ondragend = () => {
+    setActiveCropDrag(null);
     item.classList.remove('inventory__item--dragging');
   };
 }

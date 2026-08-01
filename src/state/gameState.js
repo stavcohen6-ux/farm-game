@@ -1328,27 +1328,38 @@ export function addDragonTempleWrath(state, amount) {
   return { burnedShrineId };
 }
 
-export function offerCrop(state, shrineId, cropId, sourcePlotId = null) {
-  tickCropDecay(state);
+/** True when a shrine would accept this crop (before taking from plot/inventory). */
+export function canOfferCropToShrine(state, shrineId, cropId) {
   if (isShrineMaxed(state, shrineId)) return false;
-
   const shrine = getShrine(shrineId);
   const crop = getCrop(cropId);
   if (!shrine || !crop) return false;
-
   const activeTier = getActiveShrineTier(state, shrineId);
-  if (!activeTier || !tierAcceptsCrop(activeTier, cropId)) {
-    setGameText(
-      state,
-      `The ${shrineShortName(shrine)} shrine wants a different offering now.`,
-    );
+  if (!activeTier || !tierAcceptsCrop(activeTier, cropId)) return false;
+  const baseAmount = crop.shrineValues?.[shrineId];
+  return typeof baseAmount === 'number' && baseAmount > 0;
+}
+
+export function offerCrop(state, shrineId, cropId, sourcePlotId = null) {
+  tickCropDecay(state);
+
+  const shrine = getShrine(shrineId);
+  const crop = getCrop(cropId);
+
+  if (!canOfferCropToShrine(state, shrineId, cropId)) {
+    if (shrine && crop && !isShrineMaxed(state, shrineId)) {
+      const activeTier = getActiveShrineTier(state, shrineId);
+      if (!activeTier || !tierAcceptsCrop(activeTier, cropId)) {
+        setGameText(
+          state,
+          `The ${shrineShortName(shrine)} shrine wants a different offering now.`,
+        );
+      }
+    }
     return false;
   }
 
-  const baseAmount = crop.shrineValues?.[shrineId];
-  if (typeof baseAmount !== 'number' || baseAmount <= 0) {
-    return false;
-  }
+  const baseAmount = crop.shrineValues[shrineId];
 
   if (!state.dragonTemple) {
     state.dragonTemple = createInitialDragonTemple();
