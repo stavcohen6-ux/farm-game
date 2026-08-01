@@ -9,6 +9,8 @@ const FADE_MS = 480;
 
 const CRITICAL_ASSETS = [
   OPENING_SCENE_SRC,
+  'assets/opening/opening_title.png',
+  'assets/opening/opening_play.png',
   'assets/scene/grove_clearing.png',
   'assets/scene/game_text_plank.png',
   'assets/icons/farm_frame.png',

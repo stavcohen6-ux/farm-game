@@ -798,8 +798,10 @@ pendingClose, pendingReward, triggerChance }`
 **Opening screen** then main farm. Opening (`#opening-screen`) shows on every
 fresh page load and again after confirmed **Reset game**. Journey-trail art
 (`assets/opening/opening_journey.png`) depicts the four guardian animals free
-in the forest (walking party — not shrine pedestal icons). Title **Harmony
-Grove** at the top; soft large **Play** button raised in the lower third
+in the forest (walking party — not shrine pedestal icons). Title uses a painted
+wordmark (`assets/opening/opening_title.png`, stacked Harmony / Grove with leaf
+flourish). Soft large **Play** uses matching cream parchment chrome
+(`assets/opening/opening_play.png`) with leaf accents, raised in the lower third
 (CSS only; background art unchanged). Play stays muted until critical assets
 preload (timeout fallback), then pulses gently; `prefers-reduced-motion`
 disables pulse/scene breathe. Play fades the opening out and reveals the main
