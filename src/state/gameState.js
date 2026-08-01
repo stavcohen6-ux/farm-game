@@ -259,16 +259,6 @@ export function isShrineFeedable(state, shrineId) {
   );
 }
 
-function formatAcceptedCropNames(tier) {
-  const names = (tier?.acceptedCropIds ?? [])
-    .map((id) => getCrop(id)?.name)
-    .filter(Boolean);
-  if (names.length === 0) return 'a different crop';
-  if (names.length === 1) return names[0];
-  if (names.length === 2) return `${names[0]} or ${names[1]}`;
-  return `${names.slice(0, -1).join(', ')}, or ${names[names.length - 1]}`;
-}
-
 function shrineShortName(shrine) {
   return shrine.name.replace(/\s+Shrine$/, '');
 }
@@ -1353,7 +1343,7 @@ export function offerCrop(state, shrineId, cropId, sourcePlotId = null) {
   if (!activeTier || !tierAcceptsCrop(activeTier, cropId)) {
     setGameText(
       state,
-      `The ${shrineShortName(shrine)} wants ${formatAcceptedCropNames(activeTier)} right now.`,
+      `The ${shrineShortName(shrine)} shrine wants a different offering now.`,
     );
     return false;
   }

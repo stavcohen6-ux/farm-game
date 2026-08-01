@@ -506,7 +506,7 @@ Corner cards show icon, name, next/max tier name, and active-tier progress.
 - Drag one inventory crop onto a shrine. Only crops on the **active tier’s
   allowlist** (`acceptedCropIds`) are accepted; others are rejected for now
   (not value 0 — locked until a later tier lists them) with short game text
-  (e.g. `The Frog wants Wheat or Root Loaf right now.`).
+  (e.g. `The Frog shrine wants a different offering now.`).
 - An accepted offering adds that crop’s `shrineValues[shrineId]` to progress;
   `progressRequired` per tier is data-driven (escalating; see Tiers).
   Overflow carries to the next tier. Dragon bonus multiplier still applies.
@@ -847,7 +847,7 @@ Triggers:
   arm `shrineEpilogueDueAt` (`now + SHRINE_EPILOGUE_DELAY_MS`, currently
   6000). The upgrade line above still shows first. When due (1s tick or
   load catch-up): if all shrines are still maxed, set
-  `Every shrine stands complete. The farm is legendary.` and set
+  `Every shrine stands complete. The forest rests.` and set
   `shrineEpilogueShown`. If shrines are no longer all maxed at due time
   (e.g. Dragon burn in the wait), clear `dueAt` only — do not set
   `shown`; a later all-maxed can arm again. `shown` is set only when the

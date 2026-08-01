@@ -178,7 +178,7 @@ export const SHRINE_EPILOGUE_DELAY_MS = 6000;
 
 /** Game-text line when all shrines are maxed (once per successful display). */
 export const SHRINE_EPILOGUE_LINE =
-  'Every shrine stands complete. The farm is legendary.';
+  'Every shrine stands complete. The forest rests.';
 
 export function getShrine(shrineId) {
   return SHRINES.find((shrine) => shrine.id === shrineId);
