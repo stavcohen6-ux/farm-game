@@ -1119,40 +1119,6 @@ body {
   transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
 }
 
-/* Soft depth by row — lighting only, same tap size.
-   Do not put filter/transform on .plot itself: that clips overflowing
-   .plot__mix-bridge seams into the grid gap. Soil tint via overlay
-   gradient; in-tile content (not the seam) gets brightness. */
-.plot[data-row='0'] {
-  background-image:
-    linear-gradient(rgba(20, 16, 12, 0.06), rgba(20, 16, 12, 0.06)),
-    url('assets/icons/plot_soil.png');
-}
-
-.plot[data-row='0'] > :not(.plot__mix-bridge) {
-  filter: brightness(0.94);
-}
-
-.plot[data-row='1'] {
-  background-image:
-    linear-gradient(rgba(20, 16, 12, 0.03), rgba(20, 16, 12, 0.03)),
-    url('assets/icons/plot_soil.png');
-}
-
-.plot[data-row='1'] > :not(.plot__mix-bridge) {
-  filter: brightness(0.97);
-}
-
-.plot[data-row='3'] {
-  background-image:
-    linear-gradient(rgba(255, 250, 240, 0.03), rgba(255, 250, 240, 0.03)),
-    url('assets/icons/plot_soil.png');
-}
-
-.plot[data-row='3'] > :not(.plot__mix-bridge) {
-  filter: brightness(1.03);
-}
-
 .plot--locked {
   background-color: #8a9298;
   background-image: url('assets/icons/plot_locked.png');
@@ -1166,11 +1132,6 @@ body {
     inset 0 2px 4px rgba(255, 255, 255, 0.18),
     inset 0 -2px 4px rgba(30, 36, 40, 0.3),
     0 2px 0 rgba(40, 48, 52, 0.28);
-}
-
-.plot--locked[data-row] {
-  filter: none;
-  background-image: url('assets/icons/plot_locked.png');
 }
 
 .plot--locked .game-icon {
@@ -1221,24 +1182,6 @@ body {
 
 .plot--flowered {
   background-image: url('assets/icons/plot_soil_flowered.png');
-}
-
-.plot--flowered[data-row='0'] {
-  background-image:
-    linear-gradient(rgba(20, 16, 12, 0.06), rgba(20, 16, 12, 0.06)),
-    url('assets/icons/plot_soil_flowered.png');
-}
-
-.plot--flowered[data-row='1'] {
-  background-image:
-    linear-gradient(rgba(20, 16, 12, 0.03), rgba(20, 16, 12, 0.03)),
-    url('assets/icons/plot_soil_flowered.png');
-}
-
-.plot--flowered[data-row='3'] {
-  background-image:
-    linear-gradient(rgba(255, 250, 240, 0.03), rgba(255, 250, 240, 0.03)),
-    url('assets/icons/plot_soil_flowered.png');
 }
 
 .plot--drag-over {

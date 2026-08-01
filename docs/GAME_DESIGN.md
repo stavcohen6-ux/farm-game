@@ -78,8 +78,7 @@ direction is intentionally revised.
   mossy-stone frame texture (`farm_frame.png`) and plot textures
   (`plot_soil.png`, full-tile `plot_soil_dry.png` when a plant asks for
   water, `plot_locked.png`) matching shrine / mood art; ready plots
-  keep honey glow on dirt; optional soft per-row brightness for depth without
-  changing tile size. Mood ref: `assets/mood/farm_board_lofi_ghibli_mood.png`
+  keep honey glow on dirt. Mood ref: `assets/mood/farm_board_lofi_ghibli_mood.png`
 - Locked farm plots: locked tile texture only — no lock emoji/icon overlay.
   Unlock uses a brief locked-to-soil fade (same textures, no lock icon).
 - **Player desk removed** from the live UI (inventory shelf + Mix row gone).

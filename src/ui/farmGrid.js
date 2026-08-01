@@ -156,7 +156,6 @@ export function renderGrid(
 function applyPlotPlacement(el, plotId) {
   const layout = getPlotLayout(plotId);
   if (!layout) return;
-  el.dataset.row = String(layout.row);
   el.style.gridRow = String(layout.row + 1);
   el.style.gridColumn = String(layout.col + 1);
 }
