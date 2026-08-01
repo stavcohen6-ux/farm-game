@@ -31,9 +31,11 @@ import { renderGrid } from './ui/farmGrid.js';
 import { renderShrines } from './ui/shrinesPanel.js';
 import {
   renderDragonTemple,
+  suppressNextDragonTempleFigureClick,
   updateDragonTempleLive,
   updateDragonTempleWrath,
 } from './ui/dragonTemplePanel.js';
+import { openDragonTempleDetail } from './ui/dragonTempleDetail.js';
 import { renderGameTextPanel } from './ui/gameTextPanel.js';
 import { openCropPicker } from './ui/cropPicker.js';
 import { openShrineDetail } from './ui/shrineDetail.js';
@@ -81,6 +83,7 @@ const dragonTempleHandlers = {
   onPlaceNext: handleDragonTemplePlaceNext,
   onClear: handleDragonTempleClear,
   onBurnComplete: handleDragonTempleBurnComplete,
+  onFigureClick: handleDragonTempleFigureClick,
 };
 
 function renderFarm() {
@@ -327,14 +330,20 @@ function handleShrineClick(shrineId) {
   openShrineDetail(state, shrineId);
 }
 
+function handleDragonTempleFigureClick() {
+  openDragonTempleDetail(state);
+}
+
 function handleDragonTemplePlace(slotIndex, cropId, plotId = null) {
   if (!placeDragonTempleSlot(state, slotIndex, cropId, plotId)) return;
+  suppressNextDragonTempleFigureClick();
   save(state);
   render();
 }
 
 function handleDragonTemplePlaceNext(cropId, plotId = null) {
   if (!placeDragonTempleNextSlot(state, cropId, plotId)) return;
+  suppressNextDragonTempleFigureClick();
   save(state);
   render();
 }
@@ -356,9 +365,12 @@ function handleDragonTempleBurnComplete() {
   window.setTimeout(() => {
     if (state.dragonTemple?.pendingClose !== outcome) return;
     if (!finalizeDragonTempleClose(state)) return;
+    if (outcome === 'success') {
+      playTempleWinPrize();
+      return;
+    }
     save(state);
     render();
-    if (outcome === 'success') playTempleWinPrize();
   }, DRAGON_TEMPLE.resultRevealMs);
 }
 

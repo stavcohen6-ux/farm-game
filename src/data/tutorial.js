@@ -21,7 +21,6 @@ export const TUTORIAL_LINES = {
 /** Exact Dragon / epilogue lines that block tutorial tips from overwriting. */
 const CRITICAL_GAME_TEXT_EXACT = new Set([
   'Dragon awakens! Offer crops or face its wrath.',
-  'The Dragon blesses your grove.',
   "The Dragon's wrath fades - you got lucky.",
   SHRINE_EPILOGUE_LINE,
 ]);
@@ -38,7 +37,10 @@ export function isTutorialGameText(text) {
 export function isCriticalGameText(text) {
   if (typeof text !== 'string' || text === '') return false;
   if (CRITICAL_GAME_TEXT_EXACT.has(text)) return true;
-  if (text.startsWith('The Dragon burnt your ') && text.endsWith(' shrine.')) {
+  if (text.startsWith('The Dragon blesses your ') && text.endsWith(' Shrine.')) {
+    return true;
+  }
+  if (text.startsWith('The Dragon burnt your ') && text.endsWith(' Shrine.')) {
     return true;
   }
   // e.g. "Frog Shrine upgraded"

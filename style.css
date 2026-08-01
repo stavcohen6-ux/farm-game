@@ -115,6 +115,7 @@ body {
 #app,
 .crop-picker-overlay,
 .shrine-detail-overlay,
+.dragon-temple-detail-overlay,
 .discovery-log-overlay,
 .reset-confirm-overlay,
 .uproot-confirm-overlay {
@@ -208,7 +209,8 @@ body {
   height: 4.75rem;
 }
 
-.game-icon--shrine-detail {
+.game-icon--shrine-detail,
+.game-icon--temple-detail {
   width: 2.75rem;
   height: 2.75rem;
 }
@@ -395,6 +397,7 @@ body {
   align-items: center;
   justify-content: center;
   width: 100%;
+  cursor: pointer;
   filter: drop-shadow(0 6px 12px rgba(42, 90, 60, 0.22));
   transition: filter 0.15s ease;
 }
@@ -951,6 +954,7 @@ body {
 /* Shrine detail modal */
 
 .shrine-detail-overlay,
+.dragon-temple-detail-overlay,
 .discovery-log-overlay,
 .reset-confirm-overlay,
 .uproot-confirm-overlay {
@@ -965,6 +969,7 @@ body {
 }
 
 .shrine-detail,
+.dragon-temple-detail,
 .discovery-log,
 .reset-confirm {
   background: var(--linen);
@@ -976,7 +981,8 @@ body {
     0 18px 40px rgba(42, 90, 60, 0.24);
 }
 
-.shrine-detail {
+.shrine-detail,
+.dragon-temple-detail {
   min-width: 280px;
   max-width: 360px;
   width: 90%;
@@ -984,7 +990,8 @@ body {
   overflow-y: auto;
 }
 
-.shrine-detail__title {
+.shrine-detail__title,
+.dragon-temple-detail__title {
   font-family: 'Quicksand', 'Nunito', system-ui, sans-serif;
   font-size: 1rem;
   font-weight: 700;
@@ -995,6 +1002,14 @@ body {
   justify-content: center;
   gap: 0.35rem;
   flex-wrap: wrap;
+}
+
+.dragon-temple-detail__body {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  text-align: left;
 }
 
 /* Icons use pointer-events: none globally; re-enable so hover tips work. */
@@ -1188,8 +1203,18 @@ body {
   background-image: url('assets/icons/plot_soil_flowered.png');
 }
 
-.plot--vined {
+/* Keep regular plot_soil.png; vines are a transparent overlay on top. */
+.plot--vined::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
   background-image: url('assets/icons/plot_soil_vined.png');
+  background-size: cover;
+  background-position: center;
+  pointer-events: none;
+  /* Match dry-patch: under crop icon / napper, above dirt background. */
+  z-index: 0;
 }
 
 .plot--drag-over {
@@ -1412,7 +1437,7 @@ body {
   transform-origin: 50% 80%;
 }
 
-/* Vine soil is background-image; keep napper/zzz above it on vined plots. */
+/* Vine overlay (::before) sits under napper/zzz so the critter stays in front. */
 .plot--vined .plot__napper {
   z-index: 3;
 }

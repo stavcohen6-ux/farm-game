@@ -1,4 +1,5 @@
 // Opening / title screen: forest journey art, preload, soft Play gate.
+import { startBackgroundMusic } from '../audio/backgroundMusic.js';
 import {
   listCropIconSrcs,
   shrineIconSrc,
@@ -99,6 +100,7 @@ export function installOpeningScreen({ onEnter, onWarm }) {
   let entering = false;
   let preloadGen = 0;
   let warmed = false;
+  let musicGestureArmed = false;
 
   function setPlayReady(isReady) {
     ready = isReady;
@@ -150,6 +152,23 @@ export function installOpeningScreen({ onEnter, onWarm }) {
     }, FADE_MS);
   }
 
+  function armMusicGestureFallback() {
+    if (musicGestureArmed) return;
+    musicGestureArmed = true;
+    const retry = () => {
+      root.removeEventListener('pointerdown', retry);
+      musicGestureArmed = false;
+      startBackgroundMusic();
+    };
+    root.addEventListener('pointerdown', retry);
+  }
+
+  function tryStartMusic() {
+    startBackgroundMusic().then((ok) => {
+      if (!ok) armMusicGestureFallback();
+    });
+  }
+
   function show() {
     entering = false;
     warmed = false;
@@ -158,6 +177,7 @@ export function installOpeningScreen({ onEnter, onWarm }) {
     root.setAttribute('aria-hidden', 'false');
     appEl.classList.add('app--gated');
     startPreload();
+    tryStartMusic();
   }
 
   playBtn.addEventListener('click', dismiss);

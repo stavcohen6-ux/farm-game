@@ -6,6 +6,37 @@ import { CROP_DRAG_TYPE, parseCropDragData } from './shrinesPanel.js';
 import { applyDecayUrgencyClass, appendWiltMark } from './decayUrgency.js';
 import { setCropIcon, setIcon, UI_ICONS } from './icon.js';
 
+// After a successful tribute place, HTML5 drag may still fire a click on the
+// figure; skip that one so place does not also open the explainer.
+let suppressFigureClick = false;
+
+export function suppressNextDragonTempleFigureClick() {
+  suppressFigureClick = true;
+}
+
+function wireTempleFigure(figure, onFigureClick) {
+  if (!figure || !onFigureClick) return;
+  figure.setAttribute('role', 'button');
+  figure.title = 'Dragon Temple';
+  figure.tabIndex = 0;
+  figure.onclick = () => {
+    if (suppressFigureClick) {
+      suppressFigureClick = false;
+      return;
+    }
+    onFigureClick();
+  };
+  figure.onkeydown = (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    if (suppressFigureClick) {
+      suppressFigureClick = false;
+      return;
+    }
+    onFigureClick();
+  };
+}
+
 function burnTotalMs() {
   return DRAGON_TEMPLE.burnPulseMs * DRAGON_TEMPLE.burnPulseCount;
 }
@@ -404,7 +435,7 @@ function clearTempleDropHandlers(container) {
 // Reuses the figure <img> and slot nodes across offers so ~1MB PNGs are not
 // re-decoded on every place. Full rebuild only when active/burning structure changes.
 export function renderDragonTemple(container, state, handlers) {
-  const { onBurnComplete } = handlers;
+  const { onBurnComplete, onFigureClick } = handlers;
   const temple = state.dragonTemple;
   const active = Boolean(temple?.active);
   const burning = Boolean(temple?.burning);
@@ -435,6 +466,7 @@ export function renderDragonTemple(container, state, handlers) {
   ) {
     patchMeters(meters, temple, active);
     setTempleFigure(figure, active);
+    wireTempleFigure(figure, onFigureClick);
     clearTempleDropHandlers(container);
     if (active && !burning && !temple.pendingClose) {
       wireTempleDropTarget(container, handlers.onPlaceNext);
@@ -454,6 +486,7 @@ export function renderDragonTemple(container, state, handlers) {
   const figureEl = document.createElement('div');
   figureEl.className = 'dragon-temple__figure';
   setTempleFigure(figureEl, active);
+  wireTempleFigure(figureEl, onFigureClick);
   stageEl.appendChild(figureEl);
   container.appendChild(stageEl);
 

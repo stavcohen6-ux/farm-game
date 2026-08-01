@@ -81,8 +81,9 @@ direction is intentionally revised.
 - Farm board: soft moss ground plane (quiet chrome) under the grid; painterly
   mossy-stone frame texture (`farm_frame.png`) and plot textures
   (`plot_soil.png`, full-tile `plot_soil_dry.png` when a plant asks for
-  water, `plot_soil_vined.png` after uproot while vines remain,
-  `plot_locked.png`) matching shrine / mood art; ready plots
+  water, vine overlay `plot_soil_vined.png` on top of regular soil after
+  uproot while vines remain, `plot_locked.png`) matching shrine / mood art;
+  ready plots
   keep honey glow on dirt. Mood ref: `assets/mood/farm_board_lofi_ghibli_mood.png`
 - Locked farm plots: locked tile texture only — no lock emoji/icon overlay.
   Unlock uses a brief locked-to-soil fade (same textures, no lock icon).
@@ -94,7 +95,7 @@ direction is intentionally revised.
   still uses `discovery_log.png` book art in the header. No standalone book
   button on the main screen.
 - Modals: cream linen inside sage / frame borders (Field Notes, shrine
-  detail, reset confirm)
+  detail, Dragon Temple explainer, reset confirm)
 - Shrines: simplified painterly guardian icons on small altars. Each corner
   cell of the 4×4 board is a shrine **footing** (no plot); the figure is
   **larger than a farm tile** and overflows past the farm frame border
@@ -112,7 +113,8 @@ direction is intentionally revised.
   meters space hidden. Active: awake dragon, demand ghost icons on empty
   slots, wrath bar fills above the art (ember timer colors, no numbers);
   when all four slots match the dragon auto-takes the tribute (ember burn,
-  no ember card chrome)
+  no ember card chrome). Click the figure for an asleep/awake explainer modal
+  (does not start or burn the event)
 - Buttons: moss fills; quiet, not neon
 
 ### Icons
@@ -586,7 +588,7 @@ No wall-clock timer; lose via plant-fueled wrath.
 | Config | `src/data/dragonTemple.js` |
 | State / mutators | `src/state/gameState.js` |
 | Persistence | `src/state/persistence.js` |
-| UI | `src/ui/dragonTemplePanel.js`, `src/ui/templeRewardFly.js` |
+| UI | `src/ui/dragonTemplePanel.js`, `src/ui/dragonTempleDetail.js`, `src/ui/templeRewardFly.js` |
 | Mount | `#dragon-temple` in `index.html` |
 
 ### Config (data-driven, current values)
@@ -625,18 +627,20 @@ does not weight the tribute). Total burn animation ≈
 - Resting: sleeping dragon; four faded empty board slots (not interactive);
   meters reserved but hidden.
 - Active: awake dragon; board slots show demand ghost icons; wrath meter
-  visible. No whole-object hover lift. Players do not click the dragon.
+  visible. No whole-object hover lift. Click the dragon figure for an
+  explainer modal (asleep vs awake copy); players do not click the figure
+  to start or burn the event.
 
 ### Resting vs active
-- Resting: sleeping figure; faded board slots only. Click / double-click does
-  nothing (event is not player-started).
+- Resting: sleeping figure; faded board slots only. Figure click opens the
+  asleep explainer (event is not player-started).
 - Active: awake figure; wrath bar (fills toward `wrathMax`, ember timer-bar
   colors, no numbers) above the art; demand slots on the tribute board.
+  Figure click opens the awake explainer.
 - After a win: game text panel shows
-  `The Dragon blesses your grove.`
+  `The Dragon blesses your {Frog|Monkey|Fox|Tiger} Shrine.`
 - After a loss: game text panel shows
-  `The Dragon burnt your {animal} shrine.` (animal from the shrine name
-  without trailing ` Shrine`, e.g. Frog / Fox / Monkey / Tiger).
+  `The Dragon burnt your {Frog|Monkey|Fox|Tiger} Shrine.`
   If no shrine has progress to burn:
   `The Dragon's wrath fades - you got lucky.`
 - `lastResult` is still stored (`null` | `'success'` | `'failed'`) but no
@@ -880,9 +884,9 @@ Triggers:
   epilogue text is actually written. Dragon burn clears a pending `dueAt`
   immediately when shrines drop below all-maxed.
 - Dragon Temple wake: `Dragon awakens! Offer crops or face its wrath.`
-- Dragon Temple win: `The Dragon blesses your grove.`
+- Dragon Temple win: `The Dragon blesses your {Frog|Monkey|Fox|Tiger} Shrine.`
 - Dragon Temple lose with burn:
-  `The Dragon burnt your {Frog|Monkey|Fox|Tiger} shrine.`
+  `The Dragon burnt your {Frog|Monkey|Fox|Tiger} Shrine.`
   UI also plays rising fire overlays on that shrine (once; shrine art stays
   still). Plant and offer wrath paths only — load/tick catch-up skips VFX.
 - Dragon Temple lose with nothing to burn:
@@ -926,8 +930,9 @@ Disturbed soil left after **Uproot**. Soft consequence — no growth slowdown.
 
 - **Trigger:** Successful uproot sets `vined: true` (and clears the crop).
   Boolean only; uprooting again on a vined plot leaves vines as-is.
-- **Look:** Vine soil art (`assets/icons/plot_soil_vined.png`) on empty and
-  growing vined plots (top-left L footprint, same language as flowered).
+- **Look:** Transparent vine overlay (`assets/icons/plot_soil_vined.png`) on
+  empty and growing vined plots, painted over regular `plot_soil.png` (top-left
+  L footprint, same language as flowered — not a full-tile soil swap).
 - **Planting:** Immediate; no clear-tap or wait.
 - **While growing on vines:** Normal `growthMs`. Plant-time care rolls
   schedule **neither** water nor butterfly.

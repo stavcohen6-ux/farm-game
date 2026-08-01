@@ -1305,12 +1305,6 @@ export function pickBurnableShrine(state) {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-function shrineAnimalName(shrineId) {
-  const shrine = getShrine(shrineId);
-  if (!shrine?.name) return 'shrine';
-  return shrine.name.replace(/ Shrine$/, '');
-}
-
 // Drop one shrine tier (or clear bar progress at tier 0) and revoke that tier's buffs.
 export function burnShrine(state, shrineId) {
   const progress = state.shrines?.[shrineId];
@@ -1362,7 +1356,7 @@ export function applyDragonTempleLosePenalty(state) {
   burnShrine(state, shrineId);
   setGameText(
     state,
-    `The Dragon burnt your ${shrineAnimalName(shrineId)} shrine.`,
+    `The Dragon burnt your ${getShrine(shrineId)?.name ?? 'shrine'}.`,
   );
   return shrineId;
 }
@@ -1810,10 +1804,6 @@ export function finalizeDragonTempleClose(state) {
   temple.pendingClose = null;
   if (result === 'success') {
     temple.pendingReward = true;
-    setGameText(
-      state,
-      'The Dragon blesses your grove.',
-    );
   } else {
     applyDragonTempleLosePenalty(state);
   }
@@ -1831,6 +1821,11 @@ export function claimTempleWinReward(state) {
   temple.pendingReward = false;
   const shrineId = pickTempleRewardShrine(state);
   if (!shrineId) return false;
+
+  setGameText(
+    state,
+    `The Dragon blesses your ${getShrine(shrineId)?.name ?? 'shrine'}.`,
+  );
 
   if (isShrineMaxed(state, shrineId)) {
     return { shrineId, unlockedPlotIds: [], maxed: true };
