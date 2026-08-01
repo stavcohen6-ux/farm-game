@@ -92,6 +92,7 @@ export function renderGrid(
       napArriving,
       napLeaving,
       uprooting,
+      wateringPlotIds,
     );
     const existing = existingById.get(plot.id);
     if (existing && existing.dataset.plotKey === key) {
@@ -118,6 +119,7 @@ export function renderGrid(
         napLeaving,
         uprooting,
         mixShine,
+        wateringPlotIds,
       );
       if (unlocking && onUnlockAnimationEnd) {
         wireUnlockAnimation(el, plot.id, unlockingPlotIds, onUnlockAnimationEnd);
@@ -149,6 +151,7 @@ export function renderGrid(
     },
     onUprootHold,
     uprootingPlotIds,
+    wateringPlotIds,
   );
   wireGrowingPlotUprootHold(container, state, now, onUprootHold, uprootingPlotIds);
 }
@@ -227,6 +230,7 @@ function plotKey(
   napArriving,
   napLeaving,
   uprooting,
+  wateringPlotIds = new Set(),
 ) {
   const flower = plot.flowered ? 'flowered' : 'plain';
   const vine = plot.vined ? 'vined' : 'clean';
@@ -243,11 +247,18 @@ function plotKey(
   const crop = getCrop(plot.crop.cropId);
   if (!crop) return `empty:${flower}:${vine}`;
   if (uprooting) return `uprooting:${crop.id}:${flower}:${vine}`;
-  if (watering) return `growing:${crop.id}:watering:${flower}:${vine}`;
+  // Stable mid-rain key: ignore flower/vine so land-care churn cannot remount
+  // and kill the sprinkle CSS animation.
+  if (watering) return `growing:${crop.id}:watering`;
   if (critterFlying) return `growing:${crop.id}:critter-fly:${flower}:${vine}`;
   const ready = isReady(plot, now);
   if (ready) {
-    const mix = getMixBridgeSides(state, plot.id, now).join('');
+    const mix = getMixBridgeSides(
+      state,
+      plot.id,
+      now,
+      wateringPlotIds,
+    ).join('');
     return `ready:${crop.id}:${flower}:mix:${mix}`;
   }
   const thirsty = needsWater(plot, now);
@@ -374,6 +385,7 @@ function renderPlot(
   napLeaving,
   uprooting,
   mixShine,
+  wateringPlotIds = new Set(),
 ) {
   const el = document.createElement('div');
   el.dataset.plotId = plot.id;
@@ -475,7 +487,10 @@ function renderPlot(
   }
 
   if (ready) {
-    appendMixBridges(el, getMixBridgeSides(state, plot.id, now));
+    appendMixBridges(
+      el,
+      getMixBridgeSides(state, plot.id, now, wateringPlotIds),
+    );
   }
 
   if (!ready) {

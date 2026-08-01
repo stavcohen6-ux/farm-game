@@ -1,14 +1,13 @@
 import { setIcon, cropIconSrc, UI_ICONS } from './icon.js';
 
-const FLY_MS = 700;
-const LAND_MS = 180;
+const FLY_MS = 2500;
 const ARC_LIFT_PX = 48;
-const BONUS_SPARK_MS = 1000;
+const BONUS_SPARK_MS = 5000;
 const BONUS_SPARK_DISTANCE_PX = 50;
 const BONUS_SPARK_SIZE_PX = 20;
 
 // Spawns a crop tile that arcs from `sourceRect` to the center of
-// `targetRect`, softens on arrival, then calls `onComplete`.
+// `targetRect`, then removes itself and calls `onComplete`.
 // When `withSparks` is true, four sparks fly outward from the flyer corners.
 export function playHarvestCropFly({
   sourceRect,
@@ -63,13 +62,8 @@ export function playHarvestCropFly({
   );
 
   flight.onfinish = () => {
-    flyer.style.transform = `translate(${endX}px, ${endY}px)`;
-    flyer.classList.add('bonus-crop-fly--landed');
-
-    window.setTimeout(() => {
-      flyer.remove();
-      onComplete?.();
-    }, LAND_MS);
+    flyer.remove();
+    onComplete?.();
   };
 }
 

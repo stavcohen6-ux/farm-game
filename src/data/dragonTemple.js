@@ -9,7 +9,7 @@ export const DRAGON_TEMPLE = {
   burnPulseCount: 3, // fire pulses before slotted crops disappear
   resultRevealMs: 500, // pause after burn before win close
   // Win prize: next N offerings to the blessed shrine grant multiplied points
-  rewardBonusOfferings: 3,
+  rewardBonusOfferings: 1,
   rewardProgressMultiplier: 2, // 100% bonus = double offering progress
   rewardSparkCount: 4, // spark emojis that fly temple → shrine
   rewardSparkIcon: '✨',

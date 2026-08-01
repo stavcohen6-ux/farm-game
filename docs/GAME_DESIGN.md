@@ -605,7 +605,7 @@ No wall-clock timer; lose via plant-fueled wrath.
 | `burnPulseMs` | Length of one ember-wash fire pulse | 1.2s |
 | `burnPulseCount` | Fire pulses before crops clear | 3 |
 | `resultRevealMs` | Pause after burn before win close | 500ms |
-| `rewardBonusOfferings` | Bonus offerings granted by a win prize | 3 |
+| `rewardBonusOfferings` | Bonus offerings granted by a win prize | 1 |
 | `rewardProgressMultiplier` | Progress multiplier while bonus offerings remain | 2 (100% bonus) |
 | `rewardSparkCount` | Sparks that fly temple → shrine | 4 |
 | `rewardSparkIcon` | Spark emoji | ✨ |
@@ -713,7 +713,7 @@ hidden (`triggerChance`, never shown in UI) and persists across refresh/reload.
 - Closing (win or lose) returns any leftover non-burning slotted crops to
   inventory.
 - After a win (temple already back to resting): a shrine blessing of
-  `rewardBonusOfferings` (3) doubled-progress offerings is applied immediately
+  `rewardBonusOfferings` (1) doubled-progress offerings is applied immediately
   and flagged via `pendingReward` until claimed. Uses stack if the same shrine
   is blessed again before they are spent. Then ~4 spark emojis (✨) fly from the
   temple to the chosen shrine (visual only). Prefer a non-maxed shrine; if every
@@ -823,6 +823,8 @@ re-shows the opening (no full page reload).
 Ambient BGM (`assets/audio/farm_background_music.mp3`) starts on the opening
 screen (autoplay when the browser allows; otherwise on the first tap). Native
 loop; no mute control yet. Music keeps playing after Play and across Reset.
+Pauses while the page is hidden (minimized window, backgrounded tab/app) and
+resumes when the page becomes visible again.
 
 Main farm in a scenic grove stage + info band (Field Notes game-text plank) +
 Dragon Temple. Overlays: radial crop picker (anchored to the clicked plot),

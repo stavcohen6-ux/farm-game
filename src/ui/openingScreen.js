@@ -25,6 +25,8 @@ const GAME_CRITICAL_ASSETS = [
   'assets/icons/plot_soil_vined.png',
   UI_ICONS.dragonRest,
   UI_ICONS.dragonAwake,
+  UI_ICONS.dragonFaceRest,
+  UI_ICONS.dragonFaceAwake,
   UI_ICONS.discoveryLog,
   UI_ICONS.fire,
   UI_ICONS.spark,

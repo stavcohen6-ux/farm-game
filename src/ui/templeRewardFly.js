@@ -1,7 +1,7 @@
 import { DRAGON_TEMPLE } from '../data/dragonTemple.js';
 import { setIcon, UI_ICONS } from './icon.js';
 
-const FLY_MS = 4200; // ~6× slower than the tiger bonus fly (700ms)
+const FLY_MS = 4200; // slightly slower than the tiger bonus fly (2500ms)
 const ARC_LIFT_PX = 48;
 const STAGGER_MS = 80;
 const SPARK_SIZE_PX = 28;

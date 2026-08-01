@@ -30,13 +30,15 @@ export function wireReadyCropPointerDrag(
   onDrop,
   onLongPress = null,
   uprootingPlotIds = new Set(),
+  wateringPlotIds = new Set(),
 ) {
   for (const el of container.querySelectorAll('[data-plot-id]')) {
     const plotId = Number(el.dataset.plotId);
     const plot = state.plots.find((p) => p.id === plotId);
     const ready =
       Boolean(plot?.crop && isReady(plot, now)) &&
-      !uprootingPlotIds.has(plotId);
+      !uprootingPlotIds.has(plotId) &&
+      !wateringPlotIds.has(plotId);
     // Keep the in-flight drag plot intact across the 1s farm tick so we
     // don't strip plot--dragging or drop its pointer handlers mid-gesture.
     const isActiveDrag = session?.drag?.plotId === plotId;

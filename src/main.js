@@ -175,6 +175,11 @@ function handlePlotClick(plotId) {
     window.setTimeout(() => {
       if (!wateringPlotIds.has(plotId)) return;
       wateringPlotIds.delete(plotId);
+      const watered = state.plots.find((p) => p.id === plotId);
+      if (watered?.vined && watered.crop && isReady(watered, Date.now())) {
+        watered.vined = false;
+        save(state);
+      }
       render();
     }, WATERING_ANIM_MS);
     return;

@@ -693,7 +693,8 @@ body {
   flex: 0 1 auto;
   min-height: 0;
   align-self: center;
-  width: fit-content;
+  /* Explicit width so blessing drop-shadow ink cannot inflate fit-content */
+  width: calc(var(--farm-band-width) + 6px); /* + border 3px × 2; border-box */
   max-width: 100%;
   box-sizing: border-box;
   display: block;
@@ -881,15 +882,19 @@ body {
   align-items: flex-end;
   justify-content: center;
   width: var(--shrine-col);
+  height: var(--shrine-figure);
   flex-shrink: 0;
-  min-height: var(--shrine-figure);
+  /* Isolate descendant blessing filters from flex / board intrinsic sizing */
+  contain: size layout;
+  overflow: visible;
   filter: drop-shadow(0 6px 10px rgba(42, 90, 60, 0.22));
   transition: filter 0.14s ease;
 }
 
 /* Dragon win blessing: thin amber silhouette rim (no bloom; bar untouched).
-   Rim lives on the icon so it is not expanded by the figure's soft ground blur. */
-.shrine--dragon-blessed .shrine__icon {
+   Rim lives on the PNG so it is not expanded by the figure's soft ground blur,
+   and stays off the flex-sized icon wrapper. */
+.shrine--dragon-blessed .shrine__icon .game-icon--shrine-object {
   filter: drop-shadow(3px 0 0 rgb(245, 176, 40))
     drop-shadow(-3px 0 0 rgb(245, 176, 40))
     drop-shadow(0 3px 0 rgb(245, 176, 40))
@@ -900,7 +905,7 @@ body {
   filter: drop-shadow(0 0 8px rgba(95, 154, 114, 0.75));
 }
 
-.shrine--dragon-blessed.shrine--drag-over .shrine__icon {
+.shrine--dragon-blessed.shrine--drag-over .shrine__icon .game-icon--shrine-object {
   filter: drop-shadow(3px 0 0 rgb(245, 176, 40))
     drop-shadow(-3px 0 0 rgb(245, 176, 40))
     drop-shadow(0 3px 0 rgb(245, 176, 40))
@@ -2198,17 +2203,11 @@ body {
   align-items: center;
   justify-content: center;
   border-radius: 12px;
-  background: #4d8258;
+  background: #ffe566;
   font-size: var(--tile-font);
   pointer-events: none;
   overflow: visible;
-  transition: background-color 0.18s ease;
   box-shadow: 0 0 0 2px var(--honey);
-}
-
-.bonus-crop-fly--landed {
-  background: var(--parchment);
-  box-shadow: none;
 }
 
 .bonus-crop-fly__icon {

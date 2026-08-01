@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Resolve assets/ relative to project root (not /mocks/). -->
+  <base href="../" />
+  <title>Tiger bonus crop fly — mockup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --moss: #5f9a72;
+      --moss-deep: #3d7a52;
+      --parchment: #f4faf4;
+      --honey: #e6c65a;
+      --ink: #2a3d30;
+      --muted: #5f7466;
+      --soil: #5f4634;
+      --panel-border: #9ec9aa;
+      --tile: 4rem;
+      --tile-font: 1.5rem;
+      --shrine-figure: 5.5rem;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100dvh;
+      font-family: 'Nunito', system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 90% 70% at 50% 0%, #e8fff0 0%, transparent 55%),
+        linear-gradient(180deg, #d8f0e0 0%, #b8dcc8 50%, #9ecab0 100%);
+      padding: 1.25rem;
+    }
+
+    .mock {
+      max-width: 52rem;
+      margin: 0 auto;
+      display: grid;
+      gap: 1rem;
+    }
+
+    header h1 {
+      font-size: 1.35rem;
+      font-weight: 800;
+    }
+
+    header p {
+      margin-top: 0.35rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.45;
+      max-width: 40rem;
+    }
+
+    .stage-wrap {
+      background: rgba(244, 250, 244, 0.72);
+      border: 1.5px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem 1.5rem;
+    }
+
+    .stage-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.85rem;
+    }
+
+    .stage {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 3.5rem;
+      min-height: 11rem;
+      padding: 1rem 1.25rem;
+      border-radius: 14px;
+      background:
+        radial-gradient(ellipse 70% 80% at 40% 60%, rgba(255, 255, 255, 0.35), transparent),
+        #9ecab0;
+    }
+
+    .plot {
+      width: var(--tile);
+      height: var(--tile);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      font-size: var(--tile-font);
+      background-color: var(--soil);
+      background-image: url('assets/icons/plot_soil.png');
+      background-size: cover;
+      background-position: center;
+      box-shadow:
+        inset 0 3px 6px rgba(20, 12, 8, 0.4),
+        0 2px 0 rgba(30, 40, 28, 0.28);
+    }
+
+    .plot--empty {
+      opacity: 0.55;
+    }
+
+    .plot--empty .plot-crop {
+      visibility: hidden;
+    }
+
+    .shrine {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .shrine__icon {
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .shrine__name {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .game-icon {
+      width: 1.55em;
+      height: 1.55em;
+      display: block;
+      object-fit: contain;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .game-icon--shrine-object {
+      width: var(--shrine-figure);
+      height: var(--shrine-figure);
+    }
+
+    .game-icon--tiny {
+      width: 0.85rem;
+      height: 0.85rem;
+    }
+
+    /* Mirrored from style.css — keep in sync with live game */
+    .bonus-crop-fly {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      background: #ffe566;
+      font-size: var(--tile-font);
+      pointer-events: none;
+      overflow: visible;
+      box-shadow: 0 0 0 2px var(--honey);
+    }
+
+    .bonus-crop-fly__icon {
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bonus-crop-spark {
+      position: absolute;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      align-items: center;
+    }
+
+    button,
+    select {
+      font: inherit;
+      font-weight: 700;
+      border-radius: 10px;
+      border: 1.5px solid var(--panel-border);
+      background: var(--parchment);
+      color: var(--ink);
+      padding: 0.45rem 0.85rem;
+      cursor: pointer;
+    }
+
+    button.primary {
+      background: var(--moss);
+      border-color: var(--moss-deep);
+      color: #f4faf4;
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: default;
+    }
+
+    label.opt {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .panel {
+      background: rgba(244, 250, 244, 0.72);
+      border: 1.5px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 1rem 1.15rem;
+    }
+
+    .panel h2 {
+      font-size: 0.95rem;
+      font-weight: 800;
+      margin-bottom: 0.55rem;
+    }
+
+    .constants {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+      gap: 0.45rem 1rem;
+      font-size: 0.85rem;
+    }
+
+    .constants dt {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .constants dd {
+      font-variant-numeric: tabular-nums;
+      font-weight: 800;
+      margin-bottom: 0.35rem;
+    }
+
+    .notes {
+      width: 100%;
+      min-height: 7rem;
+      resize: vertical;
+      font: inherit;
+      font-size: 0.95rem;
+      line-height: 1.45;
+      padding: 0.75rem;
+      border-radius: 10px;
+      border: 1.5px solid var(--panel-border);
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .notes-hint {
+      margin-top: 0.45rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .status {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--muted);
+      min-height: 1.25rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="mock">
+    <header>
+      <h1>Tiger bonus crop fly</h1>
+      <p>
+        Mock of the spark-fly VFX when Tiger grants a bonus offering
+        (plot → shrine). Uses the live <code>playHarvestCropFly</code> from
+        <code>src/ui/bonusCropFly.js</code>. Play it, then jot notes below
+        or reply in chat.
+      </p>
+    </header>
+
+    <div class="stage-wrap">
+      <div class="stage-label">Stage — empty plot after offer → Tiger shrine</div>
+      <div class="stage" id="stage">
+        <div class="plot plot--empty" id="source-plot" aria-label="Source plot">
+          <span class="plot-crop" id="plot-crop"></span>
+        </div>
+        <div class="shrine" id="target-shrine">
+          <div class="shrine__icon" id="shrine-icon"></div>
+          <div class="shrine__name">Tiger Shrine</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button type="button" class="primary" id="btn-play">Play bonus fly</button>
+      <button type="button" id="btn-loop">Loop</button>
+      <label class="opt">
+        <input type="checkbox" id="opt-sparks" checked />
+        Corner sparks
+      </label>
+      <label class="opt">
+        Crop
+        <select id="opt-crop">
+          <option value="wheat">wheat</option>
+          <option value="turnip">turnip</option>
+          <option value="blueberry">blueberry</option>
+          <option value="moonflower">moonflower</option>
+          <option value="golden_pumpkin" selected>golden_pumpkin</option>
+          <option value="sunfruit">sunfruit</option>
+          <option value="solar_gourd">solar_gourd</option>
+        </select>
+      </label>
+      <span class="status" id="status" aria-live="polite"></span>
+    </div>
+
+    <section class="panel">
+      <h2>Live constants (<code>bonusCropFly.js</code>)</h2>
+      <dl class="constants">
+        <div><dt>FLY_MS</dt><dd>2500</dd></div>
+        <div><dt>ARC_LIFT_PX</dt><dd>48</dd></div>
+        <div><dt>BONUS_SPARK_MS</dt><dd>5000</dd></div>
+        <div><dt>BONUS_SPARK_DISTANCE_PX</dt><dd>50</dd></div>
+        <div><dt>BONUS_SPARK_SIZE_PX</dt><dd>20</dd></div>
+        <div><dt>Arc keyframe offset</dt><dd>0.45</dd></div>
+        <div><dt>Easing</dt><dd>ease-out</dd></div>
+      </dl>
+    </section>
+
+    <section class="panel">
+      <h2>Your notes</h2>
+      <textarea
+        class="notes"
+        id="notes"
+        placeholder="e.g. arc feels too flat · sparks linger after land · want slower fly · tile green flash too strong…"
+      ></textarea>
+      <p class="notes-hint">
+        Notes stay in this tab only (not saved). Paste them into chat when
+        you are ready — I will iterate from there.
+      </p>
+    </section>
+  </div>
+
+  <script type="module">
+    import { playHarvestCropFly } from '../src/ui/bonusCropFly.js?v=2500-no-white';
+    import { setIcon, cropIconSrc, shrineIconSrc } from '../src/ui/icon.js?v=2500-no-white';
+
+    const CROP_EMOJI = {
+      wheat: '🌾',
+      turnip: '🥬',
+      blueberry: '🫐',
+      moonflower: '🪷',
+      golden_pumpkin: '🎃',
+      sunfruit: '🥭',
+      solar_gourd: '🎃',
+    };
+
+    const plotEl = document.getElementById('source-plot');
+    const plotCropEl = document.getElementById('plot-crop');
+    const shrineIconEl = document.getElementById('shrine-icon');
+    const cropSelect = document.getElementById('opt-crop');
+    const sparksCheck = document.getElementById('opt-sparks');
+    const btnPlay = document.getElementById('btn-play');
+    const btnLoop = document.getElementById('btn-loop');
+    const statusEl = document.getElementById('status');
+
+    let playing = false;
+    let looping = false;
+    let loopTimer = null;
+
+    setIcon(shrineIconEl, {
+      src: shrineIconSrc('tiger'),
+      emoji: '🐯',
+      imgClass: 'game-icon game-icon--shrine-object',
+    });
+
+    function selectedCropId() {
+      return cropSelect.value;
+    }
+
+    function refreshPlotIcon() {
+      const cropId = selectedCropId();
+      setIcon(plotCropEl, {
+        src: cropIconSrc(cropId),
+        emoji: CROP_EMOJI[cropId] ?? '',
+        imgClass: 'game-icon',
+      });
+    }
+
+    refreshPlotIcon();
+    cropSelect.addEventListener('change', refreshPlotIcon);
+
+    function setStatus(text) {
+      statusEl.textContent = text;
+    }
+
+    function playOnce() {
+      if (playing) return Promise.resolve();
+      playing = true;
+      btnPlay.disabled = true;
+      setStatus('Flying…');
+
+      // Match in-game timing: plot is already empty when bonus flies.
+      plotEl.classList.add('plot--empty');
+
+      const cropId = selectedCropId();
+      return new Promise((resolve) => {
+        playHarvestCropFly({
+          sourceRect: plotEl.getBoundingClientRect(),
+          targetRect: shrineIconEl.getBoundingClientRect(),
+          cropId,
+          icon: CROP_EMOJI[cropId] ?? '',
+          withSparks: sparksCheck.checked,
+          onComplete: () => {
+            playing = false;
+            btnPlay.disabled = false;
+            setStatus('Landed');
+            resolve();
+          },
+        });
+      });
+    }
+
+    async function loopTick() {
+      if (!looping) return;
+      await playOnce();
+      if (!looping) return;
+      loopTimer = window.setTimeout(loopTick, 400);
+    }
+
+    btnPlay.addEventListener('click', () => {
+      playOnce();
+    });
+
+    btnLoop.addEventListener('click', () => {
+      looping = !looping;
+      btnLoop.textContent = looping ? 'Stop loop' : 'Loop';
+      if (looping) {
+        loopTick();
+      } else if (loopTimer) {
+        window.clearTimeout(loopTimer);
+        loopTimer = null;
+        setStatus(playing ? 'Flying…' : 'Loop stopped');
+      }
+    });
+
+    // Space to replay
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && e.target === document.body) {
+        e.preventDefault();
+        playOnce();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -370,10 +370,18 @@ export function areAdjacentPlots(plotIdA, plotIdB) {
  * Idle mix-hint edges owned by this plot (east/south only so each shared
  * seam is drawn once). Empty unless this plot and that neighbor are both
  * ready and match an alchemy recipe.
+ * `wateringPlotIds`: mid-rain plots are treated as not ready so mix seams
+ * do not remount neighbors (and kill the sprinkle) when water finishes growth.
  */
-export function getMixBridgeSides(state, plotId, now = Date.now()) {
+export function getMixBridgeSides(
+  state,
+  plotId,
+  now = Date.now(),
+  wateringPlotIds = new Set(),
+) {
   const plot = state.plots.find((p) => p.id === plotId);
   if (!plot?.crop || plot.locked || !isReady(plot, now)) return [];
+  if (wateringPlotIds.has(plotId)) return [];
   if (isPlotNapped(state, plotId)) return [];
 
   const layout = getPlotLayout(plotId);
@@ -390,6 +398,7 @@ export function getMixBridgeSides(state, plotId, now = Date.now()) {
     if (!neighborLayout) continue;
     const neighbor = state.plots.find((p) => p.id === neighborLayout.id);
     if (!neighbor?.crop || neighbor.locked || !isReady(neighbor, now)) continue;
+    if (wateringPlotIds.has(neighbor.id)) continue;
     if (isPlotNapped(state, neighbor.id)) continue;
     if (!findAlchemyResult(plot.crop.cropId, neighbor.crop.cropId)) continue;
     sides.push(side);
@@ -620,9 +629,8 @@ export function waterPlot(state, plotId, now = Date.now()) {
   const savedMs = Math.min(getWaterTimeSavedMs(crop), remaining);
   plot.crop.growthMs = elapsed + (remaining - savedMs);
   plot.crop.watered = true;
-  if (plot.vined && isReady(plot, now)) {
-    plot.vined = false;
-  }
+  // Vine clear waits until the watering sprinkle ends (see main.js timeout)
+  // so ready-time land-care does not remount the raining tile.
   return true;
 }
 
