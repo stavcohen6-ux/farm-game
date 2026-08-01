@@ -55,6 +55,8 @@ export const UI_ICONS = {
   // Query bust so rest/awake roof cutouts aren't stuck behind old full-temple caches.
   dragonRest: `${ICON_BASE}/dragon_temple_rest.png?v=roof2`,
   dragonAwake: `${ICON_BASE}/dragon_temple_awake.png?v=roof2`,
+  dragonFaceRest: `${ICON_BASE}/log_dragon_rest.png`,
+  dragonFaceAwake: `${ICON_BASE}/log_dragon_awake.png`,
   fire: `${ICON_BASE}/fire.png`,
   mortar: `${ICON_BASE}/mortar.png`,
   harvest: `${ICON_BASE}/harvest.png`,

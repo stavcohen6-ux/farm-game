@@ -31,10 +31,11 @@ function clearPinned() {
   pinnedEl = null;
 }
 
-export function showCropTip(anchor, name, { large = false } = {}) {
+export function showCropTip(anchor, name, { large = false, small = false } = {}) {
   const tip = ensureCropTip();
   tip.textContent = name;
   tip.classList.toggle('crop-tip--large', large);
+  tip.classList.toggle('crop-tip--small', small);
   tip.hidden = false;
   const rect = anchor.getBoundingClientRect();
   tip.style.left = `${rect.left + rect.width / 2}px`;
@@ -44,6 +45,16 @@ export function showCropTip(anchor, name, { large = false } = {}) {
 export function hideCropTip() {
   clearPinned();
   if (cropTipEl) cropTipEl.hidden = true;
+}
+
+/** Pin tip until tap again on the same anchor or tap elsewhere. */
+export function pinCropTip(anchor, name, options = {}) {
+  if (pinnedEl === anchor) {
+    hideCropTip();
+    return;
+  }
+  showCropTip(anchor, name, options);
+  setPinned(anchor);
 }
 
 function isTouchLike(event) {
@@ -61,11 +72,6 @@ export function bindCropTip(el, name, options = {}) {
   });
   el.addEventListener('pointerup', (event) => {
     if (!isTouchLike(event)) return;
-    if (pinnedEl === el) {
-      hideCropTip();
-      return;
-    }
-    showCropTip(el, name, options);
-    setPinned(el);
+    pinCropTip(el, name, options);
   });
 }

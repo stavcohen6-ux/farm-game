@@ -302,6 +302,13 @@ function wireUnlockAnimation(el, plotId, unlockingPlotIds, onUnlockAnimationEnd)
   el.addEventListener('animationend', onEnd);
 }
 
+function appendVineOverlay(el) {
+  const vines = document.createElement('span');
+  vines.className = 'plot__vines';
+  vines.setAttribute('aria-hidden', 'true');
+  el.appendChild(vines);
+}
+
 function appendWaterSprinkle(el) {
   const sprinkle = document.createElement('span');
   sprinkle.className = 'plot__water-sprinkle';
@@ -394,6 +401,7 @@ function renderPlot(
       plot.crop && !watering && !critterFlying && isReady(plot, now);
     if (!readyForSoil) {
       el.classList.add('plot--vined');
+      appendVineOverlay(el);
     }
   }
 

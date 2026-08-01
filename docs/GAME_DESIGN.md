@@ -113,8 +113,9 @@ direction is intentionally revised.
   meters space hidden. Active: awake dragon, demand ghost icons on empty
   slots, wrath bar fills above the art (ember timer colors, no numbers);
   when all four slots match the dragon auto-takes the tribute (ember burn,
-  no ember card chrome). Click the figure for an asleep/awake explainer modal
-  (does not start or burn the event)
+  no ember card chrome). Click the figure for a titleless explainer with
+  asleep/awake face icons (`log_dragon_rest.png` / `log_dragon_awake.png`)
+  top-left and wrapping body (does not start or burn the event)
 - Buttons: moss fills; quiet, not neon
 
 ### Icons
@@ -123,7 +124,8 @@ Dragon Temple: cozy lofi 2D painterly icons with true transparency (no baked
 checkerboard or cream canvas). Soft mist belongs on the scenic backdrop;
 cutout icons sit cleanly in the grove. Each crop must be unmistakable at
 ~64px. Field Notes shrine-value faces (`log_frog.png`, `log_monkey.png`,
-`log_fox.png`, `log_tiger.png`) stay emoji-simple. Assets under
+`log_fox.png`, `log_tiger.png`) and Dragon Temple explainer faces
+(`log_dragon_rest.png`, `log_dragon_awake.png`) stay emoji-simple. Assets under
 `assets/icons/`; scene under `assets/scene/`. Emoji remain as fallback
 until an asset exists. Prior Fresh Moss backups:
 `assets/mood/archive_fresh_moss/`. Prior crop icon set:
@@ -334,8 +336,9 @@ welcome clears with no shrine progress.
   crop sits ready for drag / uproot as usual.
 
 ## Harvesting / moving ready crops
-Ready crops stay on the plot. Clicking a ready plot does nothing.
-Drag a ready crop to:
+Ready crops stay on the plot. Short-click a ready plot to show the crop name
+(same tip UI as shrine accepts / discovery log; font-size matches Dragon
+Temple empty-slot “Drop” text). Drag a ready crop to:
 - a **shrine** — consumes the crop from the plot; Tiger bonus may apply
   (extra same-crop progress + fly VFX from plot to shrine; not on mix/temple)
 - the **Dragon Temple** — fills a matching demand slot from the plot
@@ -628,15 +631,16 @@ does not weight the tribute). Total burn animation ≈
   meters reserved but hidden.
 - Active: awake dragon; board slots show demand ghost icons; wrath meter
   visible. No whole-object hover lift. Click the dragon figure for an
-  explainer modal (asleep vs awake copy); players do not click the figure
-  to start or burn the event.
+  explainer modal (asleep vs awake face icon + wrapping body, no title);
+  players do not click the figure to start or burn the event.
 
 ### Resting vs active
 - Resting: sleeping figure; faded board slots only. Figure click opens the
   asleep explainer (event is not player-started).
 - Active: awake figure; wrath bar (fills toward `wrathMax`, ember timer-bar
   colors, no numbers) above the art; demand slots on the tribute board.
-  Figure click opens the awake explainer.
+  Figure click opens the awake explainer (same layout: `log_dragon_*` face
+  top-left, body wraps beside then under).
 - After a win: game text panel shows
   `The Dragon blesses your {Frog|Monkey|Fox|Tiger} Shrine.`
 - After a loss: game text panel shows
@@ -839,9 +843,10 @@ reset confirm. No separate menus. Reset is at the bottom of Field Notes.
   modal). No bottom Reset dock.
 - Farm stays primary inside the grove. Dragon Temple height is reserved for
   the active dock even while resting so the clearing does not jump.
-- Ready crops stay on plots; click does nothing. Drag with **pointer events**
-  (mouse + touch) to shrines / temple / adjacent ready crops to mix.
-  Long-press (mouse + touch) opens Uproot confirm on occupied plots.
+- Ready crops stay on plots; short-click shows the crop name. Drag with
+  **pointer events** (mouse + touch) to shrines / temple / adjacent ready
+  crops to mix. Long-press (mouse + touch) opens Uproot confirm on occupied
+  plots.
 - **Reset** lives at the bottom of the Field Notes modal (confirm overlay
   unchanged). Confirming reset returns the player to the opening screen.
 
@@ -930,9 +935,9 @@ Disturbed soil left after **Uproot**. Soft consequence — no growth slowdown.
 
 - **Trigger:** Successful uproot sets `vined: true` (and clears the crop).
   Boolean only; uprooting again on a vined plot leaves vines as-is.
-- **Look:** Transparent vine overlay (`assets/icons/plot_soil_vined.png`) on
-  empty and growing vined plots, painted over regular `plot_soil.png` (top-left
-  L footprint, same language as flowered — not a full-tile soil swap).
+- **Look:** Transparent vine overlay (`assets/icons/plot_soil_vined.png`) as a
+  `.plot__vines` layer on top of regular `plot_soil.png` (top-left L footprint —
+  not a full-tile soil swap). The plot keeps the normal dirt texture.
 - **Planting:** Immediate; no clear-tap or wait.
 - **While growing on vines:** Normal `growthMs`. Plant-time care rolls
   schedule **neither** water nor butterfly.

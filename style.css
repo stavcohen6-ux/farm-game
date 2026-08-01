@@ -990,8 +990,7 @@ body {
   overflow-y: auto;
 }
 
-.shrine-detail__title,
-.dragon-temple-detail__title {
+.shrine-detail__title {
   font-family: 'Quicksand', 'Nunito', system-ui, sans-serif;
   font-size: 1rem;
   font-weight: 700;
@@ -1002,6 +1001,13 @@ body {
   justify-content: center;
   gap: 0.35rem;
   flex-wrap: wrap;
+}
+
+/* Face icon top-left; body wraps beside then full-width underneath. */
+.dragon-temple-detail__icon {
+  float: left;
+  margin: 0 0.65rem 0.35rem 0;
+  line-height: 0;
 }
 
 .dragon-temple-detail__body {
@@ -1042,6 +1048,10 @@ body {
 
 .crop-tip--large {
   font-size: 0.9rem;
+}
+
+.crop-tip--small {
+  font-size: 0.62rem;
 }
 
 .shrine-detail__tier-accepts {
@@ -1203,17 +1213,23 @@ body {
   background-image: url('assets/icons/plot_soil_flowered.png');
 }
 
-/* Keep regular plot_soil.png; vines are a transparent overlay on top. */
-.plot--vined::before {
-  content: '';
+/* Never swap away from regular dirt — vines are a separate overlay layer. */
+.plot--vined {
+  background-image: url('assets/icons/plot_soil.png');
+}
+
+.plot__vines {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
   border-radius: inherit;
   background-image: url('assets/icons/plot_soil_vined.png');
   background-size: cover;
   background-position: center;
+  background-color: transparent;
   pointer-events: none;
-  /* Match dry-patch: under crop icon / napper, above dirt background. */
+  /* Above dirt background, under crop icon / napper (same as dry-patch). */
   z-index: 0;
 }
 
@@ -1437,7 +1453,7 @@ body {
   transform-origin: 50% 80%;
 }
 
-/* Vine overlay (::before) sits under napper/zzz so the critter stays in front. */
+/* Vine overlay sits under napper/zzz so the critter stays in front. */
 .plot--vined .plot__napper {
   z-index: 3;
 }

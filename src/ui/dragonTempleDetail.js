@@ -9,8 +9,9 @@ const AWAKE_BODY =
 
 const OVERLAY_CLASS = 'dragon-temple-detail-overlay';
 
-// Shows a centered explainer for the Dragon Temple. Copy switches on whether
-// the dragon is awake. Click outside to close.
+// Shows a centered explainer for the Dragon Temple. Face icon top-left with
+// wrapping body (no title). Copy switches on whether the dragon is awake.
+// Click outside to close.
 export function openDragonTempleDetail(state) {
   document.querySelector(`.${OVERLAY_CLASS}`)?.remove();
 
@@ -22,19 +23,15 @@ export function openDragonTempleDetail(state) {
   const modal = document.createElement('div');
   modal.className = 'dragon-temple-detail';
 
-  const title = document.createElement('h2');
-  title.className = 'dragon-temple-detail__title';
-  const titleIcon = document.createElement('span');
-  titleIcon.className = 'dragon-temple-detail__title-icon';
-  setIcon(titleIcon, {
-    src: active ? UI_ICONS.dragonAwake : UI_ICONS.dragonRest,
+  const icon = document.createElement('span');
+  icon.className = 'dragon-temple-detail__icon';
+  setIcon(icon, {
+    src: active ? UI_ICONS.dragonFaceAwake : UI_ICONS.dragonFaceRest,
     emoji: '🐲',
-    alt: '',
+    alt: active ? 'Dragon awake' : 'Dragon asleep',
     imgClass: 'game-icon game-icon--temple-detail',
   });
-  title.appendChild(titleIcon);
-  title.append(active ? ' Dragon Temple — Awake' : ' Dragon Temple — Asleep');
-  modal.appendChild(title);
+  modal.appendChild(icon);
 
   const body = document.createElement('p');
   body.className = 'dragon-temple-detail__body';

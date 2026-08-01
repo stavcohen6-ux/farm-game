@@ -51,6 +51,7 @@ import { playShrineTierUp } from './ui/shrineTierUp.js';
 import { playShrineBurn } from './ui/shrineBurn.js';
 import { playTanukiArrive, playTanukiLeave } from './ui/tanukiNap.js';
 import { resolvePlotCropDrop } from './ui/plotPointerDrag.js';
+import { pinCropTip } from './ui/cropTip.js';
 import { installStageFit } from './ui/stageFit.js';
 import { installOpeningScreen } from './ui/openingScreen.js';
 
@@ -147,8 +148,15 @@ function handlePlotClick(plotId) {
     return;
   }
 
-  // Ready crops are dragged; click is a no-op.
-  if (isReady(plot, Date.now())) return;
+  // Ready crops: short-click shows name; drag to offer / mix / temple.
+  if (isReady(plot, Date.now())) {
+    const crop = getCrop(plot.crop.cropId);
+    if (!crop?.name) return;
+    const plotEl = gridEl.querySelector(`[data-plot-id="${plotId}"]`);
+    if (!plotEl) return;
+    pinCropTip(plotEl, crop.name, { small: true });
+    return;
+  }
 
   if (needsWater(plot, Date.now())) {
     wateringPlotIds.add(plotId);
