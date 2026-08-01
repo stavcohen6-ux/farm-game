@@ -121,6 +121,16 @@ function render() {
   );
 }
 
+function showPlotCropName(plotId) {
+  const plot = state.plots.find((p) => p.id === plotId);
+  if (!plot?.crop) return;
+  const crop = getCrop(plot.crop.cropId);
+  if (!crop?.name) return;
+  const plotEl = gridEl.querySelector(`[data-plot-id="${plotId}"]`);
+  if (!plotEl) return;
+  pinCropTip(plotEl, crop.name, { small: true });
+}
+
 function handlePlotClick(plotId) {
   const plot = state.plots.find((p) => p.id === plotId);
   if (!plot || plot.locked || unlockingPlotIds.has(plotId)) return;
@@ -150,11 +160,7 @@ function handlePlotClick(plotId) {
 
   // Ready crops: short-click shows name; drag to offer / mix / temple.
   if (isReady(plot, Date.now())) {
-    const crop = getCrop(plot.crop.cropId);
-    if (!crop?.name) return;
-    const plotEl = gridEl.querySelector(`[data-plot-id="${plotId}"]`);
-    if (!plotEl) return;
-    pinCropTip(plotEl, crop.name, { small: true });
+    showPlotCropName(plotId);
     return;
   }
 
@@ -211,7 +217,10 @@ function handlePlotClick(plotId) {
         render();
       },
     });
+    return;
   }
+
+  showPlotCropName(plotId);
 }
 
 function handleUprootHold(plotId) {

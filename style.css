@@ -122,6 +122,7 @@ body {
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Scenic grove: temple + farm + shrines in one clearing */
@@ -209,10 +210,14 @@ body {
   height: 4.75rem;
 }
 
-.game-icon--shrine-detail,
-.game-icon--temple-detail {
+.game-icon--shrine-detail {
   width: 2.75rem;
   height: 2.75rem;
+}
+
+.game-icon--temple-detail {
+  width: 4.5rem;
+  height: 4.5rem;
 }
 
 .game-icon--inline {
@@ -830,6 +835,7 @@ body {
   gap: var(--shrine-bar-gap);
   cursor: pointer;
   box-shadow: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .shrine--frog,

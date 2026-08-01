@@ -7,7 +7,7 @@ export const SHRINES = [
     id: 'frog',
     name: 'Frog Shrine',
     icon: '🐸',
-    theme: 'Growth',
+    theme: 'Speed',
     corner: 'top-left',
     tiers: [
       {

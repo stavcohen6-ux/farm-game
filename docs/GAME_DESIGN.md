@@ -315,8 +315,9 @@ welcome clears with no shrine progress.
   `now >= critterVisitAt`,   and the crop is not yet ready. Cue: small butterfly on the plot
   (`assets/icons/butterfly.png`; emoji fallback `🦋`).
 - Short-tap priority on a growing plot: needing water → water; else waiting
-  critter → welcome; else no-op. Ready short-tap does nothing (drag to move;
-  long-press to uproot — see Uproot). Empty still opens the picker.
+  critter → welcome; else show crop name (same tip as ready). Ready short-tap
+  shows the crop name (drag to move; long-press to uproot — see Uproot).
+  Empty still opens the picker.
 - Click a needing-water plot → soft rain sprinkle (~1.625s) falling top-to-bottom
   over the dry patch using water-drop sprites (`assets/icons/water_drop.png`),
   then the patch clears and soil reads as normal brown (or ready honey-glow if
