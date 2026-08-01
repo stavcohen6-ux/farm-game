@@ -1,8 +1,8 @@
 import { setIcon, UI_ICONS } from './icon.js';
 
-const SPARK_COUNT = 6;
-const SPARK_MS = 620;
-const STAGGER_MS = 50;
+const SPARK_COUNT = 12;
+const SPARK_MS = 2480;
+const STAGGER_MS = 200;
 const SPARK_SIZE_PX = 20;
 const RISE_EXTRA_PX = 28;
 const JITTER_PX = 14;

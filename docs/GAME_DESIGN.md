@@ -523,28 +523,27 @@ Corner cards show icon, name, next/max tier name, and active-tier progress.
 Click shrine → centered modal (click outside to close). Reset control sits at the
 bottom of this modal (opens the existing reset confirm). Below the title, an
 **Accepts:** line lists icons for the **active** tier’s allowlist (omitted
-when maxed). Then lists every tier: name, effect text, that tier’s accepted
-crop icons, progress bar. Active = live `n / required`; completed = full
-"Complete"; future = faded "Locked" (accepts still shown). Maxed = all
-Complete.
+when maxed). Then lists every tier by name and effect text. Only the **active**
+tier also shows its Accepts icons and live progress (`n / required`). Completed
+and future tiers omit Accepts and progress (future tiers stay faded). When
+maxed, every tier is name + effect only.
 
 ### Tiers
 Progress required escalates within each shrine (medium pacing; total 491).
 Each tier lists `acceptedCropIds`.
 
 **Frog — Growth** (15 / 25 / 40 / 55 = 135; apex: Sunbread)
-1. Sleeping Frog — +25% growth — wheat, root_loaf
-2. Rainkeeper Frog — +50% growth — wheat, turnip, root_loaf
-3. Ancient River Frog — +75% growth — blueberry, forest_bread, moonlit_loaf
-4. Spirit Frog — +100% growth — sunfruit, sunbread, sunroot, sunberry,
+1. Sleeping Frog — 25% faster crop growth — wheat, root_loaf
+2. Rainkeeper Frog — 50% faster crop growth — wheat, turnip, root_loaf
+3. Ancient River Frog — 75% faster crop growth — blueberry, forest_bread, moonlit_loaf
+4. Spirit Frog — 100% faster crop growth — sunfruit, sunbread, sunroot, sunberry,
    solar_bloom
 
 **Monkey — Research** (`researchLevel = 1 + bonus`; 12 / 24 / 40 = 76;
 apex: Moonberry)
-1. Curious Monkey — Research Level +1 → level 2 — wheat, turnip, root_loaf
-2. Clever Monkey — Research Level +2 → level 3 — blueberry, forest_bread,
-   wildroot
-3. Wise Monkey — Research Level +3 → level 4 — moonflower, moonlit_loaf,
+1. Curious Monkey — Discover more crops to grow. — wheat, turnip, root_loaf
+2. Clever Monkey — Unlock rarer crops. — blueberry, forest_bread, wildroot
+3. Wise Monkey — Unlock more unique crops. — moonflower, moonlit_loaf,
    moonroot, moonberry
 
 **Fox — Expansion** (`plotsToUnlock` 2 / 2 / 2 / 2; unlock order from

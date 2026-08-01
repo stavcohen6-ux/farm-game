@@ -4,9 +4,9 @@ import { getActiveShrineTier, isShrineMaxed } from '../state/gameState.js';
 import { bindCropTip, hideCropTip } from './cropTip.js';
 import { setCropIcon, setIcon, logShrineIconSrc } from './icon.js';
 
-// Shows a centered modal listing every tier for a shrine: name, effect,
-// accepted crops, and progress (Complete / live / Locked). Click outside
-// to close.
+// Shows a centered modal listing every tier for a shrine. Active tier shows
+// name, effect, accepted crops, and live progress; other tiers show name and
+// effect only. Click outside to close.
 export function openShrineDetail(state, shrineId) {
   const shrine = getShrine(shrineId);
   const progress = state.shrines?.[shrineId];
@@ -101,37 +101,29 @@ function renderTierRow(tier, index, progress, maxed) {
   effect.textContent = tier.tooltip;
   row.appendChild(effect);
 
-  if ((tier.acceptedCropIds ?? []).length > 0) {
-    const accepts = document.createElement('div');
-    accepts.className = 'shrine-detail__tier-accepts';
-    accepts.append('Accepts: ');
-    appendAcceptedIcons(accepts, tier);
-    row.appendChild(accepts);
+  if (status === 'active') {
+    if ((tier.acceptedCropIds ?? []).length > 0) {
+      const accepts = document.createElement('div');
+      accepts.className = 'shrine-detail__tier-accepts';
+      accepts.append('Accepts: ');
+      appendAcceptedIcons(accepts, tier);
+      row.appendChild(accepts);
+    }
+
+    const track = document.createElement('div');
+    track.className = 'shrine-detail__progress-track';
+    const fill = document.createElement('div');
+    fill.className = 'shrine-detail__progress-fill';
+    const percent = Math.min(100, (progress.progress / tier.progressRequired) * 100);
+    fill.style.width = `${percent}%`;
+    track.appendChild(fill);
+    row.appendChild(track);
+
+    const label = document.createElement('div');
+    label.className = 'shrine-detail__progress-label';
+    label.textContent = `${progress.progress} / ${tier.progressRequired}`;
+    row.appendChild(label);
   }
-
-  const track = document.createElement('div');
-  track.className = 'shrine-detail__progress-track';
-  const fill = document.createElement('div');
-  fill.className = 'shrine-detail__progress-fill';
-
-  let percent = 0;
-  let labelText = 'Locked';
-  if (status === 'completed') {
-    percent = 100;
-    labelText = 'Complete';
-  } else if (status === 'active') {
-    percent = Math.min(100, (progress.progress / tier.progressRequired) * 100);
-    labelText = `${progress.progress} / ${tier.progressRequired}`;
-  }
-
-  fill.style.width = `${percent}%`;
-  track.appendChild(fill);
-  row.appendChild(track);
-
-  const label = document.createElement('div');
-  label.className = 'shrine-detail__progress-label';
-  label.textContent = labelText;
-  row.appendChild(label);
 
   return row;
 }
