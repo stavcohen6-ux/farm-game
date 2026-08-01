@@ -395,13 +395,13 @@ reset confirm).
   and successfully mixed alchemy results. Empty copy when none: “Grow
   and explore new crops to fill your log” (progress still shows `0 / M`).
 - Two sections when there is at least one discovery: **Harvested crops**
-  (`plantable: true`) then **Alchemy mixes** (`plantable: false`). Omit a
+  (`plantable: true`) then **Crafted crops** (`plantable: false`). Omit a
   section if it has no discovered rows. Order within each section follows
   `CROPS`. No separate Recipes section.
 - Each row shows a larger crop icon, name, description (from crop data),
-  soft rarity label when `rarity` exists (plantables only today), and full
-  shrine-value readout with emoji-sized log face icons (`log_frog.png`,
-  `log_monkey.png`, `log_fox.png`, `log_tiger.png`) plus amounts.
+  and full shrine-value readout with emoji-sized log face icons
+  (`log_frog.png`, `log_monkey.png`, `log_fox.png`, `log_tiger.png`) plus
+  amounts.
 - Alchemy mix rows also show a **Created by:** origin line with input crop
   icons and `+` between them (once that mix is discovered). Harvested crops
   omit origin — the section heading is enough.

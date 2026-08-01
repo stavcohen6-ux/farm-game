@@ -638,12 +638,14 @@ body {
   position: absolute;
   bottom: 28%;
   z-index: 2;
-  width: 3px;
-  height: 3px;
-  margin-left: -1.5px;
+  width: calc(var(--tile) * 0.2);
+  height: calc(var(--tile) * 0.2);
+  margin-left: calc(var(--tile) * -0.1);
   border-radius: 0;
   background: #e8c878;
-  box-shadow: 0 0 4px rgba(196, 106, 46, 0.7);
+  box-shadow:
+    0 0 8px rgba(196, 106, 46, 0.85),
+    0 0 16px rgba(232, 200, 120, 0.45);
   pointer-events: none;
   animation-name: dragon-temple-spark-rise;
   animation-timing-function: ease-out;
@@ -652,14 +654,14 @@ body {
 
 @keyframes dragon-temple-spark-rise {
   0% {
-    transform: translate(0, 0) scale(0.6);
+    transform: translate(0, 0) scale(0.85);
     opacity: 0;
   }
   12% {
     opacity: 1;
   }
   100% {
-    transform: translate(var(--spark-dx, 4px), -1.8em) scale(0.4);
+    transform: translate(var(--spark-dx, 4px), -2.6em) scale(0.55);
     opacity: 0;
   }
 }
@@ -1006,6 +1008,9 @@ body {
 }
 
 .shrine-detail__accepts-icon .game-icon {
+  width: 2rem;
+  height: 2rem;
+  vertical-align: -0.35rem;
   pointer-events: auto;
 }
 
@@ -1115,16 +1120,37 @@ body {
   transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
 }
 
-/* Soft depth by row — lighting only, same tap size */
+/* Soft depth by row — lighting only, same tap size.
+   Do not put filter/transform on .plot itself: that clips overflowing
+   .plot__mix-bridge seams into the grid gap. Soil tint via overlay
+   gradient; in-tile content (not the seam) gets brightness. */
 .plot[data-row='0'] {
+  background-image:
+    linear-gradient(rgba(20, 16, 12, 0.06), rgba(20, 16, 12, 0.06)),
+    url('assets/icons/plot_soil.png');
+}
+
+.plot[data-row='0'] > :not(.plot__mix-bridge) {
   filter: brightness(0.94);
 }
 
 .plot[data-row='1'] {
+  background-image:
+    linear-gradient(rgba(20, 16, 12, 0.03), rgba(20, 16, 12, 0.03)),
+    url('assets/icons/plot_soil.png');
+}
+
+.plot[data-row='1'] > :not(.plot__mix-bridge) {
   filter: brightness(0.97);
 }
 
 .plot[data-row='3'] {
+  background-image:
+    linear-gradient(rgba(255, 250, 240, 0.03), rgba(255, 250, 240, 0.03)),
+    url('assets/icons/plot_soil.png');
+}
+
+.plot[data-row='3'] > :not(.plot__mix-bridge) {
   filter: brightness(1.03);
 }
 
@@ -1195,6 +1221,24 @@ body {
 
 .plot--flowered {
   background-image: url('assets/icons/plot_soil_flowered.png');
+}
+
+.plot--flowered[data-row='0'] {
+  background-image:
+    linear-gradient(rgba(20, 16, 12, 0.06), rgba(20, 16, 12, 0.06)),
+    url('assets/icons/plot_soil_flowered.png');
+}
+
+.plot--flowered[data-row='1'] {
+  background-image:
+    linear-gradient(rgba(20, 16, 12, 0.03), rgba(20, 16, 12, 0.03)),
+    url('assets/icons/plot_soil_flowered.png');
+}
+
+.plot--flowered[data-row='3'] {
+  background-image:
+    linear-gradient(rgba(255, 250, 240, 0.03), rgba(255, 250, 240, 0.03)),
+    url('assets/icons/plot_soil_flowered.png');
 }
 
 .plot--drag-over {
@@ -1723,45 +1767,47 @@ body {
   cursor: grabbing;
 }
 
+/* Hover: no transform on .plot — that would clip mix-bridge overflow. */
 .plot--ready:hover {
-  transform: translateY(-2px) scale(1.05);
+  box-shadow:
+    0 0 0 3px var(--honey),
+    0 0 18px rgba(230, 198, 90, 0.65),
+    inset 0 3px 6px rgba(20, 12, 8, 0.35),
+    inset 0 -2px 0 rgba(240, 220, 160, 0.22);
 }
 
-/* Brief bright flash after a successful on-plot alchemy mix. */
-@keyframes mix-shine {
+/* Brief bright wash inside the tile after a successful on-plot alchemy mix. */
+.plot--mix-shine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 2;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 248, 210, 0.95) 0%,
+    var(--honey-glow) 45%,
+    rgba(230, 198, 90, 0.55) 100%
+  );
+  animation: mix-shine-wash 1.5s ease-out forwards;
+}
+
+@keyframes mix-shine-wash {
   0% {
-    box-shadow:
-      0 0 0 4px var(--honey-glow),
-      0 0 28px rgba(240, 216, 120, 0.95),
-      0 0 48px rgba(230, 198, 90, 0.55),
-      inset 0 3px 6px rgba(20, 12, 8, 0.35),
-      inset 0 -2px 0 rgba(240, 220, 160, 0.35);
-    filter: brightness(1.35);
+    opacity: 0.85;
   }
-  40% {
-    box-shadow:
-      0 0 0 3px var(--honey-glow),
-      0 0 22px rgba(240, 216, 120, 0.75),
-      0 0 36px rgba(230, 198, 90, 0.4),
-      inset 0 3px 6px rgba(20, 12, 8, 0.35),
-      inset 0 -2px 0 rgba(240, 220, 160, 0.3);
-    filter: brightness(1.2);
+  25% {
+    opacity: 0.7;
   }
   100% {
-    box-shadow:
-      0 0 0 3px var(--honey),
-      0 0 14px rgba(230, 198, 90, 0.5),
-      inset 0 3px 6px rgba(20, 12, 8, 0.35),
-      inset 0 -2px 0 rgba(240, 220, 160, 0.22);
-    filter: brightness(1);
+    opacity: 0;
   }
-}
-
-.plot--mix-shine {
-  animation: mix-shine 1.5s ease-out;
 }
 
 .plot--mix-shine .plot__icon {
+  position: relative;
+  z-index: 3;
   animation:
     ready-pulse 2.4s ease-in-out infinite,
     mix-shine-icon 1.5s ease-out;
@@ -1769,16 +1815,13 @@ body {
 
 @keyframes mix-shine-icon {
   0% {
-    filter: brightness(1.45);
-    transform: scale(1.35);
+    filter: brightness(1.55);
   }
-  50% {
-    filter: brightness(1.2);
-    transform: scale(1.22);
+  40% {
+    filter: brightness(1.25);
   }
   100% {
     filter: brightness(1);
-    transform: scale(1);
   }
 }
 
@@ -2094,6 +2137,11 @@ body {
   filter: drop-shadow(0 1px 3px rgba(180, 60, 10, 0.45));
 }
 
+.shrine-burn-flame .game-icon {
+  width: 100%;
+  height: 100%;
+}
+
 .inventory__item--dragging {
   opacity: 0.55;
 }
@@ -2334,12 +2382,6 @@ body {
   font-size: 1rem;
   color: var(--ink);
   font-weight: 600;
-}
-
-.discovery-log__rarity {
-  font-size: 0.7rem;
-  color: var(--muted);
-  letter-spacing: 0.03em;
 }
 
 .discovery-log__description {

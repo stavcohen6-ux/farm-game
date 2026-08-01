@@ -3,7 +3,7 @@ import { setIcon, UI_ICONS } from './icon.js';
 const FLAME_COUNT = 12;
 const FLAME_MS = 2480;
 const STAGGER_MS = 200;
-const FLAME_SIZE_PX = 20;
+const FLAME_SIZE_PX = 44;
 const RISE_EXTRA_PX = 28;
 const JITTER_PX = 14;
 
@@ -32,7 +32,7 @@ export function playShrineBurn({ shrineEl, onComplete }) {
       setIcon(flame, {
         src: UI_ICONS.fire,
         emoji: '🔥',
-        imgClass: 'game-icon game-icon--tiny',
+        imgClass: 'game-icon',
       });
       flame.style.width = `${FLAME_SIZE_PX}px`;
       flame.style.height = `${FLAME_SIZE_PX}px`;

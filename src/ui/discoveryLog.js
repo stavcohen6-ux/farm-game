@@ -73,7 +73,7 @@ export function openDiscoveryLog(state, onReset = null) {
     }
     if (mixes.length > 0) {
       modal.appendChild(
-        renderSection('Alchemy mixes', mixes, discoveredRecipes),
+        renderSection('Crafted crops', mixes, discoveredRecipes),
       );
     }
   }
@@ -141,13 +141,6 @@ function renderCropRow(crop, recipeDiscovered) {
   name.textContent = crop.name;
   info.appendChild(name);
 
-  if (crop.rarity) {
-    const rarity = document.createElement('span');
-    rarity.className = 'discovery-log__rarity';
-    rarity.textContent = formatRarity(crop.rarity);
-    info.appendChild(rarity);
-  }
-
   if (crop.description) {
     const description = document.createElement('span');
     description.className = 'discovery-log__description';
@@ -166,11 +159,6 @@ function renderCropRow(crop, recipeDiscovered) {
   item.appendChild(icon);
   item.appendChild(info);
   return item;
-}
-
-function formatRarity(rarity) {
-  if (typeof rarity !== 'string' || rarity.length === 0) return '';
-  return rarity.charAt(0).toUpperCase() + rarity.slice(1);
 }
 
 function renderOrigin(crop, recipeDiscovered) {
