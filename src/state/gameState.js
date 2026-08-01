@@ -1161,13 +1161,7 @@ export function addShrineProgress(state, shrineId, amount) {
   const tiersGained = progress.tier - tierBefore;
 
   if (tiersGained > 0) {
-    const tier = shrine.tiers[progress.tier - 1];
-    if (tier?.tooltip) {
-      setGameText(
-        state,
-        `${shrine.name} upgraded — ${tier.tooltip}`,
-      );
-    }
+    setGameText(state, `${shrine.name} upgraded`);
     maybeArmShrineEpilogue(state);
   }
 

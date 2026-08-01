@@ -76,7 +76,7 @@ direction is intentionally revised.
   Temple
 - Farm board: soft moss ground plane (quiet chrome) under the grid; painterly
   mossy-stone frame texture (`farm_frame.png`) and plot textures
-  (`plot_soil.png`, circular `plot_soil_dry.png` patch when a plant asks for
+  (`plot_soil.png`, full-tile `plot_soil_dry.png` when a plant asks for
   water, `plot_locked.png`) matching shrine / mood art; ready plots
   keep honey glow on dirt; optional soft per-row brightness for depth without
   changing tile size. Mood ref: `assets/mood/farm_board_lofi_ghibli_mood.png`
@@ -196,10 +196,11 @@ saves that still carry old timers). All crops currently have
 
 `shrineValues` is offering progress per crop per shrine (`frog`, `monkey`,
 `fox`, `tiger`) when that crop is on the active tier’s allowlist. Values are
-affinity-based (strong preferred shrine, soft floor elsewhere). Full
-per-crop readouts live in the Discovery Log (via `formatShrineValues` /
-log face icons `log_{frog|monkey|fox|tiger}.png`). Shrine detail shows an
-Accepts line for the active tier’s allowlist (see Shrines).
+affinity-based (strong preferred shrine, soft floor elsewhere). Discovery Log
+readouts (via `formatShrineValues` / log face icons
+`log_{frog|monkey|fox|tiger}.png`) list only shrines that accept the crop in
+any tier. Shrine detail shows an Accepts line for the active tier’s allowlist
+(see Shrines).
 
 ### Plantable crops (current)
 
@@ -299,9 +300,9 @@ welcome clears with no shrine progress.
   flowered plot skips water and always schedules a butterfly (see Flowered
   plots).
 - Needs water when: not watered, `waterRequestAt` is set, `now >= waterRequestAt`,
-  and the crop is not yet ready. Cue: circular dry cracked patch
-  (`assets/icons/plot_soil_dry.png`) under the crop, soft-masked so edges blend
-  into normal `plot_soil.png` (crop icon stays full opacity; no numbers).
+  and the crop is not yet ready. Cue: full-tile dry cracked soil
+  (`assets/icons/plot_soil_dry.png`) under the crop, matching the plot’s
+  rounded square (crop icon stays full opacity; no numbers).
 - Has critter visit when: not welcomed, `critterVisitAt` is set,
   `now >= critterVisitAt`,   and the crop is not yet ready. Cue: small butterfly on the plot
   (`assets/icons/butterfly.png`; emoji fallback `🦋`).
@@ -841,7 +842,7 @@ HUD message area for explaining what is going on.
 Triggers:
 - Shrine tier-up (any path through `addShrineProgress`, including offerings
   and critter welcome gifts):
-  `{shrine name} upgraded — {tier tooltip}`. If one grant jumps multiple
+  `{shrine name} upgraded`. If one grant jumps multiple
   tiers, only the highest tier reached is shown. UI also plays rising
   overlay sparks on that shrine (once per grant; shrine art stays still).
   Critter path: sparks when the butterfly lands.

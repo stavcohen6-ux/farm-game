@@ -11,6 +11,8 @@
 //   normal mix: sum + 1 on every shrine
 //   apex gift:  sum + 3 on the dedicated shrine, sum + 0 elsewhere
 
+import { SHRINES, shrineAcceptsCrop } from './shrines.js';
+
 export const CROPS = [
   {
     id: 'wheat',
@@ -357,11 +359,14 @@ export function getExpiresAt(crop, now = Date.now()) {
 }
 
 // Compact shrine offering readout (emoji fallback), e.g. "🐸4  🐵2  🦊1  🐯1".
+// Only includes shrines that accept the crop in any tier.
 // Discovery Log prefers log_* face PNGs via logShrineIconSrc.
 export function formatShrineValues(crop) {
   const values = crop?.shrineValues;
   if (!values) return '';
-  return `🐸${values.frog}  🐵${values.monkey}  🦊${values.fox}  🐯${values.tiger}`;
+  return SHRINES.filter((shrine) => shrineAcceptsCrop(shrine, crop.id))
+    .map((shrine) => `${shrine.icon}${values[shrine.id] ?? 0}`)
+    .join('  ');
 }
 
 // Remaining life fraction → UI urgency. Uses the crop's full decay window.

@@ -58,14 +58,14 @@ export const SHRINES = [
         progressRequired: 12,
         acceptedCropIds: ['wheat', 'turnip', 'root_loaf'],
         researchBonus: 1,
-        tooltip: 'Discover more crops to grow.',
+        tooltip: 'Discover more crops to grow',
       },
       {
         name: 'Clever Monkey',
         progressRequired: 24,
         acceptedCropIds: ['blueberry', 'forest_bread', 'wildroot'],
         researchBonus: 2,
-        tooltip: 'Unlock rarer crops.',
+        tooltip: 'Unlock rarer crops',
       },
       {
         name: 'Wise Monkey',
@@ -77,7 +77,7 @@ export const SHRINES = [
           'moonberry',
         ],
         researchBonus: 3,
-        tooltip: 'Unlock more unique crops.',
+        tooltip: 'Unlock more unique crops',
       },
     ],
   },
@@ -191,4 +191,8 @@ export function getShrineMaxTier(shrineId) {
 
 export function tierAcceptsCrop(tier, cropId) {
   return Boolean(tier?.acceptedCropIds?.includes(cropId));
+}
+
+export function shrineAcceptsCrop(shrine, cropId) {
+  return (shrine?.tiers ?? []).some((tier) => tierAcceptsCrop(tier, cropId));
 }

@@ -1,6 +1,6 @@
 import { CROPS, getCrop } from '../data/crops.js';
 import { getAlchemyRecipeByResultId } from '../data/alchemyRecipes.js';
-import { SHRINES } from '../data/shrines.js';
+import { SHRINES, shrineAcceptsCrop } from '../data/shrines.js';
 import { bindCropTip, hideCropTip } from './cropTip.js';
 import { FIELD_NOTES_TITLE } from './gameTextPanel.js';
 import { logShrineIconSrc, setCropIcon, setIcon, UI_ICONS } from './icon.js';
@@ -192,13 +192,18 @@ function renderShrineValues(container, crop) {
   const values = crop?.shrineValues;
   if (!values) return;
 
+  const accepting = SHRINES.filter((shrine) =>
+    shrineAcceptsCrop(shrine, crop.id),
+  );
+  if (accepting.length === 0) return;
+
   let maxValue = -Infinity;
-  for (const shrine of SHRINES) {
+  for (const shrine of accepting) {
     const amount = values[shrine.id] ?? 0;
     if (amount > maxValue) maxValue = amount;
   }
 
-  for (const shrine of SHRINES) {
+  for (const shrine of accepting) {
     const amount = values[shrine.id] ?? 0;
     const entry = document.createElement('span');
     entry.className = 'discovery-log__shrine-value';
