@@ -34,6 +34,11 @@ export function cropIconSrc(cropId) {
   return `${ICON_BASE}/${cropId}.${ext}`;
 }
 
+/** All illustrated crop icon URLs (for opening-screen preload). */
+export function listCropIconSrcs() {
+  return [...PNG_CROPS].map((id) => cropIconSrc(id)).filter(Boolean);
+}
+
 export function shrineIconSrc(shrineId) {
   if (!shrineId) return null;
   return `${ICON_BASE}/shrine_${shrineId}.png`;

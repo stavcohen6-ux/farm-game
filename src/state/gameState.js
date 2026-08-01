@@ -118,6 +118,7 @@ export function createInitialState() {
     locked: layout.unlockTier > 0,
     crop: null,
     flowered: false,
+    vined: false,
   }));
   const tutorialSeen = createInitialTutorialSeen();
   tutorialSeen.welcome = true;
@@ -416,7 +417,8 @@ export function takeReadyCropFromPlot(state, plotId, now = Date.now()) {
 
 /**
  * Clear any crop from a plot (growing or ready). Free discard — no inventory,
- * wrath, shrine/temple progress, or discovery changes.
+ * wrath, shrine/temple progress, or discovery changes. Leaves vines (boolean;
+ * already-vined stays vined).
  */
 export function uprootCrop(state, plotId) {
   const plot = state.plots.find((p) => p.id === plotId);
@@ -424,6 +426,7 @@ export function uprootCrop(state, plotId) {
   if (isPlotNapped(state, plotId)) return false;
   plot.crop = null;
   plot.flowered = false;
+  plot.vined = true;
   return true;
 }
 
@@ -444,6 +447,8 @@ export function placeReadyCropOnPlot(state, plotId, cropId, now = Date.now()) {
     critterVisitAt: null,
   };
   plot.flowered = false;
+  // Ready crop sits on clean soil — vines clear immediately.
+  plot.vined = false;
   markCropDiscovered(state, cropId);
   return true;
 }
@@ -569,7 +574,11 @@ export function plantCrop(state, plotId, cropId) {
 
   let water;
   let critter;
-  if (plot.flowered) {
+  if (plot.vined) {
+    // Vined: no water ask, no butterfly (clears when this crop becomes ready).
+    water = { watered: false, waterRequestAt: null };
+    critter = { critterWelcomed: false, critterVisitAt: null };
+  } else if (plot.flowered) {
     // Flowered: guaranteed butterfly, no water on this plant.
     water = { watered: false, waterRequestAt: null };
     critter = forceCritterVisit(crop, plantedAt, growthMs);
@@ -611,6 +620,9 @@ export function waterPlot(state, plotId, now = Date.now()) {
   const savedMs = Math.min(getWaterTimeSavedMs(crop), remaining);
   plot.crop.growthMs = elapsed + (remaining - savedMs);
   plot.crop.watered = true;
+  if (plot.vined && isReady(plot, now)) {
+    plot.vined = false;
+  }
   return true;
 }
 
@@ -943,6 +955,10 @@ export function markReadyCropsDiscovered(state, now = Date.now()) {
   for (const plot of state.plots) {
     if (!plot?.crop || !isReady(plot, now)) continue;
     anyReady = true;
+    if (plot.vined) {
+      plot.vined = false;
+      changed = true;
+    }
     const before = state.discoveredCropIds?.length ?? 0;
     markCropDiscovered(state, plot.crop.cropId);
     if ((state.discoveredCropIds?.length ?? 0) > before) changed = true;
@@ -1195,6 +1211,7 @@ function lockPlots(state, count) {
     plot.locked = true;
     plot.crop = null;
     plot.flowered = false;
+    plot.vined = false;
     lockedPlotIds.push(plot.id);
   }
   if (

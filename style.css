@@ -1025,6 +1025,10 @@ body {
   box-shadow: 0 2px 8px rgba(42, 90, 60, 0.22);
 }
 
+.crop-tip--large {
+  font-size: 0.9rem;
+}
+
 .shrine-detail__tier-accepts {
   margin: 0.25rem 0 0.45rem;
   color: var(--muted);
@@ -1182,6 +1186,10 @@ body {
 
 .plot--flowered {
   background-image: url('assets/icons/plot_soil_flowered.png');
+}
+
+.plot--vined {
+  background-image: url('assets/icons/plot_soil_vined.png');
 }
 
 .plot--drag-over {
@@ -1404,6 +1412,11 @@ body {
   transform-origin: 50% 80%;
 }
 
+/* Vine soil is background-image; keep napper/zzz above it on vined plots. */
+.plot--vined .plot__napper {
+  z-index: 3;
+}
+
 .plot__napper .game-icon--napper {
   width: 1.7em;
   height: 1.7em;
@@ -1425,6 +1438,10 @@ body {
   animation-name: plot-napper-zzz;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
+}
+
+.plot--vined .plot__napper-zzz {
+  z-index: 4;
 }
 
 /* Enter / leave overlay — matches .plot__napper so the handoff is seamless */

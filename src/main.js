@@ -499,6 +499,7 @@ function handleResetGame() {
     mixShinePlotIds.clear();
     pendingBlessingVisualShrineIds.clear();
     save(state);
+    groveWarmed = false;
     opening.show();
   });
 }
@@ -512,10 +513,18 @@ if (gameTextEl) {
 }
 
 let gameStarted = false;
+let groveWarmed = false;
 
 const opening = installOpeningScreen({
-  onEnter() {
+  onWarm() {
     render();
+    groveWarmed = true;
+  },
+  onEnter() {
+    if (!groveWarmed) {
+      render();
+      groveWarmed = true;
+    }
     if (!gameStarted) {
       gameStarted = true;
       setInterval(tick, RENDER_INTERVAL_MS);

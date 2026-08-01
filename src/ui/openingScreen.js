@@ -1,16 +1,19 @@
 // Opening / title screen: forest journey art, preload, soft Play gate.
-import { shrineIconSrc, UI_ICONS } from './icon.js';
+import {
+  listCropIconSrcs,
+  shrineIconSrc,
+  UI_ICONS,
+} from './icon.js';
 
 export const OPENING_SCENE_SRC = 'assets/opening/opening_journey.png';
 
-const MIN_READY_MS = 450;
-const PRELOAD_TIMEOUT_MS = 10000;
+const MIN_READY_MS = 300;
+const PRELOAD_TIMEOUT_MS = 20000;
 const FADE_MS = 480;
 
-const CRITICAL_ASSETS = [
-  OPENING_SCENE_SRC,
-  'assets/opening/opening_title.png?v=alpha3',
-  'assets/opening/opening_play.png?v=alpha3',
+// Must finish (load + decode) before Play enables. Opening journey/title/play
+// art is already in the opening DOM and must not block this gate.
+const GAME_CRITICAL_ASSETS = [
   'assets/scene/grove_clearing.png',
   'assets/scene/game_text_plank.png',
   'assets/icons/farm_frame.png',
@@ -18,13 +21,22 @@ const CRITICAL_ASSETS = [
   'assets/icons/plot_soil_dry.png',
   'assets/icons/plot_locked.png',
   'assets/icons/plot_soil_flowered.png',
+  'assets/icons/plot_soil_vined.png',
   UI_ICONS.dragonRest,
   UI_ICONS.dragonAwake,
   UI_ICONS.discoveryLog,
+  UI_ICONS.fire,
+  UI_ICONS.spark,
+  UI_ICONS.lock,
+  UI_ICONS.wilt,
+  UI_ICONS.waterDrop,
+  UI_ICONS.butterfly,
+  UI_ICONS.tanukiSleep,
   shrineIconSrc('frog'),
   shrineIconSrc('monkey'),
   shrineIconSrc('fox'),
   shrineIconSrc('tiger'),
+  ...listCropIconSrcs(),
 ];
 
 function preloadImage(src) {
@@ -34,9 +46,25 @@ function preloadImage(src) {
       return;
     }
     const img = new Image();
-    img.onload = () => resolve();
-    img.onerror = () => resolve();
+    const finish = () => resolve();
+    img.onerror = finish;
+    img.onload = () => {
+      if (typeof img.decode === 'function') {
+        img.decode().then(finish, finish);
+      } else {
+        finish();
+      }
+    };
     img.src = src;
+    // Cached images may already be complete before handlers attach.
+    if (img.complete && img.naturalWidth > 0) {
+      img.onload = null;
+      if (typeof img.decode === 'function') {
+        img.decode().then(finish, finish);
+      } else {
+        finish();
+      }
+    }
   });
 }
 
@@ -46,16 +74,19 @@ function preloadAll(srcs) {
 
 /**
  * Mount opening-screen behavior.
- * @param {{ onEnter: () => void }} opts — called when Play reveals the main game
+ * @param {{ onEnter: () => void, onWarm?: () => void }} opts
+ *   onWarm — first grove render while still gated (before Play enables)
+ *   onEnter — after Play reveals the main game
  * @returns {{ show: () => void }}
  */
-export function installOpeningScreen({ onEnter }) {
+export function installOpeningScreen({ onEnter, onWarm }) {
   const root = document.getElementById('opening-screen');
   const playBtn = document.getElementById('opening-play');
   const appEl = document.getElementById('app');
   const sceneImg = root?.querySelector('.opening-screen__scene-img');
 
   if (!root || !playBtn || !appEl) {
+    if (typeof onWarm === 'function') onWarm();
     onEnter();
     return { show() {} };
   }
@@ -67,6 +98,7 @@ export function installOpeningScreen({ onEnter }) {
   let ready = false;
   let entering = false;
   let preloadGen = 0;
+  let warmed = false;
 
   function setPlayReady(isReady) {
     ready = isReady;
@@ -75,18 +107,25 @@ export function installOpeningScreen({ onEnter }) {
     playBtn.setAttribute('aria-busy', isReady ? 'false' : 'true');
   }
 
+  function warmGrove() {
+    if (warmed) return;
+    warmed = true;
+    if (typeof onWarm === 'function') onWarm();
+  }
+
   function startPreload() {
     const gen = ++preloadGen;
     setPlayReady(false);
     const startedAt = Date.now();
 
     const preload = Promise.race([
-      preloadAll(CRITICAL_ASSETS),
+      preloadAll(GAME_CRITICAL_ASSETS),
       new Promise((resolve) => setTimeout(resolve, PRELOAD_TIMEOUT_MS)),
     ]);
 
     preload.then(() => {
       if (gen !== preloadGen) return;
+      warmGrove();
       const wait = Math.max(0, MIN_READY_MS - (Date.now() - startedAt));
       setTimeout(() => {
         if (gen !== preloadGen) return;
@@ -113,6 +152,7 @@ export function installOpeningScreen({ onEnter }) {
 
   function show() {
     entering = false;
+    warmed = false;
     root.hidden = false;
     root.classList.remove('opening-screen--leaving');
     root.setAttribute('aria-hidden', 'false');

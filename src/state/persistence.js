@@ -14,6 +14,7 @@ import {
   maybeShowShrineEpilogue,
   collectHeldCropIds,
   reconcilePlotNapper,
+  isReady,
   STARTING_RESEARCH_LEVEL,
   TOTAL_PLOTS,
   INVENTORY_SLOT_COUNT,
@@ -171,14 +172,19 @@ function batchSortKey(expiresAt) {
 }
 
 // Legacy planted crops: no retroactive water asks or critter visits.
-// Missing plot.flowered → false.
+// Missing plot.flowered / plot.vined → false. Ready crops clear vines.
 function normalizePlantedCropWater(parsed) {
   let dirty = false;
   if (!Array.isArray(parsed.plots)) return dirty;
+  const now = Date.now();
   for (const plot of parsed.plots) {
     if (!plot || typeof plot !== 'object') continue;
     if (plot.flowered !== true && plot.flowered !== false) {
       plot.flowered = false;
+      dirty = true;
+    }
+    if (plot.vined !== true && plot.vined !== false) {
+      plot.vined = false;
       dirty = true;
     }
     const crop = plot.crop;
@@ -202,6 +208,11 @@ function normalizePlantedCropWater(parsed) {
         crop.critterVisitAt = null;
         dirty = true;
       }
+    }
+    // Ready crop sits on clean soil.
+    if (plot.vined && isReady(plot, now)) {
+      plot.vined = false;
+      dirty = true;
     }
   }
   return dirty;

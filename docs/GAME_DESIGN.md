@@ -81,7 +81,8 @@ direction is intentionally revised.
 - Farm board: soft moss ground plane (quiet chrome) under the grid; painterly
   mossy-stone frame texture (`farm_frame.png`) and plot textures
   (`plot_soil.png`, full-tile `plot_soil_dry.png` when a plant asks for
-  water, `plot_locked.png`) matching shrine / mood art; ready plots
+  water, `plot_soil_vined.png` after uproot while vines remain,
+  `plot_locked.png`) matching shrine / mood art; ready plots
   keep honey glow on dirt. Mood ref: `assets/mood/farm_board_lofi_ghibli_mood.png`
 - Locked farm plots: locked tile texture only — no lock emoji/icon overlay.
   Unlock uses a brief locked-to-soil fade (same textures, no lock icon).
@@ -301,7 +302,7 @@ welcome clears with no shrine progress.
   roll water first; if it misses, roll critter (save-friendly; no per-tick RNG).
   A plant gets water, a butterfly, or neither — never both. **Exception:** a
   flowered plot skips water and always schedules a butterfly (see Flowered
-  plots).
+  plots). **Exception:** a vined plot schedules neither (see Vined plots).
 - Needs water when: not watered, `waterRequestAt` is set, `now >= waterRequestAt`,
   and the crop is not yet ready. Cue: full-tile dry cracked soil
   (`assets/icons/plot_soil_dry.png`) under the crop, matching the plot’s
@@ -368,10 +369,11 @@ Players can clear an unwanted crop from the farm without offering it.
   the track closes with no uproot. No Cancel/Uproot buttons, no tool mode, no
   trash dock. Subtle hold progress ring on the plot while long-pressing.
 - **On confirm:** Plant shrinks into the tile center over ~1s, then the plot
-  clears and becomes plantable. Free. No inventory grant, no wrath, no
-  shrine/temple progress, discovery unchanged. Dismiss (tap outside the
-  track) leaves the crop as-is. Mid-vanish plots are ignored like other
-  mid-animation plots.
+  clears, becomes plantable, and is left **vined** (see Vined plots). Free. No
+  inventory grant, no wrath, no shrine/temple progress, discovery unchanged.
+  Dismiss (tap outside the track) leaves the crop as-is. Mid-vanish plots are
+  ignored like other mid-animation plots. Uprooting an already-vined plot
+  leaves vines as-is (boolean; no stacks).
 - **Care cues:** Short tap still waters / welcomes first. Long-press is still
   allowed so a plant can be cleared without waiting out growth.
 - Copy uses **Uproot** (not delete / sell / trash).
@@ -802,10 +804,16 @@ in the forest (walking party — not shrine pedestal icons). Title uses a painte
 wordmark (`assets/opening/opening_title.png`, stacked Harmony / Grove with leaf
 flourish). Soft large **Play** uses matching cream parchment chrome
 (`assets/opening/opening_play.png`) with leaf accents, raised in the lower third
-(CSS only; background art unchanged). Play stays muted until critical assets
-preload (timeout fallback), then pulses gently; `prefers-reduced-motion`
-disables pulse/scene breathe. Play fades the opening out and reveals the main
-grove. Reset clears progress then re-shows the opening (no full page reload).
+(CSS only; background art unchanged). Play stays muted until **main grove**
+assets preload and decode (crops, soils, frame, shrines, temple, plank, common
+UI icons — not blocked by opening journey art), then the first `render()` warms
+behind the gated opening screen; timeout fallback only as last resort. Play then
+pulses gently; `prefers-reduced-motion` disables pulse/scene breathe. Play fades
+the opening out and reveals the already-warmed grove. Reset clears progress then
+re-shows the opening (no full page reload).
+Ambient BGM (`assets/audio/farm_background_music.mp3`) starts on the opening
+screen (autoplay when the browser allows; otherwise on the first tap). Native
+loop; no mute control yet. Music keeps playing after Play and across Reset.
 
 Main farm in a scenic grove stage + info band (Field Notes game-text plank) +
 Dragon Temple. Overlays: radial crop picker (anchored to the clicked plot),
@@ -910,7 +918,24 @@ Tutorial: `TUTORIAL_LINES`, `TUTORIAL_FLAG_KEYS` in `src/data/tutorial.js`.
 ## Flowered plots (land care)
 **Parked** (no inventory to spend). Flowered soil art
 (`assets/icons/plot_soil_flowered.png`) kept for later. `flowerPlot` is a
-no-op in the live build.
+no-op in the live build. When re-enabled, mutually exclusive with vines on
+the same plot.
+
+## Vined plots (land care)
+Disturbed soil left after **Uproot**. Soft consequence — no growth slowdown.
+
+- **Trigger:** Successful uproot sets `vined: true` (and clears the crop).
+  Boolean only; uprooting again on a vined plot leaves vines as-is.
+- **Look:** Vine soil art (`assets/icons/plot_soil_vined.png`) on empty and
+  growing vined plots (top-left L footprint, same language as flowered).
+- **Planting:** Immediate; no clear-tap or wait.
+- **While growing on vines:** Normal `growthMs`. Plant-time care rolls
+  schedule **neither** water nor butterfly.
+- **Clear:** When that crop **becomes ready**, `vined` clears (ready crop
+  sits on normal soil). Placing an already-ready crop on the plot (alchemy /
+  temple return) also clears vines.
+- **Tanuki:** Empty vined plots stay eligible for naps (unlike flowered). The
+  sleeping tanuki (and arrive/leave overlay) renders above vine soil.
 
 ## Desk visitors (fireflies)
 **Parked** with the desk. Config (`src/data/deskVisitor.js`) and
@@ -932,12 +957,14 @@ unlocked plots < `minUnlockedPlots` (default **8**). Hit → schedule
 At most one tanuki farm-wide.
 
 **Arrival:** when `now >= appearAt`, list eligible plots: unlocked, empty
-(`!crop`), not flowered. If fewer than **2** eligible, visitor is **lost**
+(`!crop`), not flowered. Empty **vined** plots are eligible (vines are not
+excluded). If fewer than **2** eligible, visitor is **lost**
 (cleared; no animation, no message, no retry — never take the last free empty
 plot). Else pick one at random → status `sleeping`, set `plotId`,
 `wakeAt = now + random(napMinSeconds, napMaxSeconds)` (default **90–150**
 seconds). UI fades the sleeping tanuki in at the tile centre (**480 ms**, grows
-from its base, no travel), then idle breathing + zzz on the tile.
+from its base, no travel), then idle breathing + zzz on the tile — always
+drawn above vine soil when the plot is vined.
 
 **Occupation:** while sleeping or waking, the plot cannot be planted or
 flowered (`isPlotNapped`). Clicks do nothing. No wake button, no reward, no
@@ -953,7 +980,8 @@ retroactive leave animation).
 status: 'approaching' | 'sleeping' | 'waking', plotId?, wakeAt? }`.
 
 ## Entities
-- Plot: `{ id, locked, crop, flowered }` — `flowered` is boolean (default false)
+- Plot: `{ id, locked, crop, flowered, vined }` — `flowered` / `vined` are
+  booleans (default false)
 - Planted crop: `{ cropId, plantedAt, growthMs, watered, waterRequestAt,
   critterWelcomed, critterVisitAt }` — `waterRequestAt` / `critterVisitAt` are
   absolute timestamps or `null` if this plant never asks / never hosts a visit
@@ -1008,6 +1036,7 @@ are not re-taught mid-run; fresh games and Reset use `createInitialState`
 
 On load for `saveVersion < 2` (or missing): wipe `inventory`,
 `pendingHarvests`, desk alchemy slots, desk visitors, clear `flowered` flags,
+normalize missing `vined` to false (and clear vines under ready crops),
 and reset any active Dragon Temple (slots discarded — no inventory return).
 Then run the usual normalizers. Ready crops on plots are marked discovered
 (`markReadyCropsDiscovered`). Missing `discoveredCropIds` seeded from crops
@@ -1029,14 +1058,12 @@ animations; No or click outside dismisses and play continues.
 
 ## Future vision (not yet built)
 - More alchemy recipes, research UI, deeper progression.
-- Vine plot care (second land-care look / perk; mechanic TBD).
 - Additional plot critter types; player-chosen shrine destination for
   butterflies.
 
 ## Out of scope (current)
 - Seeds, full recipe book (always-on catalog), research UI,
   shrine hover tooltips (replaced by detail window).
-- Vine plot care (deferred).
 - Critter growth time-save, Tiger-like +1 from critters, inventory butterflies,
   waking the Dragon from critter or firefly welcome.
   Alchemy products as plot-care spend.

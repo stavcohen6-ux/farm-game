@@ -229,6 +229,7 @@ function plotKey(
   uprooting,
 ) {
   const flower = plot.flowered ? 'flowered' : 'plain';
+  const vine = plot.vined ? 'vined' : 'clean';
   if (plot.locked || unlocking) return unlocking ? 'unlocking' : 'locked';
   if (!plot.crop) {
     let nap = '';
@@ -237,13 +238,13 @@ function plotKey(
       else if (napLeaving) nap = ':nap-leave';
       else nap = `:nap:${state.plotNapper?.status ?? 'sleeping'}`;
     }
-    return `empty:${flower}${nap}`;
+    return `empty:${flower}:${vine}${nap}`;
   }
   const crop = getCrop(plot.crop.cropId);
-  if (!crop) return `empty:${flower}`;
-  if (uprooting) return `uprooting:${crop.id}:${flower}`;
-  if (watering) return `growing:${crop.id}:watering:${flower}`;
-  if (critterFlying) return `growing:${crop.id}:critter-fly:${flower}`;
+  if (!crop) return `empty:${flower}:${vine}`;
+  if (uprooting) return `uprooting:${crop.id}:${flower}:${vine}`;
+  if (watering) return `growing:${crop.id}:watering:${flower}:${vine}`;
+  if (critterFlying) return `growing:${crop.id}:critter-fly:${flower}:${vine}`;
   const ready = isReady(plot, now);
   if (ready) {
     const mix = getMixBridgeSides(state, plot.id, now).join('');
@@ -253,7 +254,7 @@ function plotKey(
   const critter = hasCritterVisit(plot, now);
   const watered = plot.crop.watered === true;
   const soil = thirsty ? 'thirsty' : watered ? 'watered' : 'dry';
-  return `growing:${crop.id}:${soil}:${critter ? 'critter' : 'alone'}:${flower}`;
+  return `growing:${crop.id}:${soil}:${critter ? 'critter' : 'alone'}:${flower}:${vine}`;
 }
 
 function syncChildren(container, nextEls) {
@@ -387,6 +388,13 @@ function renderPlot(
 
   if (plot.flowered) {
     el.classList.add('plot--flowered');
+  } else if (plot.vined) {
+    // Ready crops clear vines in state; guard so ready never shows vine soil.
+    const readyForSoil =
+      plot.crop && !watering && !critterFlying && isReady(plot, now);
+    if (!readyForSoil) {
+      el.classList.add('plot--vined');
+    }
   }
 
   const napped = isPlotNapped(state, plot.id);

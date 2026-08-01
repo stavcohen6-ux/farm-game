@@ -1,6 +1,7 @@
 import { getCrop } from '../data/crops.js';
 import { DRAGON_TEMPLE } from '../data/dragonTemple.js';
 import { getHeldCropId, getHeldExpiresAt } from '../state/gameState.js';
+import { bindCropTip, hideCropTip } from './cropTip.js';
 import { CROP_DRAG_TYPE, parseCropDragData } from './shrinesPanel.js';
 import { applyDecayUrgencyClass, appendWiltMark } from './decayUrgency.js';
 import { setCropIcon, setIcon, UI_ICONS } from './icon.js';
@@ -88,6 +89,7 @@ function renderSlot(
   now,
   interactive,
 ) {
+  hideCropTip();
   slotEl.className = 'dragon-temple__slot';
   slotEl.textContent = '';
   slotEl.ondragover = null;
@@ -166,8 +168,9 @@ function renderSlot(
     const ghost = document.createElement('span');
     ghost.className = 'dragon-temple__slot-icon dragon-temple__slot-icon--ghost';
     setCropIcon(ghost, demandCrop);
+    if (demandCrop.name) bindCropTip(ghost, demandCrop.name, { large: true });
     slotEl.appendChild(ghost);
-    slotEl.title = `Needs ${demandCrop.name}`;
+    slotEl.title = '';
   } else {
     slotEl.textContent = 'Drop';
     slotEl.title = '';

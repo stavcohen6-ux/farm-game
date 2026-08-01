@@ -31,9 +31,10 @@ function clearPinned() {
   pinnedEl = null;
 }
 
-export function showCropTip(anchor, name) {
+export function showCropTip(anchor, name, { large = false } = {}) {
   const tip = ensureCropTip();
   tip.textContent = name;
+  tip.classList.toggle('crop-tip--large', large);
   tip.hidden = false;
   const rect = anchor.getBoundingClientRect();
   tip.style.left = `${rect.left + rect.width / 2}px`;
@@ -49,10 +50,10 @@ function isTouchLike(event) {
   return event.pointerType === 'touch' || event.pointerType === 'pen';
 }
 
-export function bindCropTip(el, name) {
+export function bindCropTip(el, name, options = {}) {
   el.addEventListener('pointerenter', (event) => {
     if (event.pointerType !== 'mouse') return;
-    showCropTip(el, name);
+    showCropTip(el, name, options);
   });
   el.addEventListener('pointerleave', (event) => {
     if (event.pointerType !== 'mouse') return;
@@ -64,7 +65,7 @@ export function bindCropTip(el, name) {
       hideCropTip();
       return;
     }
-    showCropTip(el, name);
+    showCropTip(el, name, options);
     setPinned(el);
   });
 }
