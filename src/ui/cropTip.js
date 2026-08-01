@@ -37,7 +37,7 @@ export function showCropTip(anchor, name) {
   tip.hidden = false;
   const rect = anchor.getBoundingClientRect();
   tip.style.left = `${rect.left + rect.width / 2}px`;
-  tip.style.top = `${rect.bottom + 6}px`;
+  tip.style.top = `${rect.top - 6}px`;
 }
 
 export function hideCropTip() {

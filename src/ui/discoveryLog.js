@@ -60,7 +60,7 @@ export function openDiscoveryLog(state, onReset = null) {
   if (entries.length === 0) {
     const empty = document.createElement('p');
     empty.className = 'discovery-log__empty';
-    empty.textContent = 'Grow and explore new crops to fill your log';
+    empty.textContent = 'Grow, offer, and mix crops to fill your log';
     modal.appendChild(empty);
   } else {
     const plantables = entries.filter((crop) => crop.plantable);

@@ -453,11 +453,11 @@ function tick() {
 
   if (maybeShowShrineEpilogue(state, now)) {
     dirty = true;
-    renderGameTextPanel(gameTextEl, state);
   }
 
   if (dirty) {
     save(state);
+    renderGameTextPanel(gameTextEl, state);
   }
 
   if (napperResult.arrivedPlotId != null) {

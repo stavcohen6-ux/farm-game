@@ -206,10 +206,10 @@ any tier. Shrine detail shows an Accepts line for the active tier’s allowlist
 
 | Crop | Growth | Frog | Monkey | Fox | Tiger | Role |
 |------|--------|------|--------|-----|-------|------|
-| wheat | 30s | 4 | 2 | 1 | 1 | Frog primary |
+| wheat | 30s | 3 | 2 | 1 | 1 | Frog primary |
 | turnip | 60s | 1 | 1 | 4 | 2 | Fox primary |
-| blueberry | 120s | 1 | 2 | 5 | 1 | Fox primary, Monkey secondary |
-| moonflower | 180s | 2 | 6 | 1 | 2 | Monkey primary |
+| blueberry | 90s | 1 | 2 | 5 | 1 | Fox primary, Monkey secondary |
+| moonflower | 150s | 2 | 6 | 1 | 2 | Monkey primary |
 | golden_pumpkin | 300s | 2 | 2 | 2 | 7 | Tiger primary |
 | sunfruit | 480s | 6 | 2 | 2 | 7 | Frog + Tiger dual primary |
 
@@ -243,7 +243,7 @@ Not an offering: does not spend a crop, does not enter inventory, and does
 
 | Crop | Chance | Window (of growth) | Shrine progress |
 |------|--------|--------------------|-----------------|
-| wheat | 1.0 | 0.40–0.85 | 2 |
+| wheat | 0.60 | 0.40–0.85 | 2 |
 | turnip | 0.32 | 0.40–0.85 | 2 |
 | blueberry | 0.28 | 0.40–0.85 | 2 |
 | moonflower | 0.25 | 0.40–0.85 | 3 |
@@ -393,8 +393,8 @@ reset confirm).
   `N` is the unique discovered union. No locked silhouettes; undiscovered
   content appears only as remaining count in that progress line.
 - Discovered items are the union of crops that have been **ready on a plot**
-  and successfully mixed alchemy results. Empty copy when none: “Grow
-  and explore new crops to fill your log” (progress still shows `0 / M`).
+  and successfully mixed alchemy results. Empty copy when none: “Grow,
+  offer, and mix crops to fill your log” (progress still shows `0 / M`).
 - Two sections when there is at least one discovery: **Harvested crops**
   (`plantable: true`) then **Crafted crops** (`plantable: false`). Omit a
   section if it has no discovered rows. Order within each section follows
@@ -409,7 +409,8 @@ reset confirm).
 - Preferred shrine(s): among that row’s four values, emphasize every shrine
   tied for the maximum amount with a quiet honey chip (soft honey
   background/border, amber/bold amount). Teaches affinity by reading the
-  numbers; no tutorial copy.
+  numbers; no tutorial copy on the chips (start-of-game plank tips are
+  separate — see Game text panel).
 - Sticky after Reset only (and survives offer/spoil of held crops when those
   return). State: `discoveredCropIds: string[]` (marked when a crop becomes
   **ready on a plot** via `markReadyCropsDiscovered`);
@@ -463,11 +464,11 @@ apex includes that shrine’s strongest plantable crop(s).
 
 | Result | Frog | Monkey | Fox | Tiger | Notes |
 |--------|------|--------|-----|-------|-------|
-| root_loaf | 6 | 4 | 6 | 4 | normal |
-| forest_bread | 6 | 5 | 7 | 3 | normal |
-| moonlit_loaf | 7 | 9 | 3 | 4 | normal |
-| golden_loaf | 7 | 5 | 4 | 9 | normal |
-| sunbread | 13 | 4 | 3 | 8 | Frog apex |
+| root_loaf | 5 | 4 | 6 | 4 | normal |
+| forest_bread | 5 | 5 | 7 | 3 | normal |
+| moonlit_loaf | 6 | 9 | 3 | 4 | normal |
+| golden_loaf | 6 | 5 | 4 | 9 | normal |
+| sunbread | 12 | 4 | 3 | 8 | Frog apex |
 | wildroot | 2 | 3 | 12 | 3 | Fox apex |
 | moonroot | 4 | 8 | 6 | 5 | normal |
 | golden_root | 4 | 4 | 7 | 10 | normal |
@@ -590,9 +591,8 @@ No wall-clock timer; lose via plant-fueled wrath.
 | `wrathMax` | Wrath at or above this loses the event | 8 |
 | `wrathPerPlant` | Wrath added per successful plant while awake | 1 |
 | `wrathPerShrineOffer` | Wrath added when offering to an animal shrine while awake | 3 |
-| `burnPulseMs` | Length of one rising-square particle wave | 3.3s |
-| `burnPulseCount` | Particle waves before crops clear | 2 |
-| `burnParticleCount` | Rising squares per burning slot | 9 |
+| `burnPulseMs` | Length of one ember-wash fire pulse | 1.2s |
+| `burnPulseCount` | Fire pulses before crops clear | 3 |
 | `resultRevealMs` | Pause after burn before win close | 500ms |
 | `rewardBonusOfferings` | Bonus offerings granted by a win prize | 3 |
 | `rewardProgressMultiplier` | Progress multiplier while bonus offerings remain | 2 (100% bonus) |
@@ -604,7 +604,7 @@ No wall-clock timer; lose via plant-fueled wrath.
 One matched auto-burn calms the dragon (no multi-round progress points). Each
 board slot asks for a specific discovered crop; slots are equal steps (rarity
 does not weight the tribute). Total burn animation ≈
-`burnPulseMs × burnPulseCount` (currently 6.6s).
+`burnPulseMs × burnPulseCount` (currently 3.6s).
 
 ### Layout
 - Lives inside `#grove-stage` directly above `#farm-board` with a small
@@ -689,9 +689,8 @@ hidden (`triggerChance`, never shown in UI) and persists across refresh/reload.
   dragon auto-takes the tribute: burn starts immediately (no Burn button;
   players do not touch the dragon). Place sweeps expired slots first.
 - On burn: slots stay filled and locked. The ready fire-edge escalates;
-  `burnParticleCount` small square sparks rise through each slot
-  `burnPulseCount` times at `burnPulseMs` each (staggered within a wave);
-  the crop icon chars and fades. While burning, crops cannot be removed or
+  each slot pulses an ember wash `burnPulseCount` times at `burnPulseMs`
+  each; the crop icon chars and fades. While burning, crops cannot be removed or
   replaced; temple drops are ignored; plant/offer wrath is not applied.
 - After the burn animation ends: slotted crops are consumed (cleared, not
   returned) and the event wins (`pendingClose: 'success'`).
@@ -868,11 +867,30 @@ Triggers:
 - Critter welcome and desk firefly welcome do not set game text (except when
   a critter gift causes a shrine tier-up, via `addShrineProgress` above).
 - Tanuki nap arrival, sleep, and departure do not set game text.
+- Start tutorial (contextual plank tips only — no modal, no spotlight, no
+  forced actions, no player dismiss). Sticky `tutorialSeen` flags until
+  Reset. Copy in `src/data/tutorial.js`. Each tip sets `gameText` and its
+  flag only when the line is actually written. Dragon wake / win / lose,
+  shrine upgraded, and epilogue always win: if one of those is showing, a
+  tutorial tip does not overwrite it and leaves its flag false so it can
+  fire later. Shrine reject is not critical — tips may overwrite it. No
+  Monkey / research unlock tip (tier-up line + planter wheel are enough).
+
+  | When | Game text | Flag |
+  |------|-----------|------|
+  | Fresh state / Reset (`createInitialState`) | `Tap an empty plot to plant.` | `welcome` (set true with the line) |
+  | First crop reaches ready on a plot | `Drag a ready crop to a shrine.` | `firstReady` |
+  | First successful shrine offer | `Offerings earn the guardians' favor.` | `firstOffer` |
+  | After first offer, when any valid recipe pair is ready on the board (not necessarily adjacent) | `Ready crops side by side can mix into something new.` | `mixInvite` (skipped if `firstMix` already true) |
+  | First successful adjacent mix | `Mixing ready crops creates something new.` | `firstMix` |
 
 API (`src/state/gameState.js`): `setGameText(state, text)`,
-`clearGameText(state)`, `maybeShowShrineEpilogue(state, now)`.
+`clearGameText(state)`, `maybeShowShrineEpilogue(state, now)`,
+`maybeShowTutorialTip(state, flagKey)`, `maybeShowMixInviteTip(state, now)`,
+`createInitialTutorialSeen()`.
 UI: `src/ui/gameTextPanel.js`. Delay / line constants:
 `SHRINE_EPILOGUE_DELAY_MS`, `SHRINE_EPILOGUE_LINE` in `src/data/shrines.js`.
+Tutorial: `TUTORIAL_LINES`, `TUTORIAL_FLAG_KEYS` in `src/data/tutorial.js`.
 
 ## Flowered plots (land care)
 **Parked** (no inventory to spend). Flowered soil art
@@ -941,6 +959,8 @@ status: 'approaching' | 'sleeping' | 'waking', plotId?, wakeAt? }`.
 - Shrine epilogue: `shrineEpilogueShown` (boolean, sticky until Reset; true
   only after the epilogue line was displayed), `shrineEpilogueDueAt`
   (`null` | epoch ms while a wait is armed)
+- Tutorial: `tutorialSeen: { welcome, firstReady, firstOffer, firstMix }`
+  (booleans, sticky until Reset; each true only after that tip was written)
 - Discovery: `discoveredCropIds: string[]`,
   `discoveredAlchemyResultIds: string[]` — sticky until full Reset
 - State: `researchLevel`,
@@ -949,14 +969,14 @@ status: 'approaching' | 'sleeping' | 'waking', plotId?, wakeAt? }`.
   `plotNapper`,
   `discoveredCropIds`,
   `discoveredAlchemyResultIds`, `gameText`,
-  `shrineEpilogueShown`, `shrineEpilogueDueAt`
+  `shrineEpilogueShown`, `shrineEpilogueDueAt`, `tutorialSeen`
 - Shrine def: `{ id, name, icon, theme, corner, tiers[] }`
 - Tier: `name`, `progressRequired`, `acceptedCropIds`, `tooltip` (effect
   text), plus blessing field (`growthSpeedBonus` | `researchBonus` |
   `plotsToUnlock` | `bonusHarvestChance`)
 - Alchemy recipe: `{ inputs: [id, id], resultId }` (order-independent)
 - Dragon Temple config: `slotCount`, `wrathMax`, `wrathPerPlant`,
-  `wrathPerShrineOffer`, `burnPulseMs`, `burnPulseCount`, `burnParticleCount`,
+  `wrathPerShrineOffer`, `burnPulseMs`, `burnPulseCount`,
   `resultRevealMs`, `rewardBonusOfferings`,
   `rewardProgressMultiplier`, `rewardSparkCount`,
   `rewardSparkIcon`, `defaultTriggerChance`,
@@ -965,8 +985,11 @@ status: 'approaching' | 'sleeping' | 'waking', plotId?, wakeAt? }`.
 ## Persistence
 `localStorage` JSON (`saveVersion: 2` = desk-less / plot-held crops). After
 plant / water / critter welcome / offer / temple actions / Reset, and on the
-1s tick when crops spoil, a tanuki napper arrives/wakes/is lost, or a pending
-shrine epilogue is due.
+1s tick when crops spoil, a tanuki napper arrives/wakes/is lost, a pending
+shrine epilogue is due, or a start-tutorial tip is written. Missing
+`tutorialSeen` on load is filled with all flags true so returning players
+are not re-taught mid-run; fresh games and Reset use `createInitialState`
+(welcome tip + remaining flags false).
 
 On load for `saveVersion < 2` (or missing): wipe `inventory`,
 `pendingHarvests`, desk alchemy slots, desk visitors, clear `flowered` flags,

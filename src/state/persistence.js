@@ -3,6 +3,7 @@ import {
   createInitialShrines,
   createInitialAlchemy,
   createInitialDragonTemple,
+  createInitialTutorialSeen,
   completeDragonTempleBurn,
   finalizeDragonTempleClose,
   claimTempleWinReward,
@@ -20,6 +21,7 @@ import {
 import { getCrop, getExpiresAt } from '../data/crops.js';
 import { isAlchemyResultId } from '../data/alchemyRecipes.js';
 import { DRAGON_TEMPLE } from '../data/dragonTemple.js';
+import { TUTORIAL_FLAG_KEYS } from '../data/tutorial.js';
 
 const STORAGE_KEY = 'farm-game-state';
 const SAVE_VERSION = 2;
@@ -498,6 +500,10 @@ export function load() {
       parsed.shrineEpilogueDueAt = null;
     }
 
+    if (normalizeTutorialSeen(parsed)) {
+      dirty = true;
+    }
+
     // Catch up perishable crops after offline time.
     const spoiled = tickCropDecay(parsed, Date.now());
     if (Object.keys(spoiled).length > 0) {
@@ -563,6 +569,42 @@ function migrateToPlotHeldCrops(parsed) {
   }
   parsed.saveVersion = SAVE_VERSION;
   return true;
+}
+
+/**
+ * Normalize sticky tutorial flags.
+ * Missing object on an existing save → all true (skip tips for returning players).
+ * Partial / invalid keys are repaired; unknown keys dropped.
+ */
+function normalizeTutorialSeen(parsed) {
+  const raw = parsed.tutorialSeen;
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    // Existing saves without tutorial state: do not re-teach mid-run.
+    const seen = createInitialTutorialSeen();
+    for (const key of TUTORIAL_FLAG_KEYS) {
+      seen[key] = true;
+    }
+    parsed.tutorialSeen = seen;
+    return true;
+  }
+
+  let dirty = false;
+  const normalized = createInitialTutorialSeen();
+  for (const key of TUTORIAL_FLAG_KEYS) {
+    if (raw[key] === true) {
+      normalized[key] = true;
+    } else if (raw[key] !== false) {
+      dirty = true;
+    }
+  }
+  for (const key of Object.keys(raw)) {
+    if (!TUTORIAL_FLAG_KEYS.includes(key)) {
+      dirty = true;
+      break;
+    }
+  }
+  parsed.tutorialSeen = normalized;
+  return dirty;
 }
 
 function normalizeDiscoveredCrops(parsed) {
