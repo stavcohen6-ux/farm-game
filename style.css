@@ -971,7 +971,6 @@ body {
   pointer-events: none;
 }
 
-.shrine--tutorial-target,
 .plot--tutorial-target {
   outline: 2px solid var(--honey, #e6c65a);
   outline-offset: 3px;
@@ -991,7 +990,7 @@ body {
 .tutorial-bubble {
   position: fixed;
   z-index: 40;
-  max-width: 13.5rem;
+  max-width: 16rem;
   padding: 0.55rem 0.75rem;
   background: var(--parchment, #f4faf4);
   border: 2px solid #c4a574;
@@ -1025,7 +1024,7 @@ body {
 .tutorial-bubble::after {
   content: '';
   position: absolute;
-  left: 50%;
+  left: var(--tutorial-tail-x, 50%);
   bottom: -8px;
   width: 14px;
   height: 14px;

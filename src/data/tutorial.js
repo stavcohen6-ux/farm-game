@@ -13,7 +13,7 @@ export const TUTORIAL_RIGHT_PLOT = TUTORIAL_RIGHT_PLOT_ID;
 export const TUTORIAL_FOX_PROGRESS_REQUIRED = 5;
 /** Wheat offering fills this much of the FTUE Fox bar (once). */
 export const TUTORIAL_FOX_WHEAT_PROGRESS = 1;
-/** Growth multiplier for first Wheat and Turnip (4× faster ⇒ ms / 4). */
+/** Growth multiplier for FTUE Wheat and Turnip (4× faster ⇒ ms / 4). */
 export const TUTORIAL_FAST_GROWTH_DIVISOR = 4;
 
 export const TUTORIAL_STEPS = [
@@ -30,11 +30,16 @@ export const TUTORIAL_STEPS = [
   'waitBothReady',
   'mix',
   'offerRootLoaf',
+  'exploreBoard',
   'done',
 ];
 
 export const TUTORIAL_STEP_START = 'tapWheatPlot';
+export const TUTORIAL_STEP_EXPLORE = 'exploreBoard';
 export const TUTORIAL_STEP_DONE = 'done';
+
+/** Plots unlocked when the Fox FTUE bar completes (explore invite anchor). */
+export const TUTORIAL_UNLOCK_PLOT_IDS = [0, 1];
 
 export const TUTORIAL_BUBBLE_LINES = {
   tapWheatPlot: 'Tap this plot to plant.',
@@ -53,6 +58,8 @@ export const TUTORIAL_BUBBLE_LINES = {
   waitBothReady: 'Wait until both crops are ready.',
   mix: 'Drag one ready crop onto the other.',
   offerRootLoaf: 'Drag the Root Loaf to the Fox shrine.',
+  exploreBoard:
+    'The Fox thanks you for your offerings and has opened more land. Continue exploring the farm.',
 };
 
 /** @deprecated Soft plank tips — kept for critical-text helpers / legacy saves. */
@@ -85,6 +92,16 @@ export function isTutorialStep(step) {
 
 export function isTutorialActive(state) {
   return isTutorialStep(state?.tutorialStep) && state.tutorialStep !== TUTORIAL_STEP_DONE;
+}
+
+/** Final invite after unlock — bubble only; no action gates. */
+export function isTutorialExploreInvite(state) {
+  return state?.tutorialStep === TUTORIAL_STEP_EXPLORE;
+}
+
+/** True while FTUE still restricts planting / offers / temple / etc. */
+export function isTutorialGated(state) {
+  return isTutorialActive(state) && !isTutorialExploreInvite(state);
 }
 
 export function isTutorialComplete(state) {

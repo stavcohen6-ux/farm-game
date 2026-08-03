@@ -49,6 +49,8 @@ import {
 } from '../data/tutorial.js';
 import {
   isTutorialActive,
+  isTutorialGated,
+  isTutorialExploreInvite,
   canTutorialPlant,
   canTutorialUproot,
   canTutorialOffer,
@@ -74,10 +76,13 @@ import {
   isTutorialFoxTarget,
   isTutorialPickerCropUnlocked,
   getTutorialPlantMask,
+  dismissTutorialExploreInvite,
 } from './tutorialFlow.js';
 
 export {
   isTutorialActive,
+  isTutorialGated,
+  isTutorialExploreInvite,
   canTutorialOpenPicker,
   onTutorialPickerOpened,
   canTutorialUproot,
@@ -94,6 +99,7 @@ export {
   isTutorialFoxTarget,
   isTutorialPickerCropUnlocked,
   getTutorialPlantMask,
+  dismissTutorialExploreInvite,
 };
 
 export { TUTORIAL_STEP_DONE } from '../data/tutorial.js';
@@ -1497,7 +1503,7 @@ export function addDragonTempleWrath(state, amount) {
 
 /** True when a shrine would accept this crop (before taking from plot/inventory). */
 export function canOfferCropToShrine(state, shrineId, cropId) {
-  if (isTutorialActive(state)) {
+  if (isTutorialGated(state)) {
     return canTutorialOffer(state, shrineId, cropId);
   }
   if (isShrineMaxed(state, shrineId)) return false;
@@ -1516,7 +1522,7 @@ export function offerCrop(state, shrineId, cropId, sourcePlotId = null) {
   const shrine = getShrine(shrineId);
   const crop = getCrop(cropId);
 
-  if (isTutorialActive(state)) {
+  if (isTutorialGated(state)) {
     if (!canTutorialOffer(state, shrineId, cropId)) {
       return false;
     }

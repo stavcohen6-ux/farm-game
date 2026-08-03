@@ -3,8 +3,7 @@ import {
   canOfferCropToShrine,
   getDragonBonusOfferings,
   isShrineMaxed,
-  isTutorialActive,
-  isTutorialFoxTarget,
+  isTutorialGated,
   getTutorialFoxProgress,
 } from '../state/gameState.js';
 import { setIcon, shrineIconSrc } from './icon.js';
@@ -108,14 +107,11 @@ function renderShrine(
   if (maxed && !useTutorialBar) {
     container.classList.add('shrine--maxed');
   }
-  if (isTutorialActive(state) && shrine.id !== 'fox') {
+  if (isTutorialGated(state) && shrine.id !== 'fox') {
     container.classList.add('shrine--tutorial-inactive');
   }
-  if (isTutorialFoxTarget(state) && shrine.id === 'fox') {
-    container.classList.add('shrine--tutorial-target');
-  }
   const showBlessingGlow =
-    !isTutorialActive(state) &&
+    !isTutorialGated(state) &&
     getDragonBonusOfferings(state, shrine.id) > 0 &&
     !pendingBlessingVisualShrineIds?.has(shrine.id);
   if (showBlessingGlow) {

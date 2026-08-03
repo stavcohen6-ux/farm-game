@@ -11,8 +11,12 @@ import {
   TUTORIAL_FOX_WHEAT_PROGRESS,
   TUTORIAL_FAST_GROWTH_DIVISOR,
   TUTORIAL_STEP_START,
+  TUTORIAL_STEP_EXPLORE,
   TUTORIAL_STEP_DONE,
+  TUTORIAL_UNLOCK_PLOT_IDS,
   isTutorialActive,
+  isTutorialExploreInvite,
+  isTutorialGated,
   isTutorialStep,
   isTutorialCropPlantable,
 } from '../data/tutorial.js';
@@ -20,6 +24,8 @@ import {
 export {
   isTutorialActive,
   isTutorialComplete,
+  isTutorialExploreInvite,
+  isTutorialGated,
   getTutorialBubbleText,
   getTutorialTargetPlotIds,
   isTutorialFoxTarget,
@@ -29,6 +35,7 @@ export {
   TUTORIAL_FOX_PROGRESS_REQUIRED,
   TUTORIAL_STEP_DONE,
   TUTORIAL_STEP_START,
+  TUTORIAL_STEP_EXPLORE,
 } from '../data/tutorial.js';
 
 function plotById(state, plotId) {
@@ -51,9 +58,9 @@ export function setTutorialStep(state, step) {
   state.tutorialStep = step;
 }
 
-/** Fox bar fill while FTUE is active (demo max 5). */
+/** Fox bar fill while gated FTUE is active (demo max 5). */
 export function getTutorialFoxProgress(state) {
-  if (!isTutorialActive(state)) return null;
+  if (!isTutorialGated(state)) return null;
   const progress = state.tutorialFoxWheatOffered
     ? TUTORIAL_FOX_WHEAT_PROGRESS
     : 0;
@@ -71,13 +78,16 @@ export function forceWaterRequest(plantedAt, growthMs) {
   };
 }
 
-/** Growth ms for an FTUE plant (4× on first wheat + turnip). */
+/** Growth ms for an FTUE plant (4× on wheat + turnip during FTUE). */
 export function getTutorialPlantGrowthMs(state, cropId, baseGrowthMs) {
-  if (!isTutorialActive(state)) return baseGrowthMs;
+  if (!isTutorialGated(state)) return baseGrowthMs;
   const step = state.tutorialStep;
   if (
     (cropId === 'wheat' &&
-      (step === 'pickWheat' || step === 'tapWheatPlot')) ||
+      (step === 'pickWheat' ||
+        step === 'tapWheatPlot' ||
+        step === 'pickWheat2' ||
+        step === 'tapWheatPlot2')) ||
     (cropId === 'turnip' &&
       (step === 'pickTurnip' || step === 'tapTurnipPlot'))
   ) {
@@ -87,7 +97,7 @@ export function getTutorialPlantGrowthMs(state, cropId, baseGrowthMs) {
 }
 
 export function canTutorialOpenPicker(state, plotId) {
-  if (!isTutorialActive(state)) return true;
+  if (!isTutorialGated(state)) return true;
   const step = state.tutorialStep;
   if (
     (step === 'tapWheatPlot' || step === 'pickWheat') &&
@@ -111,7 +121,7 @@ export function canTutorialOpenPicker(state, plotId) {
 }
 
 export function onTutorialPickerOpened(state, plotId) {
-  if (!isTutorialActive(state)) return;
+  if (!isTutorialGated(state)) return;
   if (
     state.tutorialStep === 'tapWheatPlot' &&
     plotId === TUTORIAL_LEFT_PLOT
@@ -131,7 +141,7 @@ export function onTutorialPickerOpened(state, plotId) {
 }
 
 export function onTutorialPlanted(state, plotId, cropId) {
-  if (!isTutorialActive(state)) return;
+  if (!isTutorialGated(state)) return;
   if (
     state.tutorialStep === 'pickWheat' &&
     plotId === TUTORIAL_LEFT_PLOT &&
@@ -158,7 +168,7 @@ export function onTutorialPlanted(state, plotId, cropId) {
  * Returns true if step changed.
  */
 export function tickTutorial(state, now = Date.now()) {
-  if (!isTutorialActive(state)) return false;
+  if (!isTutorialGated(state)) return false;
   const before = state.tutorialStep;
   repairTutorialState(state, now);
 
@@ -184,12 +194,12 @@ export function tickTutorial(state, now = Date.now()) {
   return state.tutorialStep !== before;
 }
 
-export function canTutorialUproot(_state) {
-  return !isTutorialActive(_state);
+export function canTutorialUproot(state) {
+  return !isTutorialGated(state);
 }
 
 export function canTutorialOffer(state, shrineId, cropId) {
-  if (!isTutorialActive(state)) return true;
+  if (!isTutorialGated(state)) return true;
   if (shrineId !== 'fox') return false;
   if (state.tutorialStep === 'offerWheat') {
     return cropId === 'wheat' && !state.tutorialFoxWheatOffered;
@@ -201,7 +211,7 @@ export function canTutorialOffer(state, shrineId, cropId) {
 }
 
 export function canTutorialDragReadyCrop(state, plotId, cropId) {
-  if (!isTutorialActive(state)) return true;
+  if (!isTutorialGated(state)) return true;
   const step = state.tutorialStep;
   if (step === 'offerWheat') {
     return plotId === TUTORIAL_LEFT_PLOT && cropId === 'wheat';
@@ -220,7 +230,7 @@ export function canTutorialDragReadyCrop(state, plotId, cropId) {
 
 /** On-plot mix is only allowed on the FTUE mix step between the two starter plots. */
 export function canTutorialMix(state, fromPlotId, toPlotId) {
-  if (!isTutorialActive(state)) return true;
+  if (!isTutorialGated(state)) return true;
   if (state.tutorialStep !== 'mix') return false;
   return (
     (fromPlotId === TUTORIAL_LEFT_PLOT && toPlotId === TUTORIAL_RIGHT_PLOT) ||
@@ -228,12 +238,12 @@ export function canTutorialMix(state, fromPlotId, toPlotId) {
   );
 }
 
-export function canTutorialTemple(_state) {
-  return !isTutorialActive(_state);
+export function canTutorialTemple(state) {
+  return !isTutorialGated(state);
 }
 
-export function canTutorialOpenShrineDetail(_state) {
-  return !isTutorialActive(_state);
+export function canTutorialOpenShrineDetail(state) {
+  return !isTutorialGated(state);
 }
 
 /**
@@ -242,7 +252,7 @@ export function canTutorialOpenShrineDetail(_state) {
  * Returns `{ completed, unlockedPlotIds }` or null if rejected.
  */
 export function applyTutorialFoxOffer(state, cropId) {
-  if (!isTutorialActive(state)) return null;
+  if (!isTutorialGated(state)) return null;
 
   if (
     state.tutorialStep === 'offerWheat' &&
@@ -266,11 +276,11 @@ export function applyTutorialFoxOffer(state, cropId) {
   return null;
 }
 
-/** Unlock upper starter plots, mark FTUE done, reset Fox shrine to free-play. */
+/** Unlock upper starter plots, open explore invite, reset Fox shrine to free-play. */
 export function completeTutorial(state) {
   const unlockedPlotIds = [];
   const byId = new Map(state.plots.map((p) => [p.id, p]));
-  for (const plotId of [0, 1]) {
+  for (const plotId of TUTORIAL_UNLOCK_PLOT_IDS) {
     const plot = byId.get(plotId);
     if (!plot) continue;
     if (plot.locked) {
@@ -278,7 +288,7 @@ export function completeTutorial(state) {
       unlockedPlotIds.push(plotId);
     }
   }
-  state.tutorialStep = TUTORIAL_STEP_DONE;
+  state.tutorialStep = TUTORIAL_STEP_EXPLORE;
   state.tutorialFoxWheatOffered = true;
   if (state.shrines?.fox) {
     state.shrines.fox.tier = 0;
@@ -287,8 +297,15 @@ export function completeTutorial(state) {
   return unlockedPlotIds;
 }
 
+/** Dismiss the post-unlock explore bubble into free play. */
+export function dismissTutorialExploreInvite(state) {
+  if (!isTutorialExploreInvite(state)) return false;
+  setTutorialStep(state, TUTORIAL_STEP_DONE);
+  return true;
+}
+
 export function onTutorialMixed(state) {
-  if (!isTutorialActive(state)) return;
+  if (!isTutorialGated(state)) return;
   if (state.tutorialStep === 'mix') {
     setTutorialStep(state, 'offerRootLoaf');
   }
@@ -299,7 +316,7 @@ export function onTutorialMixed(state) {
  * Returns true if something changed.
  */
 export function repairTutorialState(state, now = Date.now()) {
-  if (!isTutorialActive(state)) return false;
+  if (!isTutorialGated(state)) return false;
   let changed = false;
 
   // Sync fox wheat flag vs step
@@ -419,7 +436,7 @@ function repairFromBoard(state, now) {
 
 /** Whether planting this crop on this plot is allowed in FTUE. */
 export function canTutorialPlant(state, plotId, cropId) {
-  if (!isTutorialActive(state)) return true;
+  if (!isTutorialGated(state)) return true;
   if (!isTutorialCropPlantable(state, cropId)) return false;
   const step = state.tutorialStep;
   if (
@@ -447,7 +464,7 @@ export function canTutorialPlant(state, plotId, cropId) {
 }
 
 export function shouldForceTutorialWater(state, cropId) {
-  if (!isTutorialActive(state)) return false;
+  if (!isTutorialGated(state)) return false;
   // One forced cue on every FTUE plant of wheat/turnip
   return cropId === 'wheat' || cropId === 'turnip';
 }
@@ -457,9 +474,9 @@ export function getBaseGrowthMsForCrop(crop) {
 }
 
 export function shouldSuppressDragonDuringTutorial(state) {
-  return isTutorialActive(state);
+  return isTutorialGated(state);
 }
 
 export function shouldSuppressPlotNapperDuringTutorial(state) {
-  return isTutorialActive(state);
+  return isTutorialGated(state);
 }

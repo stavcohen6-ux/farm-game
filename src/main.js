@@ -23,6 +23,8 @@ import {
   resetState,
   uprootCrop,
   isTutorialActive,
+  isTutorialGated,
+  dismissTutorialExploreInvite,
   canTutorialOpenPicker,
   onTutorialPickerOpened,
   canTutorialUproot,
@@ -133,12 +135,12 @@ function render() {
     handleShrineClick,
     pendingBlessingVisualShrineIds,
   );
-  if (isTutorialActive(state)) {
+  if (isTutorialGated(state)) {
     dragonTempleEl?.classList.add('dragon-temple--tutorial-inactive');
   } else {
     dragonTempleEl?.classList.remove('dragon-temple--tutorial-inactive');
   }
-  renderTutorialBubble(state, { boardEl, gridEl, now });
+  renderTutorialBubble(state, tutorialBubbleCtx(now));
 }
 
 function showPlotCropName(plotId) {
@@ -149,6 +151,21 @@ function showPlotCropName(plotId) {
   const plotEl = gridEl.querySelector(`[data-plot-id="${plotId}"]`);
   if (!plotEl) return;
   pinCropTip(plotEl, crop.name, { small: true });
+}
+
+function handleTutorialExploreDismiss() {
+  if (!dismissTutorialExploreInvite(state)) return;
+  save(state);
+  render();
+}
+
+function tutorialBubbleCtx(now = Date.now()) {
+  return {
+    boardEl,
+    gridEl,
+    now,
+    onExploreDismiss: handleTutorialExploreDismiss,
+  };
 }
 
 function handlePlotClick(plotId) {
@@ -182,7 +199,7 @@ function handlePlotClick(plotId) {
         playShrineBurn({ shrineEl });
       }
     });
-    renderTutorialBubble(state, { boardEl, gridEl, now: Date.now() });
+    renderTutorialBubble(state, tutorialBubbleCtx());
     return;
   }
 
@@ -553,7 +570,7 @@ function tick() {
   }
 
   renderFarm();
-  renderTutorialBubble(state, { boardEl, gridEl, now });
+  renderTutorialBubble(state, tutorialBubbleCtx(now));
   if (isTutorialActive(state)) {
     renderShrines(
       boardEl,

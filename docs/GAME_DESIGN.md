@@ -919,18 +919,21 @@ Triggers:
   Path: plant Wheat on left (Turnip locked on real crop wheel) → grow
   (optional one water cue; 4× growth) → offer Wheat to Fox only (`1/5`
   demo bar) → plant Turnip on right (Wheat visible but locked on wheel;
-  4× growth; optional water) → plant second Wheat on left (normal speed)
+  4× growth; optional water) → plant second Wheat on left (4× growth)
   → mix → offer Root Loaf to Fox (`5/5`) → Fox upgrade VFX + unlock
-  plots `0`/`1` → `done`. Water never blocks: ignore dry soil until ready
-  and the step still advances. At most one water ask per plant. Uproot,
-  shrine/temple detail popups, Tiger/Frog/Monkey offers, and Dragon wake
-  are blocked until `done`. Non-Fox shrines (+ temple) are greyed. Fox demo
-  bar uses the normal progress UI with max 5 (scripted +1 wheat / fill on
-  loaf); on complete Fox shrine progress resets to Forest Fox `0` for free
-  play. `repairTutorialState` on load + tick fixes board/step desync.
+  plots `0`/`1` → `exploreBoard` speech bubble → next tap → `done`.
+  Water never blocks: ignore dry soil until ready and the step still
+  advances. At most one water ask per plant. Uproot, shrine/temple detail
+  popups, Tiger/Frog/Monkey offers, and Dragon wake are blocked until
+  `exploreBoard` (free play with invite bubble) / `done`. Non-Fox shrines
+  (+ temple) are greyed until then. Fox demo bar uses the normal progress
+  UI with max 5 (scripted +1 wheat / fill on loaf); on complete Fox shrine
+  progress resets to Forest Fox `0` for free play. `repairTutorialState` on
+  load + tick fixes board/step desync.
 
   Bubble: one at a time, above the target (flip below if clipped); no
-  player dismiss — advances when the step completes.
+  player dismiss — advances when the step completes. Exception:
+  `exploreBoard` dismisses on the next tap after unlock.
 
 API (`src/state/gameState.js` / `tutorialFlow.js`): `tickTutorial`,
 `repairTutorialState`, `getTutorialFoxProgress`, gates
