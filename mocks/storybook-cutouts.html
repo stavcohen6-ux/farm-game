@@ -334,7 +334,37 @@
 
     .layered__figure {
       z-index: 2;
+      transform-origin: 50% 78%;
       filter: drop-shadow(0 2px 8px rgba(36, 56, 44, 0.18));
+    }
+
+    .layered--breathe .layered__figure {
+      animation: shrine-breathe 4.2s ease-in-out infinite;
+    }
+
+    @keyframes shrine-breathe {
+      0%, 100% { transform: scale(1, 1); }
+      50% { transform: scale(1.006, 1.014); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .layered--breathe .layered__figure {
+        animation: none;
+      }
+    }
+
+    .wave1-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    @media (max-width: 1100px) {
+      .wave1-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 700px) {
+      .wave1-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -349,14 +379,12 @@
     </header>
 
     <p class="wave0-banner">
-      <strong>Wave 0 — Soft Storybook B.</strong>
-      Hero lock:
-      <code>mocks/storybook-cutouts/fox-shrine-b.png</code>
-      (not C). Layered fox pair kept (figure + pedestal, static) for a possible
-      later idle breathe — motion off for now. Live
-      <code>assets/icons|scene|opening</code> not replaced yet — archive at
-      <code>assets/mood/archive_live_pre_storybook_b/</code>. Bible:
-      <code>docs/ART_STYLE_STORYBOOK_B.md</code>.
+      <strong>Wave 1 — Layered shrines (frog / monkey / fox / tiger).</strong>
+      Soft B siblings of
+      <code>shrine_fox_figure.png</code>.
+      Canonical pairs under
+      <code>mocks/storybook-cutouts/layered/shrine_{id}_*</code>.
+      Facing: frog/fox → right; monkey/tiger → left. Live assets untouched.
     </p>
 
     <p class="rules">
@@ -365,6 +393,97 @@
       presence · Fresh Moss + honey amber · no faceted/low-poly (reject C) ·
       true transparency.
     </p>
+
+    <p class="section-title">Wave 1 — Four layered shrines</p>
+    <div class="wave1-grid">
+      <article class="card">
+        <div>
+          <div class="card__tag">Frog · faces right</div>
+          <h2 class="card__name">Leaf vest</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/layered/shrine_frog_composite-preview.png" alt="Layered frog shrine" />
+        </div>
+        <div class="sizes" aria-label="Frog sizes">
+          <div class="sizes__item"><span class="sizes__label">128</span><img class="sz-128" src="mocks/storybook-cutouts/layered/shrine_frog_composite-preview.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/layered/shrine_frog_composite-preview.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/layered/shrine_frog_composite-preview.png" alt="" /></div>
+        </div>
+        <div class="stage stage--layered stage--grove" style="min-height:12rem;">
+          <img class="scene" src="assets/scene/grove_clearing.png" alt="" />
+          <div class="layered layered--breathe">
+            <img class="layered__pedestal" src="mocks/storybook-cutouts/layered/shrine_frog_pedestal.png" alt="" />
+            <img class="layered__figure" src="mocks/storybook-cutouts/layered/shrine_frog_figure.png" alt="Frog" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">Monkey · faces left</div>
+          <h2 class="card__name">Scholar beads / sash</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/layered/shrine_monkey_composite-preview.png" alt="Layered monkey shrine" />
+        </div>
+        <div class="sizes" aria-label="Monkey sizes">
+          <div class="sizes__item"><span class="sizes__label">128</span><img class="sz-128" src="mocks/storybook-cutouts/layered/shrine_monkey_composite-preview.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/layered/shrine_monkey_composite-preview.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/layered/shrine_monkey_composite-preview.png" alt="" /></div>
+        </div>
+        <div class="stage stage--layered stage--grove" style="min-height:12rem;">
+          <img class="scene" src="assets/scene/grove_clearing.png" alt="" />
+          <div class="layered layered--breathe">
+            <img class="layered__pedestal" src="mocks/storybook-cutouts/layered/shrine_monkey_pedestal.png" alt="" />
+            <img class="layered__figure" src="mocks/storybook-cutouts/layered/shrine_monkey_figure.png" alt="Monkey" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">Fox · faces right</div>
+          <h2 class="card__name">Traveler scarf + satchel</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/layered/shrine_fox_composite-preview.png" alt="Layered fox shrine" />
+        </div>
+        <div class="sizes" aria-label="Fox sizes">
+          <div class="sizes__item"><span class="sizes__label">128</span><img class="sz-128" src="mocks/storybook-cutouts/layered/shrine_fox_composite-preview.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/layered/shrine_fox_composite-preview.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/layered/shrine_fox_composite-preview.png" alt="" /></div>
+        </div>
+        <div class="stage stage--layered stage--grove" style="min-height:12rem;">
+          <img class="scene" src="assets/scene/grove_clearing.png" alt="" />
+          <div class="layered layered--breathe">
+            <img class="layered__pedestal" src="mocks/storybook-cutouts/layered/shrine_fox_pedestal.png" alt="" />
+            <img class="layered__figure" src="mocks/storybook-cutouts/layered/shrine_fox_figure.png" alt="Fox" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">Tiger · faces left</div>
+          <h2 class="card__name">Fortune collar + charms</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/layered/shrine_tiger_composite-preview.png" alt="Layered tiger shrine" />
+        </div>
+        <div class="sizes" aria-label="Tiger sizes">
+          <div class="sizes__item"><span class="sizes__label">128</span><img class="sz-128" src="mocks/storybook-cutouts/layered/shrine_tiger_composite-preview.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/layered/shrine_tiger_composite-preview.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/layered/shrine_tiger_composite-preview.png" alt="" /></div>
+        </div>
+        <div class="stage stage--layered stage--grove" style="min-height:12rem;">
+          <img class="scene" src="assets/scene/grove_clearing.png" alt="" />
+          <div class="layered layered--breathe">
+            <img class="layered__pedestal" src="mocks/storybook-cutouts/layered/shrine_tiger_pedestal.png" alt="" />
+            <img class="layered__figure" src="mocks/storybook-cutouts/layered/shrine_tiger_figure.png" alt="Tiger" />
+          </div>
+        </div>
+      </article>
+    </div>
 
     <p class="section-title">Wave 0 — Hero B + layered fox</p>
     <div class="row row--3">
