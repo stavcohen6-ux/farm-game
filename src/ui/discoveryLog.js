@@ -7,6 +7,7 @@ import {
 } from '../audio/sfx.js';
 import { bindCropTip, hideCropTip } from './cropTip.js';
 import { FIELD_NOTES_TITLE } from './gameTextPanel.js';
+import { renderHowToPlay } from './howToPlay.js';
 import { logShrineIconSrc, setCropIcon, setIcon, UI_ICONS } from './icon.js';
 
 // Opens a modal listing discovered crops with shrine values and origin.
@@ -17,6 +18,13 @@ export function openDiscoveryLog(state, onReset = null) {
 
   const modal = document.createElement('div');
   modal.className = 'discovery-log';
+
+  const logView = document.createElement('div');
+  logView.className = 'discovery-log__view';
+
+  const helpView = document.createElement('div');
+  helpView.className = 'discovery-log__view';
+  helpView.hidden = true;
 
   const header = document.createElement('div');
   header.className = 'discovery-log__header';
@@ -59,32 +67,43 @@ export function openDiscoveryLog(state, onReset = null) {
   progress.textContent = `Discoveries ${found} / ${total}`;
   header.appendChild(progress);
 
-  modal.appendChild(header);
+  logView.appendChild(header);
 
   if (entries.length === 0) {
     const empty = document.createElement('p');
     empty.className = 'discovery-log__empty';
     empty.textContent = 'Grow, offer, and mix crops to fill your log';
-    modal.appendChild(empty);
+    logView.appendChild(empty);
   } else {
     const plantables = entries.filter((crop) => crop.plantable);
     const mixes = entries.filter((crop) => !crop.plantable);
 
     if (plantables.length > 0) {
-      modal.appendChild(
+      logView.appendChild(
         renderSection('Harvested crops', plantables, discoveredRecipes),
       );
     }
     if (mixes.length > 0) {
-      modal.appendChild(
+      logView.appendChild(
         renderSection('Crafted crops', mixes, discoveredRecipes),
       );
     }
   }
 
+  const footer = document.createElement('div');
+  footer.className = 'discovery-log__footer';
+
+  const howToPlayBtn = document.createElement('button');
+  howToPlayBtn.type = 'button';
+  howToPlayBtn.className = 'reset-game';
+  howToPlayBtn.textContent = 'How to Play';
+  howToPlayBtn.addEventListener('click', (event) => {
+    event.stopPropagation();
+    showHelp();
+  });
+  footer.appendChild(howToPlayBtn);
+
   if (typeof onReset === 'function') {
-    const footer = document.createElement('div');
-    footer.className = 'discovery-log__footer';
     const resetBtn = document.createElement('button');
     resetBtn.type = 'button';
     resetBtn.className = 'reset-game';
@@ -95,9 +114,14 @@ export function openDiscoveryLog(state, onReset = null) {
       onReset();
     });
     footer.appendChild(resetBtn);
-    modal.appendChild(footer);
   }
 
+  logView.appendChild(footer);
+
+  renderHowToPlay(helpView, { onBack: showLog });
+
+  modal.appendChild(logView);
+  modal.appendChild(helpView);
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
   playDiscoveryOpenSfx();
@@ -105,6 +129,17 @@ export function openDiscoveryLog(state, onReset = null) {
   overlay.addEventListener('click', (event) => {
     if (event.target === overlay) close();
   });
+
+  function showHelp() {
+    hideCropTip();
+    logView.hidden = true;
+    helpView.hidden = false;
+  }
+
+  function showLog() {
+    helpView.hidden = true;
+    logView.hidden = false;
+  }
 
   function close() {
     hideCropTip();
