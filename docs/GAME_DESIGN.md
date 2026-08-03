@@ -396,9 +396,15 @@ on-plot until plot drag ships.
 Opened by clicking the game-text plank in the info band (`#game-text` /
 `src/ui/discoveryLog.js`). Permanent second line on the plank is titled
 **Field Notes** (`aria-label` matches). Opens a centered modal (click outside
-to close). Reset control sits at the bottom of this modal (opens the existing
-reset confirm).
+to close). Footer at the bottom of this modal (vertical stack): **How to Play**
+above **Reset Game**. Reset opens the existing reset confirm.
 
+- **How to Play** swaps the modal to a short illustrated help view
+  (`src/ui/howToPlay.js`) inside the same overlay. **Back** returns to the
+  Field Notes list (no reopen SFX). Click outside the modal closes the overlay
+  entirely and returns to the farm whether help or the log was showing.
+  Steps (icon + title + one short body): Plant, Water, Offer, Mix, Field Notes,
+  Dragon Temple; plus an Uproot footer note (hold then swipe).
 - Modal header: book cutout (`discovery_log.png`) above the title
   **Field Notes** (closed leather-bound journal/tome with a leather strap,
   soft moss accents; simplified shapes for small size; same art language as
@@ -834,7 +840,7 @@ resumes when the page becomes visible again.
 Main farm in a scenic grove stage + info band (Field Notes game-text plank) +
 Dragon Temple. Overlays: radial crop picker (anchored to the clicked plot),
 uproot confirm (anchored to the held plot), shrine detail, Field Notes modal,
-reset confirm. No separate menus. Reset is at the bottom of Field Notes.
+reset confirm. No separate menus. Field Notes footer: How to Play above Reset.
 
 ### Layout (current)
 - Target: desktop and portrait phone (see **Platform** — every feature must
@@ -855,8 +861,9 @@ reset confirm. No separate menus. Reset is at the bottom of Field Notes.
   **pointer events** (mouse + touch) to shrines / temple / adjacent ready
   crops to mix. Long-press (mouse + touch) opens Uproot confirm on occupied
   plots.
-- **Reset** lives at the bottom of the Field Notes modal (confirm overlay
-  unchanged). Confirming reset returns the player to the opening screen.
+- **How to Play** and **Reset** live at the bottom of the Field Notes modal
+  (How to Play above Reset; confirm overlay for Reset unchanged). Confirming
+  reset returns the player to the opening screen.
 
 ## Game text panel
 HUD message area for explaining what is going on.
