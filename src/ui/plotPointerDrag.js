@@ -2,6 +2,7 @@ import { getCrop } from '../data/crops.js';
 import {
   areAdjacentPlots,
   canOfferCropToShrine,
+  canTutorialDragReadyCrop,
   isReady,
 } from '../state/gameState.js';
 import { findAlchemyResult } from '../data/alchemyRecipes.js';
@@ -38,7 +39,8 @@ export function wireReadyCropPointerDrag(
     const ready =
       Boolean(plot?.crop && isReady(plot, now)) &&
       !uprootingPlotIds.has(plotId) &&
-      !wateringPlotIds.has(plotId);
+      !wateringPlotIds.has(plotId) &&
+      canTutorialDragReadyCrop(state, plotId, plot.crop.cropId);
     // Keep the in-flight drag plot intact across the 1s farm tick so we
     // don't strip plot--dragging or drop its pointer handlers mid-gesture.
     const isActiveDrag = session?.drag?.plotId === plotId;

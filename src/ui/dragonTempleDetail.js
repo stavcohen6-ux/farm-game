@@ -5,7 +5,7 @@ const ASLEEP_BODY =
   'The dragon is asleep. Offering crops to animal shrines can wake the dragon. When it wakes, fill its four slots before its wrath meter grows too high.';
 
 const AWAKE_BODY =
-  "The dragon wants the four matching crops on the board below. Drag ready crops onto matching slots. Planting or offering crops to shrines raises the dragon's wrath meter. Calm it to earn a blessing. Let wrath peak and it'll burn one of your shrines.";
+  "The dragon wants the four matching crops on the board below. Drag ready crops onto matching slots — once placed, a crop is locked in and cannot be taken back. Planting or offering crops to shrines raises the dragon's wrath meter. Calm it to earn a blessing. Let wrath peak and it burns one of your shrines; any tribute still on the board is lost.";
 
 const OVERLAY_CLASS = 'dragon-temple-detail-overlay';
 

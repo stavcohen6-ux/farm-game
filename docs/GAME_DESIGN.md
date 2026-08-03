@@ -163,15 +163,18 @@ Inventory shelf, desk alchemy Mix row, desk fireflies, and flowering are
 
 ## Farm
 - Board is 4 rows by 4 columns. Corner cells are shrine footings (no plots).
-- 12 plantable plots (`src/data/farmLayout.js`). 4 start unlocked (bottom-
-  center 2×2); 8 are visible but locked. (confirmed)
-- Fox Shrine unlocks more plots (see Shrines). Layout (numbers = Fox unlock
-  tier; `0` = start unlocked):
+- 12 plantable plots (`src/data/farmLayout.js`). **Fresh / Reset:** 2 start
+  unlocked (bottom-center row, plot ids `2` left and `3` right). The upper
+  starter pair (ids `0`, `1`) unlocks when the hard FTUE Fox demo bar
+  completes. Remaining 8 unlock via Fox shrine tiers. Existing saves keep
+  their saved `locked` flags (veterans are not forced back to 2 open plots).
+- Fox Shrine unlocks more plots (see Shrines). Layout (numbers = unlock
+  tier; `0` = start unlocked on fresh/Reset; `1` = FTUE Fox demo unlock):
 
 ```text
-  Frog     4      4     Monkey
-    3      2      2       3
-    1      0      0       1
+  Frog     5      5     Monkey
+    4      3      3       4
+    2      1      1       2
    Fox     0      0     Tiger
 ```
 
@@ -420,8 +423,8 @@ reset confirm).
 - Preferred shrine(s): among that row’s four values, emphasize every shrine
   tied for the maximum amount with a quiet honey chip (soft honey
   background/border, amber/bold amount). Teaches affinity by reading the
-  numbers; no tutorial copy on the chips (start-of-game plank tips are
-  separate — see Game text panel).
+  numbers; no tutorial copy on the chips (FTUE uses speech bubbles —
+  see Game text panel).
 - Sticky after Reset only (and survives offer/spoil of held crops when those
   return). State: `discoveredCropIds: string[]` (marked when a crop becomes
   **ready on a plot** via `markReadyCropsDiscovered`);
@@ -641,7 +644,9 @@ does not weight the tribute). Total burn animation ≈
 - Active: awake figure; wrath bar (fills toward `wrathMax`, ember timer-bar
   colors, no numbers) above the art; demand slots on the tribute board.
   Figure click opens the awake explainer (same layout: `log_dragon_*` face
-  top-left, body wraps beside then under).
+  top-left, body wraps beside then under). Awake body copy notes that
+  placed crops are locked in and that leftover tribute is lost if wrath peaks
+  (see `AWAKE_BODY` in `src/ui/dragonTempleDetail.js`).
 - After a win: game text panel shows
   `The Dragon blesses your {Frog|Monkey|Fox|Tiger} Shrine.`
 - After a loss: game text panel shows
@@ -691,11 +696,11 @@ hidden (`triggerChance`, never shown in UI) and persists across refresh/reload.
 - Empty board slots show a faded ghost icon of the demanded crop.
 - Drop onto a board slot only accepts the matching `cropId`. Drop anywhere on
   the active temple fills the first empty slot that demands that crop. Wrong
-  crops are ignored. One crop leaves inventory on place; slots store
-  `{ cropId, expiresAt }` and keep decaying (same urgency tints as
+  crops are ignored. One crop leaves the plot (or inventory) on place; slots
+  store `{ cropId, expiresAt }` and keep decaying (same urgency tints as
   inventory). While `burning`, slotted crops are not removed by decay.
-- Click a filled board slot to return that crop to inventory (same as alchemy;
-  keeps `expiresAt`) until auto-burn starts.
+- Once placed, a crop is **locked in** — it cannot be clicked out or returned
+  to the farm. Commit carefully.
 - Filled matched slots show a looping bright fire-edge highlight traveling
   around the border (ready to burn). It stays while the crop remains in the
   slot and escalates when auto-burn starts (hotter, faster, thicker trail).
@@ -710,8 +715,8 @@ hidden (`triggerChance`, never shown in UI) and persists across refresh/reload.
   returned) and the event wins (`pendingClose: 'success'`).
 - Before win close, keep the active temple UI for `resultRevealMs` (500ms),
   then close.
-- Closing (win or lose) returns any leftover non-burning slotted crops to
-  inventory.
+- On lose (wrath max), any crops still in board slots are **lost** (discarded,
+  not returned to the farm). Win already consumed tribute during burn.
 - After a win (temple already back to resting): a shrine blessing of
   `rewardBonusOfferings` (1) doubled-progress offerings is applied immediately
   and flagged via `pendingReward` until claimed. Uses stack if the same shrine
@@ -902,30 +907,37 @@ Triggers:
 - Critter welcome and desk firefly welcome do not set game text (except when
   a critter gift causes a shrine tier-up, via `addShrineProgress` above).
 - Tanuki nap arrival, sleep, and departure do not set game text.
-- Start tutorial (contextual plank tips only — no modal, no spotlight, no
-  forced actions, no player dismiss). Sticky `tutorialSeen` flags until
-  Reset. Copy in `src/data/tutorial.js`. Each tip sets `gameText` and its
-  flag only when the line is actually written. Dragon wake / win / lose,
-  shrine upgraded, and epilogue always win: if one of those is showing, a
-  tutorial tip does not overwrite it and leaves its flag false so it can
-  fire later. Shrine reject is not critical — tips may overwrite it. No
-  Monkey / research unlock tip (tier-up line + planter wheel are enough).
+- Start tutorial — **hard step-lock FTUE** (speech bubbles + action gates;
+  no full-screen dim). State: `tutorialStep`, `tutorialFoxWheatOffered`.
+  Copy / steps in `src/data/tutorial.js`; flow helpers in
+  `src/state/tutorialFlow.js`; bubble UI in `src/ui/tutorialBubble.js`.
+  Fresh / Reset start at `tapWheatPlot` with only plots `2`/`3` open.
+  Existing saves missing `tutorialStep` load as `done` (skip FTUE) and keep
+  plot `locked` as saved. Soft plank `tutorialSeen` tips are retired for
+  teaching (legacy flags still normalized).
 
-  | When | Game text | Flag |
-  |------|-----------|------|
-  | Fresh state / Reset (`createInitialState`) | `Tap an empty plot to plant.` | `welcome` (set true with the line) |
-  | First crop reaches ready on a plot | `Drag a ready crop to a shrine.` | `firstReady` |
-  | First successful shrine offer | `Offerings earn the guardians' favor.` | `firstOffer` |
-  | After first offer, when any valid recipe pair is ready on the board (not necessarily adjacent) | `Ready crops side by side can mix into something new.` | `mixInvite` (skipped if `firstMix` already true) |
-  | First successful adjacent mix | `Mixing ready crops creates something new.` | `firstMix` |
+  Path: plant Wheat on left (Turnip locked on real crop wheel) → grow
+  (optional one water cue; 4× growth) → offer Wheat to Fox only (`1/5`
+  demo bar) → plant Turnip on right (Wheat visible but locked on wheel;
+  4× growth; optional water) → plant second Wheat on left (normal speed)
+  → mix → offer Root Loaf to Fox (`5/5`) → Fox upgrade VFX + unlock
+  plots `0`/`1` → `done`. Water never blocks: ignore dry soil until ready
+  and the step still advances. At most one water ask per plant. Uproot,
+  shrine/temple detail popups, Tiger/Frog/Monkey offers, and Dragon wake
+  are blocked until `done`. Non-Fox shrines (+ temple) are greyed. Fox demo
+  bar uses the normal progress UI with max 5 (scripted +1 wheat / fill on
+  loaf); on complete Fox shrine progress resets to Forest Fox `0` for free
+  play. `repairTutorialState` on load + tick fixes board/step desync.
 
-API (`src/state/gameState.js`): `setGameText(state, text)`,
-`clearGameText(state)`, `maybeShowShrineEpilogue(state, now)`,
-`maybeShowTutorialTip(state, flagKey)`, `maybeShowMixInviteTip(state, now)`,
-`createInitialTutorialSeen()`.
-UI: `src/ui/gameTextPanel.js`. Delay / line constants:
-`SHRINE_EPILOGUE_DELAY_MS`, `SHRINE_EPILOGUE_LINE` in `src/data/shrines.js`.
-Tutorial: `TUTORIAL_LINES`, `TUTORIAL_FLAG_KEYS` in `src/data/tutorial.js`.
+  Bubble: one at a time, above the target (flip below if clipped); no
+  player dismiss — advances when the step completes.
+
+API (`src/state/gameState.js` / `tutorialFlow.js`): `tickTutorial`,
+`repairTutorialState`, `getTutorialFoxProgress`, gates
+(`canTutorialOpenPicker`, `canTutorialOffer`, …).
+UI: `src/ui/tutorialBubble.js`, crop picker mask, shrine inactive/target
+classes. Delay / line constants for epilogue unchanged in
+`src/data/shrines.js`.
 
 ## Flowered plots (land care)
 **Parked** (no inventory to spend). Flowered soil art
@@ -961,9 +973,10 @@ desk fireflies. Config in `src/data/plotNapper.js`. Single pose:
 `assets/icons/tanuki_sleep.png` (emoji fallback `🦝`). The tanuki is only ever
 shown curled asleep — it has no walk or stretch pose.
 
-**Trigger:** after a successful harvest (`harvestPlot`) — currently
-dormant while ready crops stay on plots; returns with plot-offer drag —
-roll hidden `harvestChance` (default **0.15**). No-ops if a napper already exists or
+**Trigger:** after a successful shrine offering from a plot (`offerCrop` with
+`sourcePlotId`) — roll hidden `harvestChance` (default **0.15**). Temple
+tribute place does **not** roll. Legacy `harvestPlot` also rolls but is
+dormant in the live UI. No-ops if a napper already exists or
 unlocked plots < `minUnlockedPlots` (default **8**). Hit → schedule
 `plotNapper` with `appearAt = now + random(delayMinSeconds, delayMaxSeconds)`
 (default **8–20** seconds), status `approaching`. Does **not** pick a plot yet.
@@ -1015,8 +1028,9 @@ status: 'approaching' | 'sleeping' | 'waking', plotId?, wakeAt? }`.
 - Shrine epilogue: `shrineEpilogueShown` (boolean, sticky until Reset; true
   only after the epilogue line was displayed), `shrineEpilogueDueAt`
   (`null` | epoch ms while a wait is armed)
-- Tutorial: `tutorialSeen: { welcome, firstReady, firstOffer, firstMix }`
-  (booleans, sticky until Reset; each true only after that tip was written)
+- Tutorial: `tutorialStep` (`tapWheatPlot` … `done`),
+  `tutorialFoxWheatOffered` (boolean); legacy `tutorialSeen` still
+  normalized on load
 - Discovery: `discoveredCropIds: string[]`,
   `discoveredAlchemyResultIds: string[]` — sticky until full Reset
 - State: `researchLevel`,
@@ -1025,7 +1039,8 @@ status: 'approaching' | 'sleeping' | 'waking', plotId?, wakeAt? }`.
   `plotNapper`,
   `discoveredCropIds`,
   `discoveredAlchemyResultIds`, `gameText`,
-  `shrineEpilogueShown`, `shrineEpilogueDueAt`, `tutorialSeen`
+  `shrineEpilogueShown`, `shrineEpilogueDueAt`, `tutorialStep`,
+  `tutorialFoxWheatOffered`, `tutorialSeen`
 - Shrine def: `{ id, name, icon, theme, corner, tiers[] }`
 - Tier: `name`, `progressRequired`, `acceptedCropIds`, `tooltip` (effect
   text), plus blessing field (`growthSpeedBonus` | `researchBonus` |
@@ -1042,10 +1057,11 @@ status: 'approaching' | 'sleeping' | 'waking', plotId?, wakeAt? }`.
 `localStorage` JSON (`saveVersion: 2` = desk-less / plot-held crops). After
 plant / water / critter welcome / offer / temple actions / Reset, and on the
 1s tick when crops spoil, a tanuki napper arrives/wakes/is lost, a pending
-shrine epilogue is due, or a start-tutorial tip is written. Missing
-`tutorialSeen` on load is filled with all flags true so returning players
-are not re-taught mid-run; fresh games and Reset use `createInitialState`
-(welcome tip + remaining flags false).
+shrine epilogue is due, or FTUE tutorial state advances. Missing
+`tutorialStep` on load is set to `done` so returning players are not
+re-taught mid-run; plot `locked` flags are preserved as saved. Fresh games
+and Reset use `createInitialState` (FTUE at `tapWheatPlot`, only bottom two
+plots open).
 
 On load for `saveVersion < 2` (or missing): wipe `inventory`,
 `pendingHarvests`, desk alchemy slots, desk visitors, clear `flowered` flags,

@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="../" />
+  <title>FTUE tutorial — playtest mock</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #2a3d30;
+      --muted: #5f7466;
+      --moss: #5f9a72;
+      --moss-deep: #3d7a52;
+      --parchment: #f4faf4;
+      --honey: #e6c65a;
+      --soil: #5f4634;
+      --soil-light: #6e5540;
+      --panel-border: #9ec9aa;
+      --shadow: rgba(42, 90, 60, 0.16);
+      --plot: 5.5rem;
+      --fast: 1;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    button { font: inherit; cursor: pointer; border: none; background: none; }
+    body {
+      min-height: 100dvh;
+      font-family: 'Nunito', system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 70% 45% at 50% 0%, #dff0e4 0%, transparent 55%),
+        linear-gradient(180deg, #cfe4d6 0%, #a8c9b4 100%);
+      padding: 1rem 1rem 2rem;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .page { max-width: 42rem; margin: 0 auto; display: grid; gap: 0.85rem; }
+
+    header h1 { font-size: 1.25rem; font-weight: 800; }
+    header p { margin-top: 0.35rem; color: var(--muted); font-size: 0.9rem; line-height: 1.45; }
+
+    .toolbar {
+      display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;
+    }
+    .toolbar button, .toolbar label {
+      background: var(--parchment);
+      border: 1.5px solid var(--panel-border);
+      border-radius: 999px;
+      padding: 0.35rem 0.85rem;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--moss-deep);
+      box-shadow: 0 1px 0 var(--shadow);
+    }
+    .toolbar label { display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; }
+    .toolbar .step-pill {
+      margin-left: auto;
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-weight: 700;
+      max-width: 16rem;
+      text-align: right;
+    }
+
+    .stage {
+      position: relative;
+      background: linear-gradient(180deg, #b9dcc6 0%, #8eb89a 100%);
+      border: 2px solid #7aa88a;
+      border-radius: 1.25rem;
+      padding: 1rem;
+      box-shadow: 0 10px 28px var(--shadow);
+      overflow: hidden;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: 4.5rem var(--plot) var(--plot) 4.5rem;
+      grid-template-rows: 4.75rem var(--plot) var(--plot) 4.75rem;
+      gap: 0.45rem;
+      justify-content: center;
+      margin: 0 auto;
+      width: max-content;
+    }
+
+    .shrine {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+      justify-content: center;
+      border-radius: 0.75rem;
+      padding: 0.2rem;
+      transition: filter 0.25s, opacity 0.25s, transform 0.15s;
+    }
+    .shrine--frog { grid-column: 1; grid-row: 1; }
+    .shrine--monkey { grid-column: 4; grid-row: 1; }
+    .shrine--fox { grid-column: 1; grid-row: 4; }
+    .shrine--tiger { grid-column: 4; grid-row: 4; }
+    .shrine__icon {
+      width: 3.1rem; height: 3.1rem;
+      display: grid; place-items: center;
+    }
+    .shrine__icon img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+    .shrine__name { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.02em; }
+    .shrine__bar {
+      width: 2.6rem; height: 0.45rem;
+      background: rgba(255,255,255,0.45);
+      border: 1px solid rgba(42,61,48,0.25);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .shrine__fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #e6c65a, #f0d878);
+      transition: width 0.35s ease;
+    }
+    .shrine--inactive {
+      filter: grayscale(1);
+      opacity: 0.42;
+      pointer-events: none;
+    }
+    .shrine--target {
+      outline: 2px solid var(--honey);
+      outline-offset: 3px;
+      animation: pulse 1.1s ease-in-out infinite;
+    }
+    .shrine--tierup .shrine__icon {
+      animation: pop 0.7s ease;
+    }
+
+    .plot {
+      position: relative;
+      width: var(--plot);
+      height: var(--plot);
+      border-radius: 0.85rem;
+      background:
+        radial-gradient(circle at 30% 25%, #7a5c45 0%, transparent 40%),
+        linear-gradient(160deg, var(--soil-light), var(--soil));
+      border: 2px solid #3d2c20;
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.06);
+      display: grid;
+      place-items: center;
+      cursor: default;
+    }
+    .plot--tl { grid-column: 2; grid-row: 2; }
+    .plot--tr { grid-column: 3; grid-row: 2; }
+    .plot--bl { grid-column: 2; grid-row: 3; }
+    .plot--br { grid-column: 3; grid-row: 3; }
+    .plot--locked {
+      background: linear-gradient(160deg, #6a7a68, #4a5a50);
+      border-color: #3d4a42;
+      opacity: 0.55;
+    }
+    .plot--locked::after {
+      content: '🔒';
+      font-size: 1.25rem;
+      opacity: 0.85;
+    }
+    .plot--target {
+      outline: 2px solid var(--honey);
+      outline-offset: 3px;
+      animation: pulse 1.1s ease-in-out infinite;
+      cursor: pointer;
+    }
+    .plot--dry {
+      box-shadow:
+        inset 0 0 0 2px rgba(255,255,255,0.06),
+        inset 0 0 0 3px rgba(180, 120, 60, 0.55);
+    }
+    .plot--dry::before {
+      content: '';
+      position: absolute;
+      inset: 18% 22%;
+      border-radius: 40%;
+      background:
+        repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(80,50,30,0.35) 4px, rgba(80,50,30,0.35) 6px);
+      pointer-events: none;
+    }
+    .plot--ready {
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.06), 0 0 0 2px #c8e86a;
+    }
+    .plot__crop {
+      width: 70%; height: 70%;
+      object-fit: contain;
+      pointer-events: none;
+      filter: drop-shadow(0 2px 2px rgba(0,0,0,0.25));
+      transition: transform 0.2s;
+    }
+    .plot--growing .plot__crop { transform: scale(0.72); opacity: 0.9; }
+    .plot--water-cue .plot__drop {
+      position: absolute; top: 0.25rem; right: 0.3rem;
+      width: 1.1rem; height: 1.1rem;
+      pointer-events: none;
+    }
+    .plot--mix-seam-left::after,
+    .plot--mix-seam-right::after {
+      content: '';
+      position: absolute;
+      top: 15%; bottom: 15%;
+      width: 6px;
+      background: linear-gradient(180deg, #8fd4a0, #e6c65a);
+      border-radius: 999px;
+      opacity: 0.9;
+      pointer-events: none;
+    }
+    .plot--mix-seam-left::after { right: -5px; }
+    .plot--mix-seam-right::after { left: -5px; }
+
+    .ghost {
+      position: fixed;
+      z-index: 50;
+      width: 3rem; height: 3rem;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+    }
+    .ghost img { width: 100%; height: 100%; object-fit: contain; }
+
+    .bubble {
+      position: absolute;
+      z-index: 20;
+      max-width: 13rem;
+      padding: 0.55rem 0.75rem;
+      background: var(--parchment);
+      border: 2px solid #c4a574;
+      border-radius: 0.85rem;
+      box-shadow: 0 6px 16px var(--shadow);
+      font-size: 0.88rem;
+      font-weight: 700;
+      line-height: 1.3;
+      color: var(--ink);
+      pointer-events: none;
+      opacity: 0;
+      transform: translate(-50%, -100%) scale(0.96);
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+    .bubble.is-on {
+      opacity: 1;
+      transform: translate(-50%, calc(-100% - 10px)) scale(1);
+    }
+    .bubble.is-below {
+      transform: translate(-50%, 10px) scale(0.96);
+    }
+    .bubble.is-below.is-on {
+      transform: translate(-50%, 14px) scale(1);
+    }
+    .bubble::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: -8px;
+      width: 14px; height: 14px;
+      background: var(--parchment);
+      border-right: 2px solid #c4a574;
+      border-bottom: 2px solid #c4a574;
+      transform: translateX(-50%) rotate(45deg);
+    }
+    .bubble.is-below::after {
+      top: -8px; bottom: auto;
+      border: none;
+      border-left: 2px solid #c4a574;
+      border-top: 2px solid #c4a574;
+    }
+
+    .picker-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(30, 50, 40, 0.28);
+      display: none;
+      place-items: center;
+      z-index: 30;
+    }
+    .picker-overlay.is-on { display: grid; }
+    .picker {
+      position: relative;
+      width: 11rem; height: 11rem;
+      border-radius: 50%;
+      background: rgba(244, 250, 244, 0.95);
+      border: 2px solid var(--panel-border);
+      box-shadow: 0 10px 24px var(--shadow);
+    }
+    .picker__slice {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      width: 50%;
+      height: 50%;
+    }
+    .picker__slice--wheat { left: 0; top: 0; }
+    .picker__slice--turnip { right: 0; top: 0; left: auto; }
+    .picker__btn {
+      width: 3.6rem; height: 3.6rem;
+      border-radius: 50%;
+      background: #e7f4ea;
+      border: 2px solid var(--moss);
+      display: grid;
+      place-items: center;
+      transition: transform 0.12s, opacity 0.12s;
+    }
+    .picker__btn img { width: 70%; height: 70%; object-fit: contain; }
+    .picker__btn:not(:disabled):hover { transform: scale(1.06); background: #fff8d6; }
+    .picker__btn:disabled {
+      opacity: 0.4;
+      filter: grayscale(0.7);
+      cursor: not-allowed;
+      border-color: #8a9a8c;
+    }
+    .picker__hub {
+      position: absolute;
+      left: 50%; top: 58%;
+      transform: translate(-50%, -50%);
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--muted);
+      text-align: center;
+      width: 4.5rem;
+    }
+    .picker__close {
+      position: absolute;
+      left: 50%; bottom: 0.55rem;
+      transform: translateX(-50%);
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--moss-deep);
+      text-decoration: underline;
+    }
+
+    .done-banner {
+      display: none;
+      margin-top: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: #fff8d6;
+      border: 2px solid var(--honey);
+      border-radius: 0.85rem;
+      font-weight: 800;
+      text-align: center;
+    }
+    .done-banner.is-on { display: block; }
+
+    .notes {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .notes code {
+      font-size: 0.78em;
+      background: rgba(255,255,255,0.55);
+      padding: 0.05rem 0.3rem;
+      border-radius: 0.3rem;
+    }
+
+    @keyframes pulse {
+      0%, 100% { outline-color: var(--honey); }
+      50% { outline-color: #fff3a8; }
+    }
+    @keyframes pop {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    @keyframes unlockIn {
+      from { opacity: 0.3; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .plot--unlocking {
+      animation: unlockIn 0.55s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>FTUE tutorial mock</h1>
+      <p>
+        Playable dry-run of the planned hard step-lock tutorial. Timers are sped up for playtest.
+        Bubble has no dismiss — advance by doing the prompted action.
+      </p>
+    </header>
+
+    <div class="toolbar">
+      <button type="button" id="btn-reset">Reset FTUE</button>
+      <label><input type="checkbox" id="chk-fast" checked /> Fast timers</label>
+      <span class="step-pill" id="step-pill"></span>
+    </div>
+
+    <div class="stage" id="stage">
+      <div class="board" id="board">
+        <div class="shrine shrine--frog shrine--inactive" data-shrine="frog">
+          <div class="shrine__icon"><img src="assets/icons/shrine_frog.png" alt="" /></div>
+          <div class="shrine__name">Frog</div>
+        </div>
+        <div class="shrine shrine--monkey shrine--inactive" data-shrine="monkey">
+          <div class="shrine__icon"><img src="assets/icons/shrine_monkey.png" alt="" /></div>
+          <div class="shrine__name">Monkey</div>
+        </div>
+
+        <div class="plot plot--tl plot--locked" data-plot="0"></div>
+        <div class="plot plot--tr plot--locked" data-plot="1"></div>
+        <div class="plot plot--bl" data-plot="2"></div>
+        <div class="plot plot--br" data-plot="3"></div>
+
+        <div class="shrine shrine--fox" data-shrine="fox" id="shrine-fox">
+          <div class="shrine__icon"><img src="assets/icons/shrine_fox.png" alt="" /></div>
+          <div class="shrine__name">Fox</div>
+          <div class="shrine__bar" title="FTUE bar"><div class="shrine__fill" id="fox-fill"></div></div>
+        </div>
+        <div class="shrine shrine--tiger shrine--inactive" data-shrine="tiger">
+          <div class="shrine__icon"><img src="assets/icons/shrine_tiger.png" alt="" /></div>
+          <div class="shrine__name">Tiger</div>
+        </div>
+      </div>
+
+      <div class="bubble" id="bubble" aria-live="polite"></div>
+
+      <div class="picker-overlay" id="picker">
+        <div class="picker">
+          <div class="picker__slice picker__slice--wheat">
+            <button type="button" class="picker__btn" id="pick-wheat" aria-label="Wheat">
+              <img src="assets/icons/wheat.png" alt="" />
+            </button>
+          </div>
+          <div class="picker__slice picker__slice--turnip">
+            <button type="button" class="picker__btn" id="pick-turnip" aria-label="Turnip">
+              <img src="assets/icons/turnip.png" alt="" />
+            </button>
+          </div>
+          <div class="picker__hub" id="picker-hub">Plant</div>
+          <button type="button" class="picker__close" id="picker-close">Close</button>
+        </div>
+      </div>
+
+      <div class="done-banner" id="done-banner">
+        FTUE complete — upper plots unlocked. Free play would begin here.
+      </div>
+    </div>
+
+    <p class="notes">
+      Flow: left Wheat → water → offer Fox (<code>1/5</code>) → right Turnip (Wheat visible/locked) →
+      water → left Wheat again → water → mix → Root Loaf to Fox (<code>5/5</code>) → unlock.
+      Open via a local server from the repo root, e.g.
+      <code>python3 -m http.server</code> then
+      <code>/mocks/ftue-tutorial.html</code>.
+    </p>
+  </div>
+
+  <script>
+    const STEPS = [
+      'tapWheatPlot',
+      'pickWheat',
+      'waitWaterWheat',
+      'waterWheat',
+      'waitReadyWheat',
+      'offerWheat',
+      'tapTurnipPlot',
+      'pickTurnip',
+      'waitWaterTurnip',
+      'waterTurnip',
+      'tapWheatPlot2',
+      'pickWheat2',
+      'waitWaterWheat2',
+      'waterWheat2',
+      'waitBothReady',
+      'mix',
+      'offerRootLoaf',
+      'done',
+    ];
+
+    const COPY = {
+      tapWheatPlot: 'Tap this plot to plant.',
+      pickWheat: 'Choose Wheat.',
+      waitWaterWheat: 'Wait until the soil looks dry.',
+      waterWheat: 'Tap the dry plot to water it.',
+      waitReadyWheat: 'Wait for Wheat to ripen.',
+      offerWheat: 'Drag ready Wheat to the Fox shrine.',
+      tapTurnipPlot: 'Tap this plot to plant Turnip.',
+      pickTurnip: 'Choose Turnip.',
+      waitWaterTurnip: 'Wait until the soil looks dry.',
+      waterTurnip: 'Tap to water your Turnip.',
+      tapWheatPlot2: 'Plant Wheat next to your Turnip.',
+      pickWheat2: 'Choose Wheat.',
+      waitWaterWheat2: 'Wait until the soil looks dry.',
+      waterWheat2: 'Tap to water your Wheat.',
+      waitBothReady: 'Wait until both crops are ready.',
+      mix: 'Drag one ready crop onto the other.',
+      offerRootLoaf: 'Drag the Root Loaf to the Fox shrine.',
+      done: '',
+    };
+
+    const CROP_ICON = {
+      wheat: 'assets/icons/wheat.png',
+      turnip: 'assets/icons/turnip.png',
+      root_loaf: 'assets/icons/root_loaf.png',
+    };
+
+    const LEFT = 2;
+    const RIGHT = 3;
+
+    const state = {
+      step: 'tapWheatPlot',
+      foxProgress: 0,
+      foxWheatOffered: false,
+      pickerPlot: null,
+      plots: {
+        0: { locked: true, crop: null },
+        1: { locked: true, crop: null },
+        2: { locked: false, crop: null },
+        3: { locked: false, crop: null },
+      },
+      timers: [],
+      drag: null,
+    };
+
+    const els = {
+      stage: document.getElementById('stage'),
+      bubble: document.getElementById('bubble'),
+      foxFill: document.getElementById('fox-fill'),
+      fox: document.getElementById('shrine-fox'),
+      picker: document.getElementById('picker'),
+      pickWheat: document.getElementById('pick-wheat'),
+      pickTurnip: document.getElementById('pick-turnip'),
+      pickerHub: document.getElementById('picker-hub'),
+      pickerClose: document.getElementById('picker-close'),
+      stepPill: document.getElementById('step-pill'),
+      doneBanner: document.getElementById('done-banner'),
+      chkFast: document.getElementById('chk-fast'),
+    };
+
+    function plotEl(id) {
+      return document.querySelector(`[data-plot="${id}"]`);
+    }
+
+    function ms(base) {
+      return els.chkFast.checked ? base : base * 3;
+    }
+
+    function clearTimers() {
+      for (const id of state.timers) clearTimeout(id);
+      state.timers = [];
+    }
+
+    function later(fn, delay) {
+      const id = setTimeout(fn, delay);
+      state.timers.push(id);
+      return id;
+    }
+
+    function setStep(step) {
+      state.step = step;
+      if (step !== 'pickWheat' && step !== 'pickTurnip' && step !== 'pickWheat2') {
+        closePicker();
+      }
+      render();
+      maybeArmTimers();
+    }
+
+    function advanceFrom(from) {
+      if (state.step !== from) return;
+      const i = STEPS.indexOf(from);
+      if (i < 0 || i >= STEPS.length - 1) return;
+      setStep(STEPS[i + 1]);
+    }
+
+    function closePicker() {
+      state.pickerPlot = null;
+      els.picker.classList.remove('is-on');
+    }
+
+    function openPicker(plotId) {
+      state.pickerPlot = plotId;
+      els.picker.classList.add('is-on');
+      const turnipStep = state.step === 'pickTurnip';
+      const wheatStep = state.step === 'pickWheat' || state.step === 'pickWheat2';
+      els.pickWheat.disabled = turnipStep;
+      els.pickTurnip.disabled = wheatStep || state.step === 'pickWheat2';
+      if (state.step === 'pickWheat' || state.step === 'pickWheat2') {
+        els.pickTurnip.disabled = true;
+        els.pickWheat.disabled = false;
+        els.pickerHub.textContent = 'Wheat';
+      } else if (state.step === 'pickTurnip') {
+        els.pickWheat.disabled = true;
+        els.pickTurnip.disabled = false;
+        els.pickerHub.textContent = 'Turnip';
+      }
+      renderBubble();
+    }
+
+    function plant(cropId) {
+      const plotId = state.pickerPlot;
+      if (plotId == null) return;
+      const cell = state.plots[plotId];
+      if (!cell || cell.locked || cell.crop) return;
+
+      if (state.step === 'pickWheat' && cropId === 'wheat' && plotId === LEFT) {
+        cell.crop = { id: 'wheat', phase: 'growing', needsWater: false };
+        closePicker();
+        setStep('waitWaterWheat');
+        return;
+      }
+      if (state.step === 'pickTurnip' && cropId === 'turnip' && plotId === RIGHT) {
+        cell.crop = { id: 'turnip', phase: 'growing', needsWater: false };
+        closePicker();
+        setStep('waitWaterTurnip');
+        return;
+      }
+      if (state.step === 'pickWheat2' && cropId === 'wheat' && plotId === LEFT) {
+        cell.crop = { id: 'wheat', phase: 'growing', needsWater: false };
+        closePicker();
+        setStep('waitWaterWheat2');
+      }
+    }
+
+    function maybeArmTimers() {
+      clearTimers();
+      const step = state.step;
+      if (step === 'waitWaterWheat') {
+        later(() => {
+          if (state.step !== 'waitWaterWheat') return;
+          state.plots[LEFT].crop.needsWater = true;
+          setStep('waterWheat');
+        }, ms(1400));
+      }
+      if (step === 'waitReadyWheat') {
+        later(() => {
+          if (state.step !== 'waitReadyWheat') return;
+          state.plots[LEFT].crop.phase = 'ready';
+          state.plots[LEFT].crop.needsWater = false;
+          setStep('offerWheat');
+        }, ms(1800));
+      }
+      if (step === 'waitWaterTurnip') {
+        later(() => {
+          if (state.step !== 'waitWaterTurnip') return;
+          state.plots[RIGHT].crop.needsWater = true;
+          setStep('waterTurnip');
+        }, ms(1400));
+      }
+      if (step === 'waitWaterWheat2') {
+        later(() => {
+          if (state.step !== 'waitWaterWheat2') return;
+          state.plots[LEFT].crop.needsWater = true;
+          setStep('waterWheat2');
+        }, ms(1400));
+      }
+      if (step === 'waitBothReady') {
+        later(() => {
+          if (state.step !== 'waitBothReady') return;
+          if (state.plots[LEFT].crop) {
+            state.plots[LEFT].crop.phase = 'ready';
+            state.plots[LEFT].crop.needsWater = false;
+          }
+          if (state.plots[RIGHT].crop) {
+            state.plots[RIGHT].crop.phase = 'ready';
+            state.plots[RIGHT].crop.needsWater = false;
+          }
+          setStep('mix');
+        }, ms(2200));
+      }
+    }
+
+    function water(plotId) {
+      const cell = state.plots[plotId];
+      if (!cell?.crop?.needsWater) return;
+      cell.crop.needsWater = false;
+      if (state.step === 'waterWheat' && plotId === LEFT) {
+        setStep('waitReadyWheat');
+        return;
+      }
+      if (state.step === 'waterTurnip' && plotId === RIGHT) {
+        setStep('tapWheatPlot2');
+        return;
+      }
+      if (state.step === 'waterWheat2' && plotId === LEFT) {
+        setStep('waitBothReady');
+      }
+    }
+
+    function offerToFox(fromPlotId) {
+      const cell = state.plots[fromPlotId];
+      const crop = cell?.crop;
+      if (!crop || crop.phase !== 'ready') return false;
+
+      if (state.step === 'offerWheat' && crop.id === 'wheat' && !state.foxWheatOffered) {
+        cell.crop = null;
+        state.foxWheatOffered = true;
+        state.foxProgress = 1;
+        setStep('tapTurnipPlot');
+        return true;
+      }
+      if (state.step === 'offerRootLoaf' && crop.id === 'root_loaf' && state.foxWheatOffered) {
+        cell.crop = null;
+        state.foxProgress = 5;
+        completeFtue();
+        return true;
+      }
+      return false;
+    }
+
+    function mix(fromId, toId) {
+      if (state.step !== 'mix') return false;
+      const a = state.plots[fromId]?.crop;
+      const b = state.plots[toId]?.crop;
+      if (!a || !b || a.phase !== 'ready' || b.phase !== 'ready') return false;
+      const ids = [a.id, b.id].sort().join('+');
+      if (ids !== 'turnip+wheat') return false;
+      state.plots[fromId].crop = null;
+      state.plots[toId].crop = { id: 'root_loaf', phase: 'ready', needsWater: false };
+      setStep('offerRootLoaf');
+      return true;
+    }
+
+    function completeFtue() {
+      clearTimers();
+      state.step = 'done';
+      els.fox.classList.add('shrine--tierup');
+      later(() => els.fox.classList.remove('shrine--tierup'), 800);
+      for (const id of [0, 1]) {
+        state.plots[id].locked = false;
+        const el = plotEl(id);
+        el.classList.add('plot--unlocking');
+        later(() => el.classList.remove('plot--unlocking'), 600);
+      }
+      document.querySelectorAll('.shrine--inactive').forEach((el) => {
+        el.classList.remove('shrine--inactive');
+      });
+      render();
+    }
+
+    function reset() {
+      clearTimers();
+      state.step = 'tapWheatPlot';
+      state.foxProgress = 0;
+      state.foxWheatOffered = false;
+      state.pickerPlot = null;
+      state.drag = null;
+      state.plots = {
+        0: { locked: true, crop: null },
+        1: { locked: true, crop: null },
+        2: { locked: false, crop: null },
+        3: { locked: false, crop: null },
+      };
+      document.querySelectorAll('.shrine').forEach((el) => {
+        if (el.dataset.shrine !== 'fox') el.classList.add('shrine--inactive');
+      });
+      closePicker();
+      removeGhost();
+      render();
+    }
+
+    function targetPlotId() {
+      switch (state.step) {
+        case 'tapWheatPlot':
+        case 'pickWheat':
+        case 'waitWaterWheat':
+        case 'waterWheat':
+        case 'waitReadyWheat':
+        case 'offerWheat':
+        case 'tapWheatPlot2':
+        case 'pickWheat2':
+        case 'waitWaterWheat2':
+        case 'waterWheat2':
+          return LEFT;
+        case 'tapTurnipPlot':
+        case 'pickTurnip':
+        case 'waitWaterTurnip':
+        case 'waterTurnip':
+          return RIGHT;
+        case 'waitBothReady':
+        case 'mix':
+          return null;
+        case 'offerRootLoaf': {
+          for (const id of [LEFT, RIGHT]) {
+            if (state.plots[id].crop?.id === 'root_loaf') return id;
+          }
+          return null;
+        }
+        default:
+          return null;
+      }
+    }
+
+    function bubbleAnchorEl() {
+      if (state.step === 'pickWheat' || state.step === 'pickWheat2') {
+        return els.pickWheat;
+      }
+      if (state.step === 'pickTurnip') return els.pickTurnip;
+      if (state.step === 'offerWheat' || state.step === 'offerRootLoaf') return els.fox;
+      if (state.step === 'mix') {
+        const left = plotEl(LEFT).getBoundingClientRect();
+        const right = plotEl(RIGHT).getBoundingClientRect();
+        return {
+          getBoundingClientRect() {
+            return {
+              left: (left.left + right.left) / 2,
+              top: (left.top + right.top) / 2,
+              width: (left.width + right.width) / 2,
+              height: left.height,
+              right: 0,
+              bottom: 0,
+            };
+          },
+        };
+      }
+      const id = targetPlotId();
+      return id == null ? null : plotEl(id);
+    }
+
+    function renderBubble() {
+      const text = COPY[state.step] || '';
+      const bubble = els.bubble;
+      if (!text || state.step === 'done') {
+        bubble.classList.remove('is-on');
+        bubble.textContent = '';
+        return;
+      }
+      bubble.textContent = text;
+      const anchor = bubbleAnchorEl();
+      if (!anchor) {
+        bubble.classList.remove('is-on');
+        return;
+      }
+      const stageRect = els.stage.getBoundingClientRect();
+      const r = anchor.getBoundingClientRect();
+      const x = r.left + r.width / 2 - stageRect.left;
+      let y = r.top - stageRect.top;
+      let below = false;
+      if (y < 56) {
+        below = true;
+        y = r.bottom - stageRect.top;
+      }
+      bubble.style.left = `${x}px`;
+      bubble.style.top = `${y}px`;
+      bubble.classList.toggle('is-below', below);
+      bubble.classList.add('is-on');
+    }
+
+    function render() {
+      els.stepPill.textContent = state.step === 'done' ? 'done' : state.step;
+      els.foxFill.style.width = `${(state.foxProgress / 5) * 100}%`;
+      els.doneBanner.classList.toggle('is-on', state.step === 'done');
+
+      const foxTarget = state.step === 'offerWheat' || state.step === 'offerRootLoaf';
+      els.fox.classList.toggle('shrine--target', foxTarget);
+
+      for (const id of [0, 1, 2, 3]) {
+        const el = plotEl(id);
+        const cell = state.plots[id];
+        el.className = `plot plot--${id === 0 ? 'tl' : id === 1 ? 'tr' : id === 2 ? 'bl' : 'br'}`;
+        if (cell.locked) {
+          el.classList.add('plot--locked');
+          el.innerHTML = '';
+          continue;
+        }
+
+        const crop = cell.crop;
+        const tPlot = targetPlotId();
+        const isMix = state.step === 'mix';
+        const highlight =
+          (tPlot === id &&
+            !['waitWaterWheat', 'waitReadyWheat', 'waitWaterTurnip', 'waitWaterWheat2', 'waitBothReady'].includes(
+              state.step,
+            )) ||
+          (isMix && crop?.phase === 'ready') ||
+          ((state.step === 'offerWheat' || state.step === 'offerRootLoaf') &&
+            crop?.phase === 'ready' &&
+            ((state.step === 'offerWheat' && crop.id === 'wheat') ||
+              (state.step === 'offerRootLoaf' && crop.id === 'root_loaf')));
+
+        // Always pulse the actionable plot on wait-water / water / tap steps
+        const pulseWait =
+          (state.step === 'waitWaterWheat' ||
+            state.step === 'waterWheat' ||
+            state.step === 'waitReadyWheat' ||
+            state.step === 'waitWaterTurnip' ||
+            state.step === 'waterTurnip' ||
+            state.step === 'waitWaterWheat2' ||
+            state.step === 'waterWheat2' ||
+            state.step === 'waitBothReady' ||
+            state.step === 'tapWheatPlot' ||
+            state.step === 'tapTurnipPlot' ||
+            state.step === 'tapWheatPlot2') &&
+          tPlot === id;
+
+        if (highlight || pulseWait) el.classList.add('plot--target');
+        if (crop?.needsWater) el.classList.add('plot--dry', 'plot--water-cue');
+        if (crop?.phase === 'ready') el.classList.add('plot--ready');
+        if (crop?.phase === 'growing') el.classList.add('plot--growing');
+        if (isMix && crop?.phase === 'ready') {
+          el.classList.add(id === LEFT ? 'plot--mix-seam-left' : 'plot--mix-seam-right');
+        }
+
+        el.innerHTML = '';
+        if (crop) {
+          const img = document.createElement('img');
+          img.className = 'plot__crop';
+          img.src = CROP_ICON[crop.id];
+          img.alt = crop.id;
+          el.appendChild(img);
+          if (crop.needsWater) {
+            const drop = document.createElement('img');
+            drop.className = 'plot__drop';
+            drop.src = 'assets/icons/water_drop.png';
+            drop.alt = '';
+            el.appendChild(drop);
+          }
+        }
+      }
+
+      renderBubble();
+    }
+
+    function removeGhost() {
+      document.querySelectorAll('.ghost').forEach((n) => n.remove());
+    }
+
+    function canDragFrom(plotId) {
+      const crop = state.plots[plotId]?.crop;
+      if (!crop || crop.phase !== 'ready') return false;
+      if (state.step === 'offerWheat') return plotId === LEFT && crop.id === 'wheat';
+      if (state.step === 'mix') return crop.id === 'wheat' || crop.id === 'turnip';
+      if (state.step === 'offerRootLoaf') return crop.id === 'root_loaf';
+      return false;
+    }
+
+    // Plot clicks
+    for (const id of [LEFT, RIGHT]) {
+      plotEl(id).addEventListener('click', () => {
+        if (state.drag) return;
+        if (state.step === 'tapWheatPlot' && id === LEFT) {
+          setStep('pickWheat');
+          openPicker(LEFT);
+          return;
+        }
+        if (state.step === 'pickWheat' && id === LEFT) {
+          openPicker(LEFT);
+          return;
+        }
+        if (state.step === 'waterWheat' && id === LEFT) {
+          water(LEFT);
+          return;
+        }
+        if (state.step === 'tapTurnipPlot' && id === RIGHT) {
+          setStep('pickTurnip');
+          openPicker(RIGHT);
+          return;
+        }
+        if (state.step === 'pickTurnip' && id === RIGHT) {
+          openPicker(RIGHT);
+          return;
+        }
+        if (state.step === 'waterTurnip' && id === RIGHT) {
+          water(RIGHT);
+          return;
+        }
+        if (state.step === 'tapWheatPlot2' && id === LEFT) {
+          setStep('pickWheat2');
+          openPicker(LEFT);
+          return;
+        }
+        if (state.step === 'pickWheat2' && id === LEFT) {
+          openPicker(LEFT);
+          return;
+        }
+        if (state.step === 'waterWheat2' && id === LEFT) {
+          water(LEFT);
+        }
+      });
+    }
+
+    // Drag ready crops
+    for (const id of [LEFT, RIGHT]) {
+      const el = plotEl(id);
+      el.addEventListener('pointerdown', (e) => {
+        if (!canDragFrom(id)) return;
+        e.preventDefault();
+        const crop = state.plots[id].crop;
+        const ghost = document.createElement('div');
+        ghost.className = 'ghost';
+        ghost.innerHTML = `<img src="${CROP_ICON[crop.id]}" alt="" />`;
+        document.body.appendChild(ghost);
+        ghost.style.left = `${e.clientX}px`;
+        ghost.style.top = `${e.clientY}px`;
+        state.drag = { from: id, cropId: crop.id, ghost };
+        el.setPointerCapture(e.pointerId);
+      });
+
+      el.addEventListener('pointermove', (e) => {
+        if (!state.drag || state.drag.from !== id) return;
+        state.drag.ghost.style.left = `${e.clientX}px`;
+        state.drag.ghost.style.top = `${e.clientY}px`;
+      });
+
+      el.addEventListener('pointerup', (e) => {
+        if (!state.drag || state.drag.from !== id) return;
+        const { from, ghost } = state.drag;
+        ghost.remove();
+        state.drag = null;
+
+        const foxRect = els.fox.getBoundingClientRect();
+        const overFox =
+          e.clientX >= foxRect.left &&
+          e.clientX <= foxRect.right &&
+          e.clientY >= foxRect.top &&
+          e.clientY <= foxRect.bottom;
+
+        if (overFox) {
+          offerToFox(from);
+          return;
+        }
+
+        if (state.step === 'mix') {
+          const other = from === LEFT ? RIGHT : LEFT;
+          const r = plotEl(other).getBoundingClientRect();
+          const over =
+            e.clientX >= r.left &&
+            e.clientX <= r.right &&
+            e.clientY >= r.top &&
+            e.clientY <= r.bottom;
+          if (over) mix(from, other);
+        }
+      });
+
+      el.addEventListener('pointercancel', () => {
+        if (!state.drag || state.drag.from !== id) return;
+        removeGhost();
+        state.drag = null;
+      });
+    }
+
+    // Block shrine clicks (detail popups)
+    document.querySelectorAll('.shrine').forEach((el) => {
+      el.addEventListener('click', (e) => {
+        if (state.step !== 'done') e.preventDefault();
+      });
+    });
+
+    els.pickWheat.addEventListener('click', () => plant('wheat'));
+    els.pickTurnip.addEventListener('click', () => plant('turnip'));
+    els.pickerClose.addEventListener('click', () => {
+      closePicker();
+      renderBubble();
+    });
+    document.getElementById('btn-reset').addEventListener('click', reset);
+    els.chkFast.addEventListener('change', () => {
+      document.documentElement.style.setProperty('--fast', els.chkFast.checked ? '1' : '0');
+    });
+    window.addEventListener('resize', () => renderBubble());
+
+    reset();
+  </script>
+</body>
+</html>

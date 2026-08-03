@@ -10,6 +10,8 @@ import {
   hasCritterVisit,
   isPlotNapped,
   getMixBridgeSides,
+  getTutorialTargetPlotIds,
+  isTutorialActive,
 } from '../state/gameState.js';
 import { CROP_DRAG_TYPE, parseCropDragData } from './shrinesPanel.js';
 import { wireReadyCropPointerDrag } from './plotPointerDrag.js';
@@ -129,6 +131,7 @@ export function renderGrid(
   }
 
   syncChildren(container, nextEls);
+  applyTutorialPlotHighlights(container, state);
 
   container.onclick = (event) => {
     if (suppressPlotClickAfterDrag) {
@@ -154,6 +157,19 @@ export function renderGrid(
     wateringPlotIds,
   );
   wireGrowingPlotUprootHold(container, state, now, onUprootHold, uprootingPlotIds);
+}
+
+function applyTutorialPlotHighlights(container, state) {
+  const targets = new Set(
+    isTutorialActive(state) ? getTutorialTargetPlotIds(state) : [],
+  );
+  for (const child of container.children) {
+    const id = Number(child.dataset.plotId);
+    child.classList.toggle(
+      'plot--tutorial-target',
+      targets.has(id),
+    );
+  }
 }
 
 function applyPlotPlacement(el, plotId) {

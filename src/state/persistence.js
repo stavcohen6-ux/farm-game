@@ -22,7 +22,8 @@ import {
 import { getCrop, getExpiresAt } from '../data/crops.js';
 import { isAlchemyResultId } from '../data/alchemyRecipes.js';
 import { DRAGON_TEMPLE } from '../data/dragonTemple.js';
-import { TUTORIAL_FLAG_KEYS } from '../data/tutorial.js';
+import { TUTORIAL_FLAG_KEYS, TUTORIAL_STEP_DONE, isTutorialStep } from '../data/tutorial.js';
+import { repairTutorialState } from './tutorialFlow.js';
 
 const STORAGE_KEY = 'farm-game-state';
 const SAVE_VERSION = 2;
@@ -514,6 +515,9 @@ export function load() {
     if (normalizeTutorialSeen(parsed)) {
       dirty = true;
     }
+    if (normalizeTutorialStep(parsed)) {
+      dirty = true;
+    }
 
     // Catch up perishable crops after offline time.
     const spoiled = tickCropDecay(parsed, Date.now());
@@ -615,6 +619,28 @@ function normalizeTutorialSeen(parsed) {
     }
   }
   parsed.tutorialSeen = normalized;
+  return dirty;
+}
+
+/**
+ * Hard FTUE step. Missing on existing saves → done (do not re-teach).
+ * Preserves plot.locked as saved (never re-derive from new layout sketch).
+ */
+function normalizeTutorialStep(parsed) {
+  let dirty = false;
+  if (!isTutorialStep(parsed.tutorialStep)) {
+    parsed.tutorialStep = TUTORIAL_STEP_DONE;
+    dirty = true;
+  }
+  if (typeof parsed.tutorialFoxWheatOffered !== 'boolean') {
+    parsed.tutorialFoxWheatOffered = parsed.tutorialStep === TUTORIAL_STEP_DONE;
+    dirty = true;
+  }
+  if (parsed.tutorialStep !== TUTORIAL_STEP_DONE) {
+    if (repairTutorialState(parsed, Date.now())) {
+      dirty = true;
+    }
+  }
   return dirty;
 }
 

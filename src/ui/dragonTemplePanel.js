@@ -114,7 +114,6 @@ function renderSlot(
   held,
   slotIndex,
   demandCropId,
-  onClear,
   onPlace,
   burning,
   now,
@@ -177,12 +176,12 @@ function renderSlot(
       slotEl.appendChild(fire);
     }
 
+    // Placed tribute is locked in until burn or lose discard.
     slotEl.title = burning
       ? 'Burning…'
       : crop
-        ? `${crop.name} — click to return to farm`
-        : 'Click to return to farm';
-    slotEl.onclick = burning || !interactive ? null : () => onClear(slotIndex);
+        ? `${crop.name} — locked in`
+        : 'Locked in';
     return;
   }
 
@@ -207,31 +206,7 @@ function renderSlot(
     slotEl.title = '';
   }
 
-  if (burning) {
-    return;
-  }
-
-  slotEl.ondragover = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    event.dataTransfer.dropEffect = 'move';
-    slotEl.classList.add('dragon-temple__slot--drag-over');
-  };
-
-  slotEl.ondragleave = () => {
-    slotEl.classList.remove('dragon-temple__slot--drag-over');
-  };
-
-  slotEl.ondrop = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    slotEl.classList.remove('dragon-temple__slot--drag-over');
-    const drag = parseCropDragData(
-      event.dataTransfer.getData(CROP_DRAG_TYPE),
-    );
-    if (!drag) return;
-    onPlace(slotIndex, drag.cropId, drag.plotId);
-  };
+  wireEmptySlotDrop(slotEl, slotIndex, onPlace);
 }
 
 function wireTempleDropTarget(container, onPlaceNext) {
@@ -296,7 +271,7 @@ function patchMeters(meters, temple, active) {
 }
 
 function buildSlotsRow(temple, handlers, burning, now, interactive) {
-  const { onClear, onPlace } = handlers;
+  const { onPlace } = handlers;
   const slotsRow = document.createElement('div');
   slotsRow.className = 'dragon-temple__slots';
   const slots = temple.slots ?? [];
@@ -311,7 +286,6 @@ function buildSlotsRow(temple, handlers, burning, now, interactive) {
       held,
       i,
       demand,
-      onClear,
       onPlace,
       burning,
       now,
@@ -323,7 +297,7 @@ function buildSlotsRow(temple, handlers, burning, now, interactive) {
 }
 
 function patchSlotsRow(slotsRow, temple, handlers, burning, now, interactive) {
-  const { onClear, onPlace } = handlers;
+  const { onPlace } = handlers;
   const slots = temple.slots ?? [];
   const slotEls = slotsRow.querySelectorAll('.dragon-temple__slot');
   if (slotEls.length !== DRAGON_TEMPLE.slotCount) return false;
@@ -336,7 +310,7 @@ function patchSlotsRow(slotsRow, temple, handlers, burning, now, interactive) {
     if (slotEl.dataset.slotKey === key) {
       // Rebind handlers so closures stay current; refresh decay tint.
       if (getHeldCropId(held) && !burning && interactive) {
-        slotEl.onclick = () => onClear(i);
+        slotEl.onclick = null;
         slotEl.querySelector('.crop-decay__wilt')?.remove();
         const urgency = applyDecayUrgencyClass(
           slotEl,
@@ -356,7 +330,6 @@ function patchSlotsRow(slotsRow, temple, handlers, burning, now, interactive) {
       held,
       i,
       demand,
-      onClear,
       onPlace,
       burning,
       now,

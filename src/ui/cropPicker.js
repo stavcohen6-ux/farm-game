@@ -1,5 +1,9 @@
 import { CROPS } from '../data/crops.js';
-import { isCropUnlocked, getFrogGrowthMs } from '../state/gameState.js';
+import {
+  isCropUnlocked,
+  getFrogGrowthMs,
+  isTutorialPickerCropUnlocked,
+} from '../state/gameState.js';
 import { setCropIcon, setIcon, UI_ICONS } from './icon.js';
 
 const WHEEL_SIZE = 180;
@@ -39,7 +43,12 @@ export function openCropPicker(state, plotEl, onSelect) {
 
   for (let i = 0; i < plantables.length; i++) {
     const crop = plantables[i];
-    const unlocked = isCropUnlocked(state, crop);
+    const researchUnlocked = isCropUnlocked(state, crop);
+    const unlocked = isTutorialPickerCropUnlocked(
+      state,
+      crop,
+      researchUnlocked,
+    );
     const timeLabel = unlocked
       ? formatDuration(getFrogGrowthMs(crop, state))
       : null;

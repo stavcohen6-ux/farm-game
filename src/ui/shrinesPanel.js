@@ -3,6 +3,9 @@ import {
   canOfferCropToShrine,
   getDragonBonusOfferings,
   isShrineMaxed,
+  isTutorialActive,
+  isTutorialFoxTarget,
+  getTutorialFoxProgress,
 } from '../state/gameState.js';
 import { setIcon, shrineIconSrc } from './icon.js';
 
@@ -83,15 +86,36 @@ function renderShrine(
   const currentTier = progress.tier;
   const nextTierDef = shrine.tiers[currentTier];
 
-  const required = maxed ? 1 : nextTierDef.progressRequired;
-  const current = maxed ? 1 : progress.progress;
-  const percent = maxed ? 100 : Math.min(100, (current / required) * 100);
+  const tutorialFox = getTutorialFoxProgress(state);
+  const useTutorialBar = shrine.id === 'fox' && tutorialFox;
+  const required = useTutorialBar
+    ? tutorialFox.progressRequired
+    : maxed
+      ? 1
+      : nextTierDef.progressRequired;
+  const current = useTutorialBar
+    ? tutorialFox.progress
+    : maxed
+      ? 1
+      : progress.progress;
+  const percent = useTutorialBar
+    ? Math.min(100, (current / required) * 100)
+    : maxed
+      ? 100
+      : Math.min(100, (current / required) * 100);
 
   container.className = `shrine shrine--${shrine.corner} shrine--${shrine.id}`;
-  if (maxed) {
+  if (maxed && !useTutorialBar) {
     container.classList.add('shrine--maxed');
   }
+  if (isTutorialActive(state) && shrine.id !== 'fox') {
+    container.classList.add('shrine--tutorial-inactive');
+  }
+  if (isTutorialFoxTarget(state) && shrine.id === 'fox') {
+    container.classList.add('shrine--tutorial-target');
+  }
   const showBlessingGlow =
+    !isTutorialActive(state) &&
     getDragonBonusOfferings(state, shrine.id) > 0 &&
     !pendingBlessingVisualShrineIds?.has(shrine.id);
   if (showBlessingGlow) {
@@ -143,7 +167,7 @@ function renderShrine(
     onShrineClick(shrine.id);
   };
 
-  if (maxed) {
+  if (maxed && !useTutorialBar) {
     container.ondragover = null;
     container.ondrop = null;
     container.ondragleave = null;

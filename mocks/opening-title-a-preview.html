@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="../" />
+  <title>Opening title — A on journey</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      min-height: 100dvh;
+      background: #c8ddd0;
+      display: grid;
+      place-items: center;
+    }
+    .stage {
+      position: relative;
+      width: min(100vw, calc(100dvh * 2 / 3));
+      aspect-ratio: 2 / 3;
+      max-height: 100dvh;
+      overflow: hidden;
+      background: #c8ddd0;
+    }
+    .scene {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
+    }
+    .veil {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(180deg, rgba(232, 244, 234, 0.28) 0%, transparent 22%),
+        linear-gradient(0deg, rgba(42, 61, 48, 0.12) 0%, transparent 22%);
+    }
+    .title {
+      position: absolute;
+      z-index: 2;
+      top: 3.5%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(78%, 16rem);
+      margin: 0;
+      line-height: 0;
+    }
+    .title img {
+      display: block;
+      width: 100%;
+      height: auto;
+      filter:
+        drop-shadow(0 0 12px rgba(244, 250, 236, 0.55))
+        drop-shadow(0 2px 8px rgba(36, 56, 44, 0.35));
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    .play {
+      position: absolute;
+      z-index: 2;
+      left: 50%;
+      bottom: 9%;
+      transform: translateX(-50%);
+      width: min(72%, 17.5rem);
+      pointer-events: none;
+      filter: drop-shadow(0 10px 18px rgba(184, 144, 48, 0.28));
+    }
+    .play img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="stage" aria-label="Storybook moss title on opening journey">
+    <img class="scene" src="assets/opening/opening_journey.png" alt="" />
+    <div class="veil"></div>
+    <h1 class="title">
+      <img src="mocks/opening-title/a-painted-moss-cutout.png" alt="Harmony Grove" />
+    </h1>
+    <div class="play">
+      <img src="assets/opening/opening_play.png?v=alpha3" alt="" />
+    </div>
+  </div>
+</body>
+</html>

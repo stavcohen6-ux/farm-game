@@ -44,8 +44,59 @@ import {
 import {
   TUTORIAL_FLAG_KEYS,
   TUTORIAL_LINES,
+  TUTORIAL_STEP_START,
   isCriticalGameText,
 } from '../data/tutorial.js';
+import {
+  isTutorialActive,
+  canTutorialPlant,
+  canTutorialUproot,
+  canTutorialOffer,
+  canTutorialMix,
+  canTutorialTemple,
+  canTutorialOpenPicker,
+  canTutorialOpenShrineDetail,
+  canTutorialDragReadyCrop,
+  onTutorialPickerOpened,
+  onTutorialPlanted,
+  onTutorialMixed,
+  applyTutorialFoxOffer,
+  tickTutorial,
+  repairTutorialState,
+  forceWaterRequest,
+  getTutorialPlantGrowthMs,
+  shouldForceTutorialWater,
+  shouldSuppressDragonDuringTutorial,
+  shouldSuppressPlotNapperDuringTutorial,
+  getTutorialFoxProgress,
+  getTutorialBubbleText,
+  getTutorialTargetPlotIds,
+  isTutorialFoxTarget,
+  isTutorialPickerCropUnlocked,
+  getTutorialPlantMask,
+} from './tutorialFlow.js';
+
+export {
+  isTutorialActive,
+  canTutorialOpenPicker,
+  onTutorialPickerOpened,
+  canTutorialUproot,
+  canTutorialOffer,
+  canTutorialMix,
+  canTutorialTemple,
+  canTutorialOpenShrineDetail,
+  canTutorialDragReadyCrop,
+  tickTutorial,
+  repairTutorialState,
+  getTutorialFoxProgress,
+  getTutorialBubbleText,
+  getTutorialTargetPlotIds,
+  isTutorialFoxTarget,
+  isTutorialPickerCropUnlocked,
+  getTutorialPlantMask,
+};
+
+export { TUTORIAL_STEP_DONE } from '../data/tutorial.js';
 
 export const GRID_ROWS = BOARD_ROWS;
 export const GRID_COLS = BOARD_COLS;
@@ -121,7 +172,9 @@ export function createInitialState() {
     vined: false,
   }));
   const tutorialSeen = createInitialTutorialSeen();
-  tutorialSeen.welcome = true;
+  for (const key of TUTORIAL_FLAG_KEYS) {
+    tutorialSeen[key] = true;
+  }
   return {
     saveVersion: 2,
     plots,
@@ -142,9 +195,12 @@ export function createInitialState() {
     // Sleeping tanuki on one empty plot: null | { id, kind, appearAt, status, plotId?, wakeAt? }
     plotNapper: null,
     // Player-facing message for the info-band text panel; null = empty
-    gameText: TUTORIAL_LINES.welcome,
-    // Start tutorial tips already shown this playthrough (sticky until Reset)
+    gameText: null,
+    // Legacy soft tips (all true — FTUE uses tutorialStep instead)
     tutorialSeen,
+    // Hard step-lock FTUE (Fox demo); 'done' after Root Loaf offer
+    tutorialStep: TUTORIAL_STEP_START,
+    tutorialFoxWheatOffered: false,
     // Shrine completion epilogue: shown only after a successful display
     shrineEpilogueShown: false,
     // Epoch ms when the epilogue may fire; null when not armed
@@ -170,6 +226,8 @@ export function resetState(state) {
   state.plotNapper = fresh.plotNapper;
   state.gameText = fresh.gameText;
   state.tutorialSeen = fresh.tutorialSeen;
+  state.tutorialStep = fresh.tutorialStep;
+  state.tutorialFoxWheatOffered = fresh.tutorialFoxWheatOffered;
   state.shrineEpilogueShown = fresh.shrineEpilogueShown;
   state.shrineEpilogueDueAt = fresh.shrineEpilogueDueAt;
 }
@@ -430,6 +488,7 @@ export function takeReadyCropFromPlot(state, plotId, now = Date.now()) {
  * already-vined stays vined).
  */
 export function uprootCrop(state, plotId) {
+  if (!canTutorialUproot(state)) return false;
   const plot = state.plots.find((p) => p.id === plotId);
   if (!plot?.crop || plot.locked) return false;
   if (isPlotNapped(state, plotId)) return false;
@@ -462,28 +521,12 @@ export function placeReadyCropOnPlot(state, plotId, cropId, now = Date.now()) {
   return true;
 }
 
-function findEmptyUnlockedPlotId(state) {
-  for (const plot of state.plots) {
-    if (plot.locked || plot.crop) continue;
-    if (isPlotNapped(state, plot.id)) continue;
-    return plot.id;
-  }
-  return null;
-}
-
-/** Return a held temple crop onto an empty farm plot (desk-less sink). */
-function returnCropToFarm(state, cropId) {
-  if (!getCrop(cropId)) return false;
-  const plotId = findEmptyUnlockedPlotId(state);
-  if (plotId == null) return false;
-  return placeReadyCropOnPlot(state, plotId, cropId);
-}
-
 /**
  * Mix two adjacent ready crops in place. Result sits on `toPlotId`;
  * `fromPlotId` is cleared. Returns `{ resultId, fromPlotId, toPlotId }` or null.
  */
 export function mixAdjacentReadyPlots(state, fromPlotId, toPlotId, now = Date.now()) {
+  if (!canTutorialMix(state, fromPlotId, toPlotId)) return null;
   if (!areAdjacentPlots(fromPlotId, toPlotId)) return null;
 
   const from = state.plots.find((p) => p.id === fromPlotId);
@@ -500,7 +543,7 @@ export function mixAdjacentReadyPlots(state, fromPlotId, toPlotId, now = Date.no
   to.flowered = false;
   placeReadyCropOnPlot(state, toPlotId, resultId, now);
   markAlchemyRecipeDiscovered(state, resultId);
-  maybeShowTutorialTip(state, 'firstMix');
+  onTutorialMixed(state);
   return { resultId, fromPlotId, toPlotId };
 }
 
@@ -577,9 +620,11 @@ export function plantCrop(state, plotId, cropId) {
 
   const crop = getCrop(cropId);
   if (!crop?.plantable || !isCropUnlocked(state, crop)) return;
+  if (!canTutorialPlant(state, plotId, cropId)) return;
 
   const plantedAt = Date.now();
-  const growthMs = getFrogGrowthMs(crop, state);
+  let growthMs = getFrogGrowthMs(crop, state);
+  growthMs = getTutorialPlantGrowthMs(state, cropId, growthMs);
 
   let water;
   let critter;
@@ -591,6 +636,10 @@ export function plantCrop(state, plotId, cropId) {
     // Flowered: guaranteed butterfly, no water on this plant.
     water = { watered: false, waterRequestAt: null };
     critter = forceCritterVisit(crop, plantedAt, growthMs);
+  } else if (shouldForceTutorialWater(state, cropId)) {
+    // FTUE: one forced water cue; no butterfly on that plant.
+    water = forceWaterRequest(plantedAt, growthMs);
+    critter = { critterWelcomed: false, critterVisitAt: null };
   } else {
     // Water first; butterfly only if water missed (never both on one plant).
     water = rollWaterRequest(crop, plantedAt, growthMs);
@@ -610,6 +659,9 @@ export function plantCrop(state, plotId, cropId) {
     critterVisitAt: critter.critterVisitAt,
   };
 
+  onTutorialPlanted(state, plotId, cropId);
+
+  if (shouldSuppressDragonDuringTutorial(state)) return;
   const lose = addDragonTempleWrath(state, DRAGON_TEMPLE.wrathPerPlant);
   if (lose) return lose;
 }
@@ -971,10 +1023,10 @@ export function markReadyCropsDiscovered(state, now = Date.now()) {
     markCropDiscovered(state, plot.crop.cropId);
     if ((state.discoveredCropIds?.length ?? 0) > before) changed = true;
   }
-  if (anyReady && maybeShowTutorialTip(state, 'firstReady')) {
+  if (anyReady && !isTutorialActive(state) && maybeShowTutorialTip(state, 'firstReady')) {
     changed = true;
   }
-  if (maybeShowMixInviteTip(state, now)) {
+  if (!isTutorialActive(state) && maybeShowMixInviteTip(state, now)) {
     changed = true;
   }
   return changed;
@@ -1445,6 +1497,9 @@ export function addDragonTempleWrath(state, amount) {
 
 /** True when a shrine would accept this crop (before taking from plot/inventory). */
 export function canOfferCropToShrine(state, shrineId, cropId) {
+  if (isTutorialActive(state)) {
+    return canTutorialOffer(state, shrineId, cropId);
+  }
   if (isShrineMaxed(state, shrineId)) return false;
   const shrine = getShrine(shrineId);
   const crop = getCrop(cropId);
@@ -1460,6 +1515,29 @@ export function offerCrop(state, shrineId, cropId, sourcePlotId = null) {
 
   const shrine = getShrine(shrineId);
   const crop = getCrop(cropId);
+
+  if (isTutorialActive(state)) {
+    if (!canTutorialOffer(state, shrineId, cropId)) {
+      return false;
+    }
+    if (sourcePlotId != null) {
+      const taken = takeReadyCropFromPlot(state, sourcePlotId);
+      if (!taken || taken.cropId !== cropId) return false;
+    } else if (!takeFromInventory(state, cropId)) {
+      return false;
+    }
+    const applied = applyTutorialFoxOffer(state, cropId);
+    if (!applied) return false;
+    markCropDiscovered(state, cropId);
+    return {
+      unlockedPlotIds: applied.unlockedPlotIds,
+      tiersGained: applied.tiersGained,
+      bonus: false,
+      cropId,
+      plotId: sourcePlotId,
+      tutorialCompleted: applied.completed,
+    };
+  }
 
   if (!canOfferCropToShrine(state, shrineId, cropId)) {
     if (shrine && crop && !isShrineMaxed(state, shrineId)) {
@@ -1551,6 +1629,7 @@ function applyOfferingProgress(state, shrineId, cropId, baseAmount) {
 }
 
 function maybeTriggerDragonTempleFromOffering(state, shrineId, cropId) {
+  if (shouldSuppressDragonDuringTutorial(state)) return;
   if (!state.dragonTemple) {
     state.dragonTemple = createInitialDragonTemple();
   }
@@ -1644,19 +1723,6 @@ export function claimAlchemyResult(state) {
   return true;
 }
 
-function returnDragonTempleSlotsToFarm(state) {
-  const temple = state.dragonTemple;
-  if (!temple?.slots) return;
-
-  for (let i = 0; i < temple.slots.length; i++) {
-    const held = temple.slots[i];
-    const cropId = getHeldCropId(held);
-    if (!cropId) continue;
-    returnCropToFarm(state, cropId);
-    temple.slots[i] = null;
-  }
-}
-
 export function closeDragonTempleEvent(state) {
   if (!state.dragonTemple) {
     state.dragonTemple = createInitialDragonTemple();
@@ -1664,7 +1730,7 @@ export function closeDragonTempleEvent(state) {
   }
   const lastResult = state.dragonTemple.lastResult ?? null;
   const pendingReward = Boolean(state.dragonTemple.pendingReward);
-  returnDragonTempleSlotsToFarm(state);
+  // Placed tribute is locked in — discard any leftover slots on close/lose.
   state.dragonTemple.active = false;
   state.dragonTemple.demand = [];
   state.dragonTemple.wrath = 0;
@@ -1701,6 +1767,7 @@ function demandCropAt(temple, slotIndex) {
 }
 
 export function placeDragonTempleSlot(state, slotIndex, cropId, sourcePlotId = null) {
+  if (!canTutorialTemple(state)) return false;
   tickCropDecay(state);
   const temple = state.dragonTemple;
   if (!temple?.active || temple.burning || temple.pendingClose) return false;
@@ -1719,7 +1786,6 @@ export function placeDragonTempleSlot(state, slotIndex, cropId, sourcePlotId = n
   if (sourcePlotId != null) {
     const taken = takeReadyCropFromPlot(state, sourcePlotId);
     if (!taken || taken.cropId !== cropId) return false;
-    maybeSchedulePlotNapperFromHarvest(state);
   } else {
     const taken = takeFromInventory(state, cropId);
     if (!taken) return false;
@@ -1748,25 +1814,9 @@ export function placeDragonTempleNextSlot(state, cropId, sourcePlotId = null) {
   return placeDragonTempleSlot(state, slotIndex, cropId, sourcePlotId);
 }
 
-export function clearDragonTempleSlot(state, slotIndex) {
-  tickCropDecay(state);
-  const temple = state.dragonTemple;
-  if (!temple?.active || temple.burning || temple.pendingClose) return false;
-  if (
-    typeof slotIndex !== 'number' ||
-    slotIndex < 0 ||
-    slotIndex >= temple.slots.length
-  ) {
-    return false;
-  }
-
-  const held = temple.slots[slotIndex];
-  const cropId = getHeldCropId(held);
-  if (!cropId) return false;
-
-  if (!returnCropToFarm(state, cropId)) return false;
-  temple.slots[slotIndex] = null;
-  return true;
+/** Placed tribute is locked in — cannot be removed by the player. */
+export function clearDragonTempleSlot(_state, _slotIndex) {
+  return false;
 }
 
 function templeDemandMatched(temple) {
@@ -2102,6 +2152,7 @@ export function clearPlotNapper(state) {
 
 // After a harvest: maybe schedule a tanuki (does not pick a plot yet).
 export function maybeSchedulePlotNapperFromHarvest(state, now = Date.now()) {
+  if (shouldSuppressPlotNapperDuringTutorial(state)) return false;
   if (state.plotNapper) return false;
   const minUnlocked = PLOT_NAPPER.minUnlockedPlots ?? 0;
   if (countUnlockedPlots(state) < minUnlocked) return false;

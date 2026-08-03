@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Resolve assets/ relative to project root (not /mocks/). -->
+  <base href="../" />
+  <title>Style 1 — Soft Storybook Cutouts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #24382c;
+      --muted: #5a6e60;
+      --panel: rgba(248, 252, 248, 0.9);
+      --line: #a8c9b4;
+      --moss: #3f6b4c;
+      --honey: #d4a84b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100dvh;
+      font-family: 'Nunito', system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, #dff0e4 0%, transparent 55%),
+        linear-gradient(180deg, #cfe4d6 0%, #b4d0c0 55%, #9cbcac 100%);
+      padding: 1.25rem 1.25rem 2.5rem;
+    }
+
+    .page {
+      max-width: 72rem;
+      margin: 0 auto;
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    header h1 {
+      font-size: 1.35rem;
+      font-weight: 800;
+    }
+
+    header p {
+      margin-top: 0.4rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      max-width: 42rem;
+    }
+
+    .rules {
+      background: var(--panel);
+      border: 1.5px solid var(--line);
+      border-radius: 14px;
+      padding: 0.85rem 1.1rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .rules strong {
+      color: var(--moss);
+      font-weight: 800;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .row--3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .row--4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    @media (max-width: 1100px) {
+      .row--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 900px) {
+      .row--3 { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 700px) {
+      .row { grid-template-columns: 1fr; }
+      .row--4 { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1.5px solid var(--line);
+      border-radius: 16px;
+      padding: 0.85rem 0.85rem 1rem;
+      display: grid;
+      gap: 0.65rem;
+    }
+
+    .card__tag {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--moss);
+    }
+
+    .card__name {
+      font-size: 1.05rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-top: 0.1rem;
+    }
+
+    .stage {
+      display: grid;
+      place-items: center;
+      min-height: 14rem;
+      border-radius: 12px;
+      background:
+        linear-gradient(135deg, #e8f2ea 0%, #d4e6d8 50%, #c5d9c8 100%);
+      border: 1px solid rgba(36, 56, 44, 0.08);
+      padding: 1rem;
+    }
+
+    .stage--grove {
+      position: relative;
+      overflow: hidden;
+      min-height: 16rem;
+      padding: 0;
+      background: #c8ddd0;
+    }
+
+    .stage--grove img.scene {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .stage--grove .cutout {
+      position: relative;
+      z-index: 1;
+      width: min(70%, 11rem);
+      height: auto;
+      filter: drop-shadow(0 4px 12px rgba(36, 56, 44, 0.28));
+    }
+
+    .stage img.hero {
+      width: min(100%, 12rem);
+      height: auto;
+      filter: drop-shadow(0 3px 10px rgba(36, 56, 44, 0.2));
+    }
+
+    .stage img.hero--title {
+      width: min(100%, 16rem);
+    }
+
+    .sizes {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      gap: 1rem 1.25rem;
+      padding: 0.35rem 0.15rem 0;
+    }
+
+    .sizes__item {
+      display: grid;
+      gap: 0.3rem;
+      justify-items: center;
+    }
+
+    .sizes__label {
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .sizes img {
+      display: block;
+      height: auto;
+      image-rendering: auto;
+      filter: drop-shadow(0 1px 3px rgba(36, 56, 44, 0.18));
+    }
+
+    .sizes img.sz-128 { width: 128px; }
+    .sizes img.sz-64 { width: 64px; }
+    .sizes img.sz-40 { width: 40px; }
+
+    .section-title {
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 0.35rem;
+    }
+
+    .phone {
+      position: relative;
+      aspect-ratio: 2 / 3;
+      max-width: 18rem;
+      margin-inline: auto;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #c8ddd0;
+      box-shadow: inset 0 0 0 1px rgba(36, 56, 44, 0.12);
+    }
+
+    .phone__scene {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .phone__veil {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(180deg, rgba(232, 244, 234, 0.28) 0%, transparent 22%),
+        linear-gradient(0deg, rgba(42, 61, 48, 0.12) 0%, transparent 22%);
+    }
+
+    .phone__title {
+      position: absolute;
+      z-index: 2;
+      top: 3%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(82%, 13rem);
+      margin: 0;
+      line-height: 0;
+    }
+
+    .phone__title img {
+      display: block;
+      width: 100%;
+      height: auto;
+      filter: drop-shadow(0 2px 10px rgba(36, 56, 44, 0.35));
+    }
+
+    .phone__play {
+      position: absolute;
+      z-index: 2;
+      left: 50%;
+      bottom: 9%;
+      transform: translateX(-50%);
+      width: min(72%, 10.5rem);
+      opacity: 0.92;
+      pointer-events: none;
+      filter: drop-shadow(0 8px 14px rgba(184, 144, 48, 0.22));
+    }
+
+    .phone__play img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .title-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    @media (max-width: 700px) {
+      .title-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>Style 1 — Soft Storybook Cutouts</h1>
+      <p>
+        Mock only — live assets unchanged. Side-by-side: current painterly icons
+        vs simplified storybook cutouts (fox shrine, wheat, title).
+      </p>
+    </header>
+
+    <p class="rules">
+      <strong>Style lock:</strong>
+      2–3 value shading · clear silhouette · soft cream edge · calm old-god
+      presence (not goofy-cute) · Fresh Moss + honey amber · true transparency.
+    </p>
+
+    <p class="section-title">Fox shrine</p>
+    <div class="row row--4">
+      <article class="card">
+        <div>
+          <div class="card__tag">Current (live)</div>
+          <h2 class="card__name">Painterly fox</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="assets/icons/shrine_fox.png" alt="Current fox shrine" />
+        </div>
+        <div class="sizes" aria-label="Current fox at game sizes">
+          <div class="sizes__item">
+            <span class="sizes__label">128</span>
+            <img class="sz-128" src="assets/icons/shrine_fox.png" alt="" />
+          </div>
+          <div class="sizes__item">
+            <span class="sizes__label">64</span>
+            <img class="sz-64" src="assets/icons/shrine_fox.png" alt="" />
+          </div>
+          <div class="sizes__item">
+            <span class="sizes__label">40</span>
+            <img class="sz-40" src="assets/icons/shrine_fox.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">Mock A</div>
+          <h2 class="card__name">Storybook cutout</h2>
+        </div>
+        <div class="stage stage--grove">
+          <img class="scene" src="assets/scene/grove_clearing.png" alt="" />
+          <img class="cutout" src="mocks/storybook-cutouts/fox-shrine.png" alt="Mock A fox shrine" />
+        </div>
+        <div class="sizes" aria-label="Mock A fox at game sizes">
+          <div class="sizes__item">
+            <span class="sizes__label">128</span>
+            <img class="sz-128" src="mocks/storybook-cutouts/fox-shrine.png" alt="" />
+          </div>
+          <div class="sizes__item">
+            <span class="sizes__label">64</span>
+            <img class="sz-64" src="mocks/storybook-cutouts/fox-shrine.png" alt="" />
+          </div>
+          <div class="sizes__item">
+            <span class="sizes__label">40</span>
+            <img class="sz-40" src="mocks/storybook-cutouts/fox-shrine.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">Mock B · size-fit</div>
+          <h2 class="card__name">Larger fill cutout</h2>
+        </div>
+        <div class="stage stage--grove">
+          <img class="scene" src="assets/scene/grove_clearing.png" alt="" />
+          <img class="cutout" src="mocks/storybook-cutouts/fox-shrine-b.png" alt="Mock B fox shrine" />
+        </div>
+        <div class="sizes" aria-label="Mock B fox at game sizes">
+          <div class="sizes__item">
+            <span class="sizes__label">128</span>
+            <img class="sz-128" src="mocks/storybook-cutouts/fox-shrine-b.png" alt="" />
+          </div>
+          <div class="sizes__item">
+            <span class="sizes__label">64</span>
+            <img class="sz-64" src="mocks/storybook-cutouts/fox-shrine-b.png" alt="" />
+          </div>
+          <div class="sizes__item">
+            <span class="sizes__label">40</span>
+            <img class="sz-40" src="mocks/storybook-cutouts/fox-shrine-b.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">Mock C · flatter</div>
+          <h2 class="card__name">Geometric cutout</h2>
+        </div>
+        <div class="stage stage--grove">
+          <img class="scene" src="assets/scene/grove_clearing.png" alt="" />
+          <img class="cutout" src="mocks/storybook-cutouts/fox-shrine-c.png" alt="Mock C fox shrine" />
+        </div>
+        <div class="sizes" aria-label="Mock C fox at game sizes">
+          <div class="sizes__item">
+            <span class="sizes__label">128</span>
+            <img class="sz-128" src="mocks/storybook-cutouts/fox-shrine-c.png" alt="" />
+          </div>
+          <div class="sizes__item">
+            <span class="sizes__label">64</span>
+            <img class="sz-64" src="mocks/storybook-cutouts/fox-shrine-c.png" alt="" />
+          </div>
+          <div class="sizes__item">
+            <span class="sizes__label">40</span>
+            <img class="sz-40" src="mocks/storybook-cutouts/fox-shrine-c.png" alt="" />
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <p class="section-title">Monkey shrine</p>
+    <div class="row row--3">
+      <article class="card">
+        <div>
+          <div class="card__tag">Current (live)</div>
+          <h2 class="card__name">Painterly monkey</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="assets/icons/shrine_monkey.png" alt="Current monkey shrine" />
+        </div>
+        <div class="sizes" aria-label="Current monkey at game sizes">
+          <div class="sizes__item">
+            <span class="sizes__label">128</span>
+            <img class="sz-128" src="assets/icons/shrine_monkey.png" alt="" />
+          </div>
+          <div class="sizes__item">
+            <span class="sizes__label">64</span>
+            <img class="sz-64" src="assets/icons/shrine_monkey.png" alt="" />
+          </div>
+          <div class="sizes__item">
+            <span class="sizes__label">40</span>
+            <img class="sz-40" src="assets/icons/shrine_monkey.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">Mock B · size-fit</div>
+          <h2 class="card__name">Larger fill cutout</h2>
+        </div>
+        <div class="stage stage--grove">
+          <img class="scene" src="assets/scene/grove_clearing.png" alt="" />
+          <img class="cutout" src="mocks/storybook-cutouts/monkey-shrine-b.png" alt="Mock B monkey shrine" />
+        </div>
+        <div class="sizes" aria-label="Mock B monkey at game sizes">
+          <div class="sizes__item">
+            <span class="sizes__label">128</span>
+            <img class="sz-128" src="mocks/storybook-cutouts/monkey-shrine-b.png" alt="" />
+          </div>
+          <div class="sizes__item">
+            <span class="sizes__label">64</span>
+            <img class="sz-64" src="mocks/storybook-cutouts/monkey-shrine-b.png" alt="" />
+          </div>
+          <div class="sizes__item">
+            <span class="sizes__label">40</span>
+            <img class="sz-40" src="mocks/storybook-cutouts/monkey-shrine-b.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">Mock C · flatter</div>
+          <h2 class="card__name">Geometric cutout</h2>
+        </div>
+        <div class="stage stage--grove">
+          <img class="scene" src="assets/scene/grove_clearing.png" alt="" />
+          <img class="cutout" src="mocks/storybook-cutouts/monkey-shrine-c.png" alt="Mock C monkey shrine" />
+        </div>
+        <div class="sizes" aria-label="Mock C monkey at game sizes">
+          <div class="sizes__item">
+            <span class="sizes__label">128</span>
+            <img class="sz-128" src="mocks/storybook-cutouts/monkey-shrine-c.png" alt="" />
+          </div>
+          <div class="sizes__item">
+            <span class="sizes__label">64</span>
+            <img class="sz-64" src="mocks/storybook-cutouts/monkey-shrine-c.png" alt="" />
+          </div>
+          <div class="sizes__item">
+            <span class="sizes__label">40</span>
+            <img class="sz-40" src="mocks/storybook-cutouts/monkey-shrine-c.png" alt="" />
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <p class="section-title">Wheat crop</p>
+    <div class="row">
+      <article class="card">
+        <div>
+          <div class="card__tag">Current (live)</div>
+          <h2 class="card__name">Painterly wheat</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="assets/icons/wheat.png" alt="Current wheat" />
+        </div>
+        <div class="sizes" aria-label="Current wheat at game sizes">
+          <div class="sizes__item">
+            <span class="sizes__label">128</span>
+            <img class="sz-128" src="assets/icons/wheat.png" alt="" />
+          </div>
+          <div class="sizes__item">
+            <span class="sizes__label">64</span>
+            <img class="sz-64" src="assets/icons/wheat.png" alt="" />
+          </div>
+          <div class="sizes__item">
+            <span class="sizes__label">40</span>
+            <img class="sz-40" src="assets/icons/wheat.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">Style 1 mock</div>
+          <h2 class="card__name">Storybook cutout</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/wheat.png" alt="Style 1 wheat" />
+        </div>
+        <div class="sizes" aria-label="Style 1 wheat at game sizes">
+          <div class="sizes__item">
+            <span class="sizes__label">128</span>
+            <img class="sz-128" src="mocks/storybook-cutouts/wheat.png" alt="" />
+          </div>
+          <div class="sizes__item">
+            <span class="sizes__label">64</span>
+            <img class="sz-64" src="mocks/storybook-cutouts/wheat.png" alt="" />
+          </div>
+          <div class="sizes__item">
+            <span class="sizes__label">40</span>
+            <img class="sz-40" src="mocks/storybook-cutouts/wheat.png" alt="" />
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <p class="section-title">Title</p>
+    <div class="title-row">
+      <article class="card">
+        <div>
+          <div class="card__tag">Current (live)</div>
+          <h2 class="card__name">Glossy bevel</h2>
+        </div>
+        <div class="stage" style="background: #0a0a0a;">
+          <img class="hero hero--title" src="assets/opening/opening_title.png" alt="Current title" />
+        </div>
+        <div class="phone" aria-label="Current title on opening" style="margin-top: 0.5rem;">
+          <img class="phone__scene" src="assets/opening/opening_journey.png" alt="" />
+          <div class="phone__veil"></div>
+          <h3 class="phone__title">
+            <img src="assets/opening/opening_title.png" alt="Harmony Grove" style="mix-blend-mode: screen;" />
+          </h3>
+          <div class="phone__play">
+            <img src="assets/opening/opening_play.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">Style 1 mock</div>
+          <h2 class="card__name">Storybook moss cutout</h2>
+        </div>
+        <div class="stage">
+          <img class="hero hero--title" src="mocks/storybook-cutouts/title.png" alt="Style 1 title" />
+        </div>
+        <div class="phone" aria-label="Style 1 title on opening" style="margin-top: 0.5rem;">
+          <img class="phone__scene" src="assets/opening/opening_journey.png" alt="" />
+          <div class="phone__veil"></div>
+          <h3 class="phone__title">
+            <img src="mocks/storybook-cutouts/title.png" alt="Harmony Grove" />
+          </h3>
+          <div class="phone__play">
+            <img src="assets/opening/opening_play.png" alt="" />
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</body>
+</html>

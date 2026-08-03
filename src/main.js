@@ -12,7 +12,6 @@ import {
   mixAdjacentReadyPlots,
   placeDragonTempleSlot,
   placeDragonTempleNextSlot,
-  clearDragonTempleSlot,
   completeDragonTempleBurn,
   finalizeDragonTempleClose,
   claimTempleWinReward,
@@ -23,6 +22,13 @@ import {
   maybeShowShrineEpilogue,
   resetState,
   uprootCrop,
+  isTutorialActive,
+  canTutorialOpenPicker,
+  onTutorialPickerOpened,
+  canTutorialUproot,
+  canTutorialOpenShrineDetail,
+  canTutorialTemple,
+  tickTutorial,
 } from './state/gameState.js';
 import { load, save } from './state/persistence.js';
 import { getCrop } from './data/crops.js';
@@ -54,6 +60,14 @@ import { resolvePlotCropDrop } from './ui/plotPointerDrag.js';
 import { pinCropTip } from './ui/cropTip.js';
 import { installStageFit } from './ui/stageFit.js';
 import { installOpeningScreen } from './ui/openingScreen.js';
+import { renderTutorialBubble } from './ui/tutorialBubble.js';
+import {
+  playPlantSfx,
+  playMixSfx,
+  playShrineUpgradeSfx,
+  playDragonSlotSfx,
+  playDragonEventEndSfx,
+} from './audio/sfx.js';
 
 const RENDER_INTERVAL_MS = 1000;
 const WATERING_ANIM_MS = 1625;
@@ -82,7 +96,6 @@ installStageFit(appEl);
 const dragonTempleHandlers = {
   onPlace: handleDragonTemplePlace,
   onPlaceNext: handleDragonTemplePlaceNext,
-  onClear: handleDragonTempleClear,
   onBurnComplete: handleDragonTempleBurnComplete,
   onFigureClick: handleDragonTempleFigureClick,
 };
@@ -109,6 +122,7 @@ function renderFarm() {
 }
 
 function render() {
+  const now = Date.now();
   renderFarm();
   renderGameTextPanel(gameTextEl, state);
   renderDragonTemple(dragonTempleEl, state, dragonTempleHandlers);
@@ -119,6 +133,12 @@ function render() {
     handleShrineClick,
     pendingBlessingVisualShrineIds,
   );
+  if (isTutorialActive(state)) {
+    dragonTempleEl?.classList.add('dragon-temple--tutorial-inactive');
+  } else {
+    dragonTempleEl?.classList.remove('dragon-temple--tutorial-inactive');
+  }
+  renderTutorialBubble(state, { boardEl, gridEl, now });
 }
 
 function showPlotCropName(plotId) {
@@ -142,19 +162,27 @@ function handlePlotClick(plotId) {
   if (isPlotNapped(state, plotId)) return;
 
   if (!plot.crop) {
+    if (!canTutorialOpenPicker(state, plotId)) return;
     const plotEl = gridEl.querySelector(`[data-plot-id="${plotId}"]`);
     if (!plotEl) return;
+    onTutorialPickerOpened(state, plotId);
     openCropPicker(state, plotEl, (cropId) => {
       const plantResult = plantCrop(state, plotId, cropId);
+      const planted = state.plots.find((p) => p.id === plotId);
+      if (planted?.crop?.cropId === cropId) {
+        playPlantSfx(cropId);
+      }
       save(state);
       render();
       if (plantResult?.burnedShrineId) {
+        playDragonEventEndSfx();
         const shrineEl = boardEl.querySelector(
           `#shrine-${plantResult.burnedShrineId}`,
         );
         playShrineBurn({ shrineEl });
       }
     });
+    renderTutorialBubble(state, { boardEl, gridEl, now: Date.now() });
     return;
   }
 
@@ -216,6 +244,7 @@ function handlePlotClick(plotId) {
       onComplete: () => {
         critterFlyingPlotIds.delete(plotId);
         if ((result.tiersGained ?? 0) > 0 && shrineId) {
+          playShrineUpgradeSfx();
           const shrineEl = boardEl.querySelector(`#shrine-${shrineId}`);
           playShrineTierUp({ shrineEl });
         }
@@ -229,6 +258,7 @@ function handlePlotClick(plotId) {
 }
 
 function handleUprootHold(plotId) {
+  if (!canTutorialUproot(state)) return;
   const plot = state.plots.find((p) => p.id === plotId);
   if (!plot?.crop || plot.locked || unlockingPlotIds.has(plotId)) return;
   if (wateringPlotIds.has(plotId)) return;
@@ -261,7 +291,9 @@ function handleUnlockAnimationEnd() {
 }
 
 function handleMixReadyPlots(fromPlotId, toPlotId) {
-  if (!mixAdjacentReadyPlots(state, fromPlotId, toPlotId)) return;
+  const mixResult = mixAdjacentReadyPlots(state, fromPlotId, toPlotId);
+  if (!mixResult) return;
+  playMixSfx(mixResult.resultId);
   mixShinePlotIds.add(toPlotId);
   save(state);
   render();
@@ -321,12 +353,16 @@ function handleOffer(shrineId, cropId, plotId = null) {
   save(state);
   render();
 
-  if ((result.tiersGained ?? 0) > 0) {
+  if (result.tutorialCompleted || (result.tiersGained ?? 0) > 0) {
+    if ((result.tiersGained ?? 0) > 0) {
+      playShrineUpgradeSfx();
+    }
     const shrineEl = boardEl.querySelector(`#shrine-${shrineId}`);
     playShrineTierUp({ shrineEl });
   }
 
   if (result.burnedShrineId) {
+    playDragonEventEndSfx();
     const burnedEl = boardEl.querySelector(
       `#shrine-${result.burnedShrineId}`,
     );
@@ -349,29 +385,29 @@ function handleOffer(shrineId, cropId, plotId = null) {
 }
 
 function handleShrineClick(shrineId) {
+  if (!canTutorialOpenShrineDetail(state)) return;
   openShrineDetail(state, shrineId);
 }
 
 function handleDragonTempleFigureClick() {
+  if (!canTutorialTemple(state)) return;
   openDragonTempleDetail(state);
 }
 
 function handleDragonTemplePlace(slotIndex, cropId, plotId = null) {
+  if (!canTutorialTemple(state)) return;
   if (!placeDragonTempleSlot(state, slotIndex, cropId, plotId)) return;
+  playDragonSlotSfx();
   suppressNextDragonTempleFigureClick();
   save(state);
   render();
 }
 
 function handleDragonTemplePlaceNext(cropId, plotId = null) {
+  if (!canTutorialTemple(state)) return;
   if (!placeDragonTempleNextSlot(state, cropId, plotId)) return;
+  playDragonSlotSfx();
   suppressNextDragonTempleFigureClick();
-  save(state);
-  render();
-}
-
-function handleDragonTempleClear(slotIndex) {
-  if (!clearDragonTempleSlot(state, slotIndex)) return;
   save(state);
   render();
 }
@@ -387,6 +423,7 @@ function handleDragonTempleBurnComplete() {
   window.setTimeout(() => {
     if (state.dragonTemple?.pendingClose !== outcome) return;
     if (!finalizeDragonTempleClose(state)) return;
+    playDragonEventEndSfx();
     if (outcome === 'success') {
       playTempleWinPrize();
       return;
@@ -477,6 +514,10 @@ function tick() {
   const spoiled = tickCropDecay(state, now);
   let dirty = Object.keys(spoiled).length > 0;
 
+  if (tickTutorial(state, now)) {
+    dirty = true;
+  }
+
   if (markReadyCropsDiscovered(state, now)) {
     dirty = true;
   }
@@ -512,6 +553,16 @@ function tick() {
   }
 
   renderFarm();
+  renderTutorialBubble(state, { boardEl, gridEl, now });
+  if (isTutorialActive(state)) {
+    renderShrines(
+      boardEl,
+      state,
+      handleOffer,
+      handleShrineClick,
+      pendingBlessingVisualShrineIds,
+    );
+  }
   if (state.dragonTemple?.active) {
     if (state.dragonTemple.burning) {
       updateDragonTempleWrath(dragonTempleEl, state);
