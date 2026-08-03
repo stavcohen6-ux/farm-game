@@ -1021,6 +1021,11 @@ body {
   transform: translate(-50%, 14px) scale(1);
 }
 
+.tutorial-bubble--dismissable {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
 .tutorial-bubble::after {
   content: '';
   position: absolute;

@@ -20,7 +20,7 @@ import {
 let bubbleEl = null;
 let exploreDismissWired = false;
 let exploreDismissHandler = null;
-let exploreDismissRaf = 0;
+let exploreDismissTimer = 0;
 
 function ensureBubble() {
   if (bubbleEl) return bubbleEl;
@@ -33,13 +33,17 @@ function ensureBubble() {
 }
 
 function clearExploreDismiss() {
-  if (exploreDismissRaf) {
-    cancelAnimationFrame(exploreDismissRaf);
-    exploreDismissRaf = 0;
+  if (exploreDismissTimer) {
+    window.clearTimeout(exploreDismissTimer);
+    exploreDismissTimer = 0;
   }
   if (exploreDismissHandler) {
-    document.removeEventListener('pointerdown', exploreDismissHandler);
+    document.removeEventListener('pointerdown', exploreDismissHandler, true);
+    document.removeEventListener('click', exploreDismissHandler, true);
     exploreDismissHandler = null;
+  }
+  if (bubbleEl) {
+    bubbleEl.classList.remove('tutorial-bubble--dismissable');
   }
   exploreDismissWired = false;
 }
@@ -47,20 +51,21 @@ function clearExploreDismiss() {
 function wireExploreDismiss(onExploreDismiss) {
   if (exploreDismissWired || typeof onExploreDismiss !== 'function') return;
   exploreDismissWired = true;
-  // Skip the same gesture that finished the Root Loaf offer.
-  exploreDismissRaf = requestAnimationFrame(() => {
-    exploreDismissRaf = requestAnimationFrame(() => {
-      exploreDismissRaf = 0;
-      exploreDismissHandler = () => {
-        exploreDismissHandler = null;
-        exploreDismissWired = false;
-        onExploreDismiss();
-      };
-      document.addEventListener('pointerdown', exploreDismissHandler, {
-        once: true,
-      });
-    });
-  });
+  // Wait out the Root Loaf drop gesture, then arm capture-phase dismiss.
+  exploreDismissTimer = window.setTimeout(() => {
+    exploreDismissTimer = 0;
+    const handler = () => {
+      clearExploreDismiss();
+      onExploreDismiss();
+    };
+    exploreDismissHandler = handler;
+    if (bubbleEl) {
+      bubbleEl.classList.add('tutorial-bubble--dismissable');
+    }
+    // Capture so plot/shrine handlers cannot swallow the dismiss.
+    document.addEventListener('pointerdown', handler, true);
+    document.addEventListener('click', handler, true);
+  }, 280);
 }
 
 export function teardownTutorialBubble() {
@@ -82,6 +87,11 @@ function onResize() {
   if (resizeCtx?.state) {
     renderTutorialBubble(resizeCtx.state, resizeCtx);
   }
+}
+
+function isOpeningVisible() {
+  const root = document.getElementById('opening-screen');
+  return Boolean(root && !root.hidden);
 }
 
 function midPointAnchor(a, b) {
@@ -119,7 +129,8 @@ export function renderTutorialBubble(state, ctx) {
     resizeWired = true;
   }
   const el = ensureBubble();
-  if (!isTutorialActive(state)) {
+  // Grove warms under the title screen; keep FTUE bubbles off until Play.
+  if (!isTutorialActive(state) || isOpeningVisible()) {
     clearExploreDismiss();
     el.classList.remove('is-on', 'is-below');
     el.textContent = '';
