@@ -278,6 +278,64 @@
     @media (max-width: 700px) {
       .title-row { grid-template-columns: 1fr; }
     }
+
+    /* —— Wave 0: Soft Storybook B —— */
+    .wave0-banner {
+      background: var(--panel);
+      border: 1.5px solid var(--honey);
+      border-radius: 14px;
+      padding: 0.85rem 1.1rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .wave0-banner strong {
+      color: var(--moss);
+      font-weight: 800;
+    }
+
+    .wave0-banner code {
+      font-size: 0.8em;
+      color: var(--ink);
+    }
+
+    .stage--layered {
+      position: relative;
+      min-height: 16rem;
+      overflow: hidden;
+    }
+
+    .layered {
+      position: relative;
+      z-index: 1;
+      width: min(100%, 14rem);
+      aspect-ratio: 1 / 1;
+      margin-inline: auto;
+    }
+
+    .stage--grove .layered {
+      width: min(70%, 12rem);
+    }
+
+    .layered img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      pointer-events: none;
+    }
+
+    .layered__pedestal {
+      z-index: 1;
+      filter: drop-shadow(0 4px 12px rgba(36, 56, 44, 0.22));
+    }
+
+    .layered__figure {
+      z-index: 2;
+      filter: drop-shadow(0 2px 8px rgba(36, 56, 44, 0.18));
+    }
   </style>
 </head>
 <body>
@@ -290,11 +348,88 @@
       </p>
     </header>
 
-    <p class="rules">
-      <strong>Style lock:</strong>
-      2–3 value shading · clear silhouette · soft cream edge · calm old-god
-      presence (not goofy-cute) · Fresh Moss + honey amber · true transparency.
+    <p class="wave0-banner">
+      <strong>Wave 0 — Soft Storybook B.</strong>
+      Hero lock:
+      <code>mocks/storybook-cutouts/fox-shrine-b.png</code>
+      (not C). Layered fox pair kept (figure + pedestal, static) for a possible
+      later idle breathe — motion off for now. Live
+      <code>assets/icons|scene|opening</code> not replaced yet — archive at
+      <code>assets/mood/archive_live_pre_storybook_b/</code>. Bible:
+      <code>docs/ART_STYLE_STORYBOOK_B.md</code>.
     </p>
+
+    <p class="rules">
+      <strong>Style lock (B):</strong>
+      soft storybook cutouts · 2–3 value shading · cream rim · calm old-god
+      presence · Fresh Moss + honey amber · no faceted/low-poly (reject C) ·
+      true transparency.
+    </p>
+
+    <p class="section-title">Wave 0 — Hero B + layered fox</p>
+    <div class="row row--3">
+      <article class="card">
+        <div>
+          <div class="card__tag">Hero lock · B only</div>
+          <h2 class="card__name">Fox shrine B</h2>
+        </div>
+        <div class="stage stage--grove">
+          <img class="scene" src="assets/scene/grove_clearing.png" alt="" />
+          <img class="cutout" src="mocks/storybook-cutouts/fox-shrine-b.png" alt="Hero Soft Storybook B fox shrine" />
+        </div>
+        <div class="sizes" aria-label="Hero B at game sizes">
+          <div class="sizes__item">
+            <span class="sizes__label">128</span>
+            <img class="sz-128" src="mocks/storybook-cutouts/fox-shrine-b.png" alt="" />
+          </div>
+          <div class="sizes__item">
+            <span class="sizes__label">64</span>
+            <img class="sz-64" src="mocks/storybook-cutouts/fox-shrine-b.png" alt="" />
+          </div>
+          <div class="sizes__item">
+            <span class="sizes__label">40</span>
+            <img class="sz-40" src="mocks/storybook-cutouts/fox-shrine-b.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">Layered pair · static</div>
+          <h2 class="card__name">Figure + pedestal</h2>
+        </div>
+        <div class="stage stage--layered">
+          <div class="layered" aria-label="Layered fox static composite">
+            <img class="layered__pedestal" src="mocks/storybook-cutouts/layered/fox-pedestal.png" alt="" />
+            <img class="layered__figure" src="mocks/storybook-cutouts/layered/fox-figure.png" alt="Layered fox figure on pedestal" />
+          </div>
+        </div>
+        <p style="font-size:0.78rem;color:var(--muted);line-height:1.4;">
+          Shared-canvas pair under
+          <code>mocks/storybook-cutouts/layered/</code>.
+          Static preview also:
+          <code>fox-composite-preview.png</code>.
+        </p>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">Layered on grove</div>
+          <h2 class="card__name">Static stack</h2>
+        </div>
+        <div class="stage stage--layered stage--grove">
+          <img class="scene" src="assets/scene/grove_clearing.png" alt="" />
+          <div class="layered" aria-label="Layered fox on grove static">
+            <img class="layered__pedestal" src="mocks/storybook-cutouts/layered/fox-pedestal.png" alt="" />
+            <img class="layered__figure" src="mocks/storybook-cutouts/layered/fox-figure.png" alt="Layered fox figure on pedestal" />
+          </div>
+        </div>
+        <p style="font-size:0.78rem;color:var(--muted);line-height:1.4;">
+          Same shared-canvas layers on the grove. Idle breathe deferred —
+          figure + pedestal stay separate for later.
+        </p>
+      </article>
+    </div>
 
     <p class="section-title">Fox shrine</p>
     <div class="row row--4">
