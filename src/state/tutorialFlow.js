@@ -218,6 +218,16 @@ export function canTutorialDragReadyCrop(state, plotId, cropId) {
   return false;
 }
 
+/** On-plot mix is only allowed on the FTUE mix step between the two starter plots. */
+export function canTutorialMix(state, fromPlotId, toPlotId) {
+  if (!isTutorialActive(state)) return true;
+  if (state.tutorialStep !== 'mix') return false;
+  return (
+    (fromPlotId === TUTORIAL_LEFT_PLOT && toPlotId === TUTORIAL_RIGHT_PLOT) ||
+    (fromPlotId === TUTORIAL_RIGHT_PLOT && toPlotId === TUTORIAL_LEFT_PLOT)
+  );
+}
+
 export function canTutorialTemple(_state) {
   return !isTutorialActive(_state);
 }
