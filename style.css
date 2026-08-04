@@ -2341,6 +2341,10 @@ body {
   min-height: 0;
 }
 
+.discovery-log__view[hidden] {
+  display: none;
+}
+
 .discovery-log__footer {
   flex: 0 0 auto;
   display: flex;
