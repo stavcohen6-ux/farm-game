@@ -64,15 +64,7 @@ function playHtmlFallback(src) {
   }
 }
 
-function playFromBuffer(src, buffer) {
-  const ctx = getAudioContext();
-  if (!ctx) {
-    playHtmlFallback(src);
-    return;
-  }
-  if (ctx.state === 'suspended') {
-    ctx.resume().catch(() => {});
-  }
+function startBufferSource(ctx, buffer) {
   const source = ctx.createBufferSource();
   const gain = ctx.createGain();
   gain.gain.value = VOLUME;
@@ -80,6 +72,32 @@ function playFromBuffer(src, buffer) {
   source.connect(gain);
   gain.connect(ctx.destination);
   source.start(0);
+}
+
+function playFromBuffer(src, buffer) {
+  const ctx = getAudioContext();
+  if (!ctx) {
+    playHtmlFallback(src);
+    return;
+  }
+  // Never start while suspended — Chrome queues the node silently and may
+  // audibly play it only later when the context resumes (e.g. window restore).
+  if (ctx.state === 'suspended') {
+    ctx
+      .resume()
+      .then(() => {
+        if (ctx.state !== 'running') {
+          playHtmlFallback(src);
+          return;
+        }
+        startBufferSource(ctx, buffer);
+      })
+      .catch(() => {
+        playHtmlFallback(src);
+      });
+    return;
+  }
+  startBufferSource(ctx, buffer);
 }
 
 function playSfx(src) {

@@ -473,25 +473,15 @@ function handleDragonTemplePlaceNext(cropId, plotId = null) {
 }
 
 function handleDragonTempleBurnComplete() {
-  // #region agent log
-  fetch('http://127.0.0.1:7803/ingest/4bdcb06a-528d-4b51-af29-8b31250eeefe',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b1c945'},body:JSON.stringify({sessionId:'b1c945',runId:'pre-fix',hypothesisId:'B',location:'main.js:handleDragonTempleBurnComplete',message:'burn complete handler entry',data:{burning:state.dragonTemple?.burning,pendingClose:state.dragonTemple?.pendingClose,active:state.dragonTemple?.active,visibility:document.visibilityState},timestamp:Date.now()})}).catch(()=>{});
-  // #endregion
   if (!completeDragonTempleBurn(state)) return;
   save(state);
   render();
 
   const outcome = state.dragonTemple?.pendingClose;
-  // #region agent log
-  fetch('http://127.0.0.1:7803/ingest/4bdcb06a-528d-4b51-af29-8b31250eeefe',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b1c945'},body:JSON.stringify({sessionId:'b1c945',runId:'pre-fix',hypothesisId:'B',location:'main.js:handleDragonTempleBurnComplete',message:'after completeDragonTempleBurn',data:{outcome,pendingClose:state.dragonTemple?.pendingClose,resultRevealMs:DRAGON_TEMPLE.resultRevealMs,visibility:document.visibilityState},timestamp:Date.now()})}).catch(()=>{});
-  // #endregion
   if (!outcome) return;
 
   window.setTimeout(() => {
-    const stillPending = state.dragonTemple?.pendingClose === outcome;
-    // #region agent log
-    fetch('http://127.0.0.1:7803/ingest/4bdcb06a-528d-4b51-af29-8b31250eeefe',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b1c945'},body:JSON.stringify({sessionId:'b1c945',runId:'pre-fix',hypothesisId:'B',location:'main.js:resultRevealTimeout',message:'result reveal timeout fired',data:{outcome,stillPending,pendingClose:state.dragonTemple?.pendingClose,visibility:document.visibilityState},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
-    if (!stillPending) return;
+    if (state.dragonTemple?.pendingClose !== outcome) return;
     if (!finalizeDragonTempleClose(state)) return;
     playDragonEventEndSfx();
     if (outcome === 'success') {
