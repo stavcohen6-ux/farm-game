@@ -397,7 +397,8 @@ Opened by clicking the game-text plank in the info band (`#game-text` /
 `src/ui/discoveryLog.js`). Permanent second line on the plank is titled
 **Field Notes** (`aria-label` matches). Opens a centered modal (click outside
 to close). Footer at the bottom of this modal (vertical stack): **How to Play**
-above **Reset Game**. Reset opens the existing reset confirm.
+above **Reset Game**. Reset opens the Yes/No confirm, then a swipe-to-reset
+  slider.
 
 - **How to Play** swaps the modal to a short illustrated help view
   (`src/ui/howToPlay.js`) inside the same overlay. **Back** returns to the
@@ -840,7 +841,8 @@ resumes when the page becomes visible again.
 Main farm in a scenic grove stage + info band (Field Notes game-text plank) +
 Dragon Temple. Overlays: radial crop picker (anchored to the clicked plot),
 uproot confirm (anchored to the held plot), shrine detail, Field Notes modal,
-reset confirm. No separate menus. Field Notes footer: How to Play above Reset.
+reset confirm (Yes/No then swipe-to-reset). No separate menus. Field Notes
+footer: How to Play above Reset.
 
 ### Layout (current)
 - Target: desktop and portrait phone (see **Platform** — every feature must
@@ -862,8 +864,8 @@ reset confirm. No separate menus. Field Notes footer: How to Play above Reset.
   crops to mix. Long-press (mouse + touch) opens Uproot confirm on occupied
   plots.
 - **How to Play** and **Reset** live at the bottom of the Field Notes modal
-  (How to Play above Reset; confirm overlay for Reset unchanged). Confirming
-  reset returns the player to the opening screen.
+  (How to Play above Reset). Reset uses Yes/No then a swipe-to-reset slider;
+  only a completed swipe returns the player to the opening screen.
 
 ## Game text panel
 HUD message area for explaining what is going on.
@@ -1086,10 +1088,13 @@ Missing or invalid `shrineEpilogueShown` → `false`; invalid
 a due wait past its time can fire (or cancel) immediately.
 Plot count must match `TOTAL_PLOTS` (12) or the save is replaced.
 
-No server. Player can wipe progress via Reset (confirm required). On Yes,
-state is replaced with a fresh `createInitialState()` (including an empty
-Field Notes log) and saved. Confirm overlay does not pause timers or
-animations; No or click outside dismisses and play continues.
+No server. Player can wipe progress via Reset (two-step confirm required).
+Yes on the first overlay opens a second swipe-to-reset slider (label
+**Reset**, same right→left gesture as Uproot). Only a completed swipe
+replaces state with a fresh `createInitialState()` (including an empty
+Field Notes log) and saves. Confirm overlays do not pause timers or
+animations; No, incomplete swipe, or click/tap outside either overlay
+dismisses and play continues.
 
 ## Design principles
 - Cozy over complicated; farm stays primary; smallest complete version first.
