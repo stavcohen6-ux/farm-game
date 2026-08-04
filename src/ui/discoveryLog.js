@@ -1,10 +1,7 @@
 import { CROPS, getCrop } from '../data/crops.js';
 import { getAlchemyRecipeByResultId } from '../data/alchemyRecipes.js';
 import { SHRINES, shrineAcceptsCrop } from '../data/shrines.js';
-import {
-  playDiscoveryOpenSfx,
-  playDiscoveryCloseSfx,
-} from '../audio/sfx.js';
+import { playDiscoveryOpenSfx } from '../audio/sfx.js';
 import { bindCropTip, hideCropTip } from './cropTip.js';
 import { FIELD_NOTES_TITLE } from './gameTextPanel.js';
 import { renderHowToPlay } from './howToPlay.js';
@@ -144,7 +141,6 @@ export function openDiscoveryLog(state, onReset = null) {
   function close() {
     hideCropTip();
     overlay.remove();
-    playDiscoveryCloseSfx();
   }
 }
 
