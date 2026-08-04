@@ -211,6 +211,9 @@ export function createInitialState() {
     shrineEpilogueShown: false,
     // Epoch ms when the epilogue may fire; null when not armed
     shrineEpilogueDueAt: null,
+    // Tiger fortune: second offering waits until bonus fly arrives
+    // null | { shrineId, cropId }
+    pendingTigerBonus: null,
   };
 }
 
@@ -236,6 +239,7 @@ export function resetState(state) {
   state.tutorialFoxWheatOffered = fresh.tutorialFoxWheatOffered;
   state.shrineEpilogueShown = fresh.shrineEpilogueShown;
   state.shrineEpilogueDueAt = fresh.shrineEpilogueDueAt;
+  state.pendingTigerBonus = fresh.pendingTigerBonus;
 }
 
 /** Set the top text panel message. Empty/whitespace clears to null. */
@@ -1385,6 +1389,12 @@ export function burnShrine(state, shrineId) {
   progress.progress = 0;
   // Dragon burn clears any remaining win-prize bonus offerings on this shrine.
   progress.dragonBonusOfferings = 0;
+  if (
+    state.pendingTigerBonus &&
+    state.pendingTigerBonus.shrineId === shrineId
+  ) {
+    state.pendingTigerBonus = null;
+  }
 
   if (tierBefore > 0 && shrineId === 'fox') {
     const lostTier = shrine?.tiers[tierBefore - 1];
@@ -1575,23 +1585,36 @@ export function offerCrop(state, shrineId, cropId, sourcePlotId = null) {
 
   const tigerBlessing = getActiveBlessing(state, 'tiger');
   const chance = tigerBlessing?.bonusHarvestChance ?? 0;
-  const bonus =
+  const bonusRoll =
     sourcePlotId != null && chance > 0 && Math.random() < chance;
 
   const unlockedPlotIds = [];
   let tiersGained = 0;
+  let flushedTigerBonus = null;
+
+  // Flush a previous deferred bonus before starting a new offer.
+  if (state.pendingTigerBonus) {
+    const pendingShrineId = state.pendingTigerBonus.shrineId;
+    const flushed = applyPendingTigerBonus(state);
+    if (flushed) {
+      flushedTigerBonus = {
+        shrineId: pendingShrineId,
+        unlockedPlotIds: flushed.unlockedPlotIds,
+        tiersGained: flushed.tiersGained ?? 0,
+      };
+    }
+  }
+
   const first = applyOfferingProgress(state, shrineId, cropId, baseAmount);
   if (first) {
     unlockedPlotIds.push(...first.unlockedPlotIds);
     tiersGained += first.tiersGained ?? 0;
   }
 
-  if (bonus && !isShrineMaxed(state, shrineId)) {
-    const second = applyOfferingProgress(state, shrineId, cropId, baseAmount);
-    if (second) {
-      unlockedPlotIds.push(...second.unlockedPlotIds);
-      tiersGained += second.tiersGained ?? 0;
-    }
+  let bonus = false;
+  if (bonusRoll && !isShrineMaxed(state, shrineId)) {
+    state.pendingTigerBonus = { shrineId, cropId };
+    bonus = true;
   }
 
   let burnedShrineId;
@@ -1613,10 +1636,35 @@ export function offerCrop(state, shrineId, cropId, sourcePlotId = null) {
     cropId,
     plotId: sourcePlotId,
   };
+  if (flushedTigerBonus) {
+    result.flushedTigerBonus = flushedTigerBonus;
+  }
   if (burnedShrineId !== undefined) {
     result.burnedShrineId = burnedShrineId;
   }
   return result;
+}
+
+/**
+ * Apply a deferred Tiger fortune bonus offering (same crop / shrineValues path
+ * as a normal offer, including Dragon win-buff multiplier if uses remain).
+ */
+export function applyPendingTigerBonus(state) {
+  const pending = state.pendingTigerBonus;
+  if (!pending || typeof pending !== 'object') {
+    state.pendingTigerBonus = null;
+    return null;
+  }
+
+  const { shrineId, cropId } = pending;
+  state.pendingTigerBonus = null;
+
+  if (!shrineId || !cropId || isShrineMaxed(state, shrineId)) return null;
+  const crop = getCrop(cropId);
+  const baseAmount = crop?.shrineValues?.[shrineId];
+  if (typeof baseAmount !== 'number' || baseAmount <= 0) return null;
+
+  return applyOfferingProgress(state, shrineId, cropId, baseAmount);
 }
 
 /** Apply one offering's progress (and one Dragon-bonus use if any). */

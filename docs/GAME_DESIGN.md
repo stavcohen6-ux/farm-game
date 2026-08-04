@@ -589,8 +589,10 @@ shrine; 14 / 30 / 44 / 60 = 148; apex: Solar Gourd)
 4. Spirit Tiger — 100% for a bonus crop — golden_pumpkin, sunfruit, golden_loaf,
    golden_bloom, solar_gourd
 
-Bonus: a second same-type offering applies immediately; a spark-fly VFX
-arcs from the (now empty) plot to the shrine. No bonus on mix or temple.
+Bonus: a second same-type offering applies when the ghost-crop fly arrives
+(spark trail + cream/ink +1 on the shrine); bar progress for that second
+offering waits until land. Dragon win-buff multiplier applies to each
+offering separately if uses remain. No bonus on mix or temple.
 
 ## Dragon Temple
 Matched-tribute challenge above the farm plot grid (not including shrines).

@@ -160,30 +160,41 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 12px;
-      background: #ffe566;
-      font-size: var(--tile-font);
       pointer-events: none;
-      overflow: visible;
-      box-shadow: 0 0 0 2px var(--honey);
+      filter: drop-shadow(0 2px 4px rgba(180, 120, 20, 0.45));
     }
 
-    .bonus-crop-fly__icon {
-      line-height: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .bonus-crop-fly .game-icon--bonus-fly {
+      width: 100%;
+      height: 100%;
     }
 
     .bonus-crop-spark {
-      position: absolute;
-      z-index: 1;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1rem;
-      line-height: 1;
       pointer-events: none;
+      filter: drop-shadow(0 1px 2px rgba(180, 120, 20, 0.35));
+    }
+
+    .bonus-crop-plus {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1001;
+      pointer-events: none;
+      font-family: 'Nunito', system-ui, sans-serif;
+      font-weight: 800;
+      font-size: 1.65rem;
+      line-height: 1;
+      color: #fffef6;
+      -webkit-text-stroke: 3px #2a3d30;
+      paint-order: stroke fill;
+      text-shadow: 0 2px 6px rgba(20, 30, 18, 0.55);
     }
 
     .controls {
@@ -290,10 +301,9 @@
     <header>
       <h1>Tiger bonus crop fly</h1>
       <p>
-        Mock of the spark-fly VFX when Tiger grants a bonus offering
-        (plot → shrine). Uses the live <code>playHarvestCropFly</code> from
-        <code>src/ui/bonusCropFly.js</code>. Play it, then jot notes below
-        or reply in chat.
+        Ghost crop icon + spark trail + amber <strong>+1</strong> on land.
+        Live <code>playHarvestCropFly</code> from
+        <code>src/ui/bonusCropFly.js</code>. Hit Play and send notes.
       </p>
     </header>
 
@@ -315,7 +325,7 @@
       <button type="button" id="btn-loop">Loop</button>
       <label class="opt">
         <input type="checkbox" id="opt-sparks" checked />
-        Corner sparks
+        Spark trail
       </label>
       <label class="opt">
         Crop
@@ -335,12 +345,11 @@
     <section class="panel">
       <h2>Live constants (<code>bonusCropFly.js</code>)</h2>
       <dl class="constants">
-        <div><dt>FLY_MS</dt><dd>2500</dd></div>
-        <div><dt>ARC_LIFT_PX</dt><dd>48</dd></div>
-        <div><dt>BONUS_SPARK_MS</dt><dd>5000</dd></div>
-        <div><dt>BONUS_SPARK_DISTANCE_PX</dt><dd>50</dd></div>
-        <div><dt>BONUS_SPARK_SIZE_PX</dt><dd>20</dd></div>
-        <div><dt>Arc keyframe offset</dt><dd>0.45</dd></div>
+        <div><dt>FLY_MS</dt><dd>3000</dd></div>
+        <div><dt>ARC_LIFT_PX</dt><dd>56</dd></div>
+        <div><dt>FLYER_SIZE_PX</dt><dd>36</dd></div>
+        <div><dt>TRAIL_COUNT</dt><dd>4</dd></div>
+        <div><dt>PLUS_MS</dt><dd>900</dd></div>
         <div><dt>Easing</dt><dd>ease-out</dd></div>
       </dl>
     </section>
@@ -360,8 +369,8 @@
   </div>
 
   <script type="module">
-    import { playHarvestCropFly } from '../src/ui/bonusCropFly.js?v=2500-no-white';
-    import { setIcon, cropIconSrc, shrineIconSrc } from '../src/ui/icon.js?v=2500-no-white';
+    import { playHarvestCropFly } from '../src/ui/bonusCropFly.js?v=fly3k';
+    import { setIcon, cropIconSrc, shrineIconSrc } from '../src/ui/icon.js?v=fly3k';
 
     const CROP_EMOJI = {
       wheat: '🌾',

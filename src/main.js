@@ -9,6 +9,7 @@ import {
   reconcilePlotNapper,
   clearPlotNapper,
   offerCrop,
+  applyPendingTigerBonus,
   mixAdjacentReadyPlots,
   placeDragonTempleSlot,
   placeDragonTempleNextSlot,
@@ -366,9 +367,22 @@ function handleOffer(shrineId, cropId, plotId = null) {
   for (const unlockedId of result.unlockedPlotIds) {
     unlockingPlotIds.add(unlockedId);
   }
+  if (result.flushedTigerBonus) {
+    for (const unlockedId of result.flushedTigerBonus.unlockedPlotIds) {
+      unlockingPlotIds.add(unlockedId);
+    }
+  }
 
   save(state);
   render();
+
+  if (result.flushedTigerBonus?.tiersGained > 0) {
+    playShrineUpgradeSfx();
+    const flushedEl = boardEl.querySelector(
+      `#shrine-${result.flushedTigerBonus.shrineId}`,
+    );
+    playShrineTierUp({ shrineEl: flushedEl });
+  }
 
   if (result.tutorialCompleted || (result.tiersGained ?? 0) > 0) {
     if ((result.tiersGained ?? 0) > 0) {
@@ -397,6 +411,35 @@ function handleOffer(shrineId, cropId, plotId = null) {
       cropId: result.cropId,
       icon: crop?.icon ?? '',
       withSparks: true,
+      onComplete: () => {
+        const pending = state.pendingTigerBonus;
+        // Stale fly after a newer offer flushed/replaced this pending.
+        if (
+          !pending ||
+          pending.shrineId !== shrineId ||
+          pending.cropId !== result.cropId
+        ) {
+          save(state);
+          render();
+          return;
+        }
+        const bonusResult = applyPendingTigerBonus(state);
+        if (!bonusResult) {
+          save(state);
+          render();
+          return;
+        }
+        for (const unlockedId of bonusResult.unlockedPlotIds) {
+          unlockingPlotIds.add(unlockedId);
+        }
+        save(state);
+        render();
+        if ((bonusResult.tiersGained ?? 0) > 0) {
+          playShrineUpgradeSfx();
+          const shrineEl = boardEl.querySelector(`#shrine-${shrineId}`);
+          playShrineTierUp({ shrineEl });
+        }
+      },
     });
   }
 }
@@ -430,15 +473,25 @@ function handleDragonTemplePlaceNext(cropId, plotId = null) {
 }
 
 function handleDragonTempleBurnComplete() {
+  // #region agent log
+  fetch('http://127.0.0.1:7803/ingest/4bdcb06a-528d-4b51-af29-8b31250eeefe',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b1c945'},body:JSON.stringify({sessionId:'b1c945',runId:'pre-fix',hypothesisId:'B',location:'main.js:handleDragonTempleBurnComplete',message:'burn complete handler entry',data:{burning:state.dragonTemple?.burning,pendingClose:state.dragonTemple?.pendingClose,active:state.dragonTemple?.active,visibility:document.visibilityState},timestamp:Date.now()})}).catch(()=>{});
+  // #endregion
   if (!completeDragonTempleBurn(state)) return;
   save(state);
   render();
 
   const outcome = state.dragonTemple?.pendingClose;
+  // #region agent log
+  fetch('http://127.0.0.1:7803/ingest/4bdcb06a-528d-4b51-af29-8b31250eeefe',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b1c945'},body:JSON.stringify({sessionId:'b1c945',runId:'pre-fix',hypothesisId:'B',location:'main.js:handleDragonTempleBurnComplete',message:'after completeDragonTempleBurn',data:{outcome,pendingClose:state.dragonTemple?.pendingClose,resultRevealMs:DRAGON_TEMPLE.resultRevealMs,visibility:document.visibilityState},timestamp:Date.now()})}).catch(()=>{});
+  // #endregion
   if (!outcome) return;
 
   window.setTimeout(() => {
-    if (state.dragonTemple?.pendingClose !== outcome) return;
+    const stillPending = state.dragonTemple?.pendingClose === outcome;
+    // #region agent log
+    fetch('http://127.0.0.1:7803/ingest/4bdcb06a-528d-4b51-af29-8b31250eeefe',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b1c945'},body:JSON.stringify({sessionId:'b1c945',runId:'pre-fix',hypothesisId:'B',location:'main.js:resultRevealTimeout',message:'result reveal timeout fired',data:{outcome,stillPending,pendingClose:state.dragonTemple?.pendingClose,visibility:document.visibilityState},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
+    if (!stillPending) return;
     if (!finalizeDragonTempleClose(state)) return;
     playDragonEventEndSfx();
     if (outcome === 'success') {
@@ -606,11 +659,38 @@ function handleResetGame() {
   });
 }
 
+// :active ends on pointerup (before click), so a class + short delay makes
+// the plank press readable before Field Notes covers it.
+const GAME_TEXT_PRESS_MS = 140;
+
 function handleDiscoveryLog() {
-  openDiscoveryLog(state, handleResetGame);
+  if (!gameTextEl) {
+    openDiscoveryLog(state, handleResetGame);
+    return;
+  }
+  if (gameTextEl.dataset.opening === '1') return;
+  gameTextEl.dataset.opening = '1';
+  gameTextEl.classList.add('game-text--pressed');
+  window.setTimeout(() => {
+    gameTextEl.classList.remove('game-text--pressed');
+    delete gameTextEl.dataset.opening;
+    openDiscoveryLog(state, handleResetGame);
+  }, GAME_TEXT_PRESS_MS);
 }
 
 if (gameTextEl) {
+  gameTextEl.addEventListener('pointerdown', (event) => {
+    if (event.button !== 0) return;
+    gameTextEl.classList.add('game-text--pressed');
+  });
+  gameTextEl.addEventListener('pointercancel', () => {
+    if (gameTextEl.dataset.opening === '1') return;
+    gameTextEl.classList.remove('game-text--pressed');
+  });
+  gameTextEl.addEventListener('pointerleave', () => {
+    if (gameTextEl.dataset.opening === '1') return;
+    gameTextEl.classList.remove('game-text--pressed');
+  });
   gameTextEl.onclick = handleDiscoveryLog;
 }
 

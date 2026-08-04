@@ -14,6 +14,7 @@ import {
   maybeShowShrineEpilogue,
   collectHeldCropIds,
   reconcilePlotNapper,
+  applyPendingTigerBonus,
   isReady,
   STARTING_RESEARCH_LEVEL,
   TOTAL_PLOTS,
@@ -21,6 +22,7 @@ import {
 } from './gameState.js';
 import { getCrop, getExpiresAt } from '../data/crops.js';
 import { isAlchemyResultId } from '../data/alchemyRecipes.js';
+import { getShrine } from '../data/shrines.js';
 import { DRAGON_TEMPLE } from '../data/dragonTemple.js';
 import { TUTORIAL_FLAG_KEYS, TUTORIAL_STEP_DONE, isTutorialStep } from '../data/tutorial.js';
 import { repairTutorialState } from './tutorialFlow.js';
@@ -518,6 +520,9 @@ export function load() {
     if (normalizeTutorialStep(parsed)) {
       dirty = true;
     }
+    if (normalizePendingTigerBonus(parsed)) {
+      dirty = true;
+    }
 
     // Catch up perishable crops after offline time.
     const spoiled = tickCropDecay(parsed, Date.now());
@@ -545,6 +550,11 @@ export function load() {
     }
     if (parsed.dragonTemple?.pendingReward) {
       claimTempleWinReward(parsed);
+      dirty = true;
+    }
+    // Mid-fly Tiger bonus: apply immediately on load (no orphaned VFX).
+    if (parsed.pendingTigerBonus) {
+      applyPendingTigerBonus(parsed);
       dirty = true;
     }
     if (tickDragonTemple(parsed, Date.now())) {
@@ -642,6 +652,30 @@ function normalizeTutorialStep(parsed) {
     }
   }
   return dirty;
+}
+
+/** null | { shrineId, cropId } — invalid shapes cleared. */
+function normalizePendingTigerBonus(parsed) {
+  const pending = parsed.pendingTigerBonus;
+  if (pending == null) {
+    if (pending !== null) {
+      parsed.pendingTigerBonus = null;
+      return true;
+    }
+    return false;
+  }
+  if (
+    typeof pending !== 'object' ||
+    Array.isArray(pending) ||
+    typeof pending.shrineId !== 'string' ||
+    typeof pending.cropId !== 'string' ||
+    !getShrine(pending.shrineId) ||
+    !getCrop(pending.cropId)
+  ) {
+    parsed.pendingTigerBonus = null;
+    return true;
+  }
+  return false;
 }
 
 function normalizeDiscoveredCrops(parsed) {
