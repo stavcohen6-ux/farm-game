@@ -405,7 +405,7 @@ above **Reset Game**. Reset opens the Yes/No confirm, then a swipe-to-reset
   Field Notes list (no reopen SFX). Click outside the modal closes the overlay
   entirely and returns to the farm whether help or the log was showing.
   Steps (icon + title + one short body): Plant, Water, Offer, Mix, Field Notes,
-  Dragon Temple; plus an Uproot footer note (hold then swipe).
+  Dragon Temple, Uproot (hold then swipe; harvest icon).
 - Modal header: book cutout (`discovery_log.png`) above the title
   **Field Notes** (closed leather-bound journal/tome with a leather strap,
   soft moss accents; simplified shapes for small size; same art language as

@@ -37,9 +37,13 @@ const HOW_TO_PLAY_STEPS = [
     title: 'Dragon Temple',
     body: 'When it wakes, fill its slots before wrath bar fills.',
   },
+  {
+    src: UI_ICONS.harvest,
+    emoji: '✋',
+    title: 'Uproot',
+    body: 'Hold a crop, then swipe to clear the plot.',
+  },
 ];
-
-const UPROOT_NOTE = 'Hold a crop, then swipe to clear the plot.';
 
 /**
  * Fill `container` with the How to Play view (Back + illustrated steps).
@@ -105,12 +109,4 @@ export function renderHowToPlay(container, { onBack }) {
   }
 
   container.appendChild(list);
-
-  const uproot = document.createElement('p');
-  uproot.className = 'how-to-play__uproot';
-  const uprootLabel = document.createElement('strong');
-  uprootLabel.textContent = 'Uproot';
-  uproot.appendChild(uprootLabel);
-  uproot.appendChild(document.createTextNode(` — ${UPROOT_NOTE}`));
-  container.appendChild(uproot);
 }

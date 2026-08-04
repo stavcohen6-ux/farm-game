@@ -2445,20 +2445,6 @@ body {
   line-height: 1.35;
 }
 
-.how-to-play__uproot {
-  margin: 1rem 0 0;
-  padding-top: 0.75rem;
-  border-top: 1px solid rgba(158, 201, 170, 0.55);
-  font-size: 0.9rem;
-  line-height: 1.35;
-  color: var(--muted);
-}
-
-.how-to-play__uproot strong {
-  color: var(--ink);
-  font-weight: 700;
-}
-
 .discovery-log__header {
   display: flex;
   flex-direction: column;
