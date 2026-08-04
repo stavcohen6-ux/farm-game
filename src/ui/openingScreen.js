@@ -1,5 +1,6 @@
 // Opening / title screen: forest journey art, preload, soft Play gate.
 import { startBackgroundMusic } from '../audio/backgroundMusic.js';
+import { preloadSfx, unlockSfx } from '../audio/sfx.js';
 import {
   listCropIconSrcs,
   shrineIconSrc,
@@ -121,6 +122,7 @@ export function installOpeningScreen({ onEnter, onWarm }) {
     const gen = ++preloadGen;
     setPlayReady(false);
     const startedAt = Date.now();
+    preloadSfx();
 
     const preload = Promise.race([
       preloadAll(GAME_CRITICAL_ASSETS),
@@ -160,12 +162,14 @@ export function installOpeningScreen({ onEnter, onWarm }) {
     const retry = () => {
       root.removeEventListener('pointerdown', retry);
       musicGestureArmed = false;
+      unlockSfx();
       startBackgroundMusic();
     };
     root.addEventListener('pointerdown', retry);
   }
 
   function tryStartMusic() {
+    unlockSfx();
     startBackgroundMusic().then((ok) => {
       if (!ok) armMusicGestureFallback();
     });
@@ -182,7 +186,10 @@ export function installOpeningScreen({ onEnter, onWarm }) {
     tryStartMusic();
   }
 
-  playBtn.addEventListener('click', dismiss);
+  playBtn.addEventListener('click', () => {
+    unlockSfx();
+    dismiss();
+  });
 
   // Cold boot: screen is already in the DOM; start preload.
   show();
