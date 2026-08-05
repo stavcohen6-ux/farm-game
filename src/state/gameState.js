@@ -41,12 +41,7 @@ import {
   getPlotLayout,
   getUnlockOrderedPlotIds,
 } from '../data/farmLayout.js';
-import {
-  TUTORIAL_FLAG_KEYS,
-  TUTORIAL_LINES,
-  TUTORIAL_STEP_START,
-  isCriticalGameText,
-} from '../data/tutorial.js';
+import { TUTORIAL_STEP_START } from '../data/tutorial.js';
 import {
   isTutorialActive,
   isTutorialGated,
@@ -164,17 +159,6 @@ export function createInitialDragonTemple() {
   };
 }
 
-/** Sticky start-tutorial flags (true only after that tip was written). */
-export function createInitialTutorialSeen() {
-  return {
-    welcome: false,
-    firstReady: false,
-    firstOffer: false,
-    mixInvite: false,
-    firstMix: false,
-  };
-}
-
 // The single game state object. All mutations must go through the functions
 // below — nothing else should modify plots/inventory/shrines directly.
 export function createInitialState() {
@@ -185,10 +169,6 @@ export function createInitialState() {
     flowered: false,
     vined: false,
   }));
-  const tutorialSeen = createInitialTutorialSeen();
-  for (const key of TUTORIAL_FLAG_KEYS) {
-    tutorialSeen[key] = true;
-  }
   return {
     saveVersion: 2,
     plots,
@@ -210,8 +190,6 @@ export function createInitialState() {
     plotNapper: null,
     // Player-facing message for the info-band text panel; null = empty
     gameText: null,
-    // Legacy soft tips (all true — FTUE uses tutorialStep instead)
-    tutorialSeen,
     // Hard step-lock FTUE (Fox demo); 'done' after Root Loaf offer
     tutorialStep: TUTORIAL_STEP_START,
     tutorialFoxWheatOffered: false,
@@ -242,7 +220,7 @@ export function resetState(state) {
   state.deskGiftLand = fresh.deskGiftLand;
   state.plotNapper = fresh.plotNapper;
   state.gameText = fresh.gameText;
-  state.tutorialSeen = fresh.tutorialSeen;
+  delete state.tutorialSeen;
   state.tutorialStep = fresh.tutorialStep;
   state.tutorialFoxWheatOffered = fresh.tutorialFoxWheatOffered;
   state.shrineEpilogueShown = fresh.shrineEpilogueShown;
@@ -263,40 +241,6 @@ export function setGameText(state, text) {
 /** Clear the top text panel message. */
 export function clearGameText(state) {
   state.gameText = null;
-}
-
-function ensureTutorialSeen(state) {
-  if (
-    !state.tutorialSeen ||
-    typeof state.tutorialSeen !== 'object' ||
-    Array.isArray(state.tutorialSeen)
-  ) {
-    state.tutorialSeen = createInitialTutorialSeen();
-  }
-}
-
-/**
- * Show a start-tutorial tip once. Does not overwrite critical game text
- * (Dragon wake / win / lose, shrine upgraded, epilogue). Shrine reject and
- * other routine lines may be overwritten. Flag is set only when the tip
- * line is written. Returns true if the tip was shown.
- */
-export function maybeShowTutorialTip(state, flagKey) {
-  if (!TUTORIAL_FLAG_KEYS.includes(flagKey)) return false;
-  ensureTutorialSeen(state);
-  if (state.tutorialSeen[flagKey]) return false;
-
-  const line = TUTORIAL_LINES[flagKey];
-  if (!line) return false;
-
-  // Critical lines always win — leave flag false so the tip can fire later.
-  if (isCriticalGameText(state.gameText)) {
-    return false;
-  }
-
-  setGameText(state, line);
-  state.tutorialSeen[flagKey] = true;
-  return true;
 }
 
 export function isCropUnlocked(state, crop) {
@@ -1034,10 +978,8 @@ export function markCropDiscovered(state, cropId) {
 /** Mark plantables/alchemy products that are ready on plots as discovered. */
 export function markReadyCropsDiscovered(state, now = Date.now()) {
   let changed = false;
-  let anyReady = false;
   for (const plot of state.plots) {
     if (!plot?.crop || !isReady(plot, now)) continue;
-    anyReady = true;
     if (plot.vined) {
       plot.vined = false;
       changed = true;
@@ -1046,45 +988,7 @@ export function markReadyCropsDiscovered(state, now = Date.now()) {
     markCropDiscovered(state, plot.crop.cropId);
     if ((state.discoveredCropIds?.length ?? 0) > before) changed = true;
   }
-  if (anyReady && !isTutorialActive(state) && maybeShowTutorialTip(state, 'firstReady')) {
-    changed = true;
-  }
-  if (!isTutorialActive(state) && maybeShowMixInviteTip(state, now)) {
-    changed = true;
-  }
   return changed;
-}
-
-/**
- * Once offerings are taught, invite mixing when any valid recipe pair is
- * ready somewhere on the board (adjacency not required). Skipped after first mix.
- */
-export function maybeShowMixInviteTip(state, now = Date.now()) {
-  ensureTutorialSeen(state);
-  if (!state.tutorialSeen.firstOffer) return false;
-  if (state.tutorialSeen.firstMix) return false;
-  if (state.tutorialSeen.mixInvite) return false;
-
-  const readyIds = [];
-  for (const plot of state.plots) {
-    if (!plot?.crop || !isReady(plot, now)) continue;
-    readyIds.push(plot.crop.cropId);
-  }
-  if (readyIds.length < 2) return false;
-
-  let hasMixablePair = false;
-  for (let i = 0; i < readyIds.length; i += 1) {
-    for (let j = i + 1; j < readyIds.length; j += 1) {
-      if (findAlchemyResult(readyIds[i], readyIds[j])) {
-        hasMixablePair = true;
-        break;
-      }
-    }
-    if (hasMixablePair) break;
-  }
-  if (!hasMixablePair) return false;
-
-  return maybeShowTutorialTip(state, 'mixInvite');
 }
 
 // Sticky alchemy recipe discovery: once mixed, stays until full Reset.
@@ -1641,7 +1545,6 @@ export function offerCrop(state, shrineId, cropId, sourcePlotId = null) {
     maybeTriggerDragonTempleFromOffering(state, shrineId, cropId);
   }
   maybeScheduleDeskVisitorFromOffering(state);
-  maybeShowTutorialTip(state, 'firstOffer');
   const result = {
     unlockedPlotIds,
     tiersGained,

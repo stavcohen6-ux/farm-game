@@ -19,6 +19,7 @@ import { wireGrowingPlotUprootHold } from './plotUprootHold.js';
 import { setCropIcon, setIcon, UI_ICONS } from './icon.js';
 import { setTanukiIcon } from './tanukiNap.js';
 import { breathTiming } from './breathTiming.js';
+import { playPlotUnlockSparks } from './plotUnlockSparks.js';
 
 const WATER_SPRINKLE_DROPS = 12;
 
@@ -29,8 +30,8 @@ let suppressPlotClickAfterDrag = false;
 // pulse animations are not restarted on every tick.
 //
 // `unlockingPlotIds` holds plots that are unlocked in state but still
-// showing the locked-to-soil fade. When all of those finish,
-// `onUnlockAnimationEnd` is called once.
+// showing the locked-to-soil fade (+ soft spark pop). When all of those
+// finish, `onUnlockAnimationEnd` is called once.
 //
 // `wateringPlotIds` holds plots mid watering sprinkle; they keep the dry
 // patch until the animation finishes (even if state already marks them watered).
@@ -317,6 +318,8 @@ function updateProgress(el, plot, now) {
 }
 
 function wireUnlockAnimation(el, plotId, unlockingPlotIds, onUnlockAnimationEnd) {
+  playPlotUnlockSparks({ plotEl: el });
+
   function onEnd(event) {
     if (event.animationName !== 'plot-unlock-fade') return;
     el.removeEventListener('animationend', onEnd);

@@ -1,6 +1,5 @@
 /** Hard step-lock start FTUE (Fox demo bar + speech bubbles). */
 
-import { SHRINE_EPILOGUE_LINE } from './shrines.js';
 import {
   TUTORIAL_LEFT_PLOT_ID,
   TUTORIAL_RIGHT_PLOT_ID,
@@ -65,30 +64,6 @@ export const TUTORIAL_BUBBLE_LINES = {
   fieldNotesInvite:
     'Tap here to see all of your discovered crops and for tips on how to play',
 };
-
-/** @deprecated Soft plank tips — kept for critical-text helpers / legacy saves. */
-export const TUTORIAL_FLAG_KEYS = [
-  'welcome',
-  'firstReady',
-  'firstOffer',
-  'mixInvite',
-  'firstMix',
-];
-
-/** @deprecated */
-export const TUTORIAL_LINES = {
-  welcome: 'Tap an empty plot to plant.',
-  firstReady: 'Drag a ready crop to a shrine.',
-  firstOffer: "Offerings earn the guardians' favor.",
-  mixInvite: 'Ready crops side by side can mix into something new.',
-  firstMix: 'Mixing ready crops creates something new.',
-};
-
-const CRITICAL_GAME_TEXT_EXACT = new Set([
-  'Dragon awakens! Offer crops or face its wrath.',
-  "The Dragon's wrath fades - you got lucky.",
-  SHRINE_EPILOGUE_LINE,
-]);
 
 export function isTutorialStep(step) {
   return typeof step === 'string' && TUTORIAL_STEPS.includes(step);
@@ -238,23 +213,4 @@ export function isTutorialFoxTarget(state) {
     (state.tutorialStep === 'offerWheat' ||
       state.tutorialStep === 'offerRootLoaf')
   );
-}
-
-/** @deprecated */
-export function isTutorialGameText(text) {
-  if (typeof text !== 'string') return false;
-  return TUTORIAL_FLAG_KEYS.some((key) => TUTORIAL_LINES[key] === text);
-}
-
-export function isCriticalGameText(text) {
-  if (typeof text !== 'string' || text === '') return false;
-  if (CRITICAL_GAME_TEXT_EXACT.has(text)) return true;
-  if (text.startsWith('The Dragon blesses your ') && text.endsWith(' Shrine.')) {
-    return true;
-  }
-  if (text.startsWith('The Dragon burnt your ') && text.endsWith(' Shrine.')) {
-    return true;
-  }
-  if (text.endsWith(' upgraded')) return true;
-  return false;
 }

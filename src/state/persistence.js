@@ -3,7 +3,6 @@ import {
   createInitialShrines,
   createInitialAlchemy,
   createInitialDragonTemple,
-  createInitialTutorialSeen,
   completeDragonTempleBurn,
   finalizeDragonTempleClose,
   claimTempleWinReward,
@@ -24,7 +23,7 @@ import { getCrop, getExpiresAt } from '../data/crops.js';
 import { isAlchemyResultId } from '../data/alchemyRecipes.js';
 import { getShrine } from '../data/shrines.js';
 import { DRAGON_TEMPLE } from '../data/dragonTemple.js';
-import { TUTORIAL_FLAG_KEYS, TUTORIAL_STEP_DONE, isTutorialStep } from '../data/tutorial.js';
+import { TUTORIAL_STEP_DONE, isTutorialStep } from '../data/tutorial.js';
 import { repairTutorialState } from './tutorialFlow.js';
 
 const STORAGE_KEY = 'farm-game-state';
@@ -514,7 +513,7 @@ export function load() {
       parsed.shrineEpilogueDueAt = null;
     }
 
-    if (normalizeTutorialSeen(parsed)) {
+    if (stripLegacyTutorialSeen(parsed)) {
       dirty = true;
     }
     if (normalizeTutorialStep(parsed)) {
@@ -597,39 +596,15 @@ function migrateToPlotHeldCrops(parsed) {
 }
 
 /**
- * Normalize sticky tutorial flags.
- * Missing object on an existing save → all true (skip tips for returning players).
- * Partial / invalid keys are repaired; unknown keys dropped.
+ * Soft plank tips removed (FTUE + How to Play teach). Drop legacy field so
+ * the next save no longer persists it.
  */
-function normalizeTutorialSeen(parsed) {
-  const raw = parsed.tutorialSeen;
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
-    // Existing saves without tutorial state: do not re-teach mid-run.
-    const seen = createInitialTutorialSeen();
-    for (const key of TUTORIAL_FLAG_KEYS) {
-      seen[key] = true;
-    }
-    parsed.tutorialSeen = seen;
-    return true;
+function stripLegacyTutorialSeen(parsed) {
+  if (!Object.prototype.hasOwnProperty.call(parsed, 'tutorialSeen')) {
+    return false;
   }
-
-  let dirty = false;
-  const normalized = createInitialTutorialSeen();
-  for (const key of TUTORIAL_FLAG_KEYS) {
-    if (raw[key] === true) {
-      normalized[key] = true;
-    } else if (raw[key] !== false) {
-      dirty = true;
-    }
-  }
-  for (const key of Object.keys(raw)) {
-    if (!TUTORIAL_FLAG_KEYS.includes(key)) {
-      dirty = true;
-      break;
-    }
-  }
-  parsed.tutorialSeen = normalized;
-  return dirty;
+  delete parsed.tutorialSeen;
+  return true;
 }
 
 /**

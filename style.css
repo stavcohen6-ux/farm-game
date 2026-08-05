@@ -2259,6 +2259,17 @@ body {
   filter: drop-shadow(0 1px 2px rgba(80, 60, 20, 0.25));
 }
 
+.plot-unlock-spark {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 46;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 1px 2px rgba(80, 60, 20, 0.25));
+}
+
 .shrine-tier-spark {
   position: fixed;
   left: 0;

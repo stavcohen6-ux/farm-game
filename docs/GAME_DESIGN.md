@@ -89,7 +89,9 @@ artwork — live, mood, mocks, parked desk, backups, or archives.
   ready plots
   keep honey glow on dirt. Mood ref: `assets/mood/farm_board_lofi_ghibli_mood.png`
 - Locked farm plots: locked tile texture only — no lock emoji/icon overlay.
-  Unlock uses a brief locked-to-soil fade (same textures, no lock icon).
+  Unlock uses a brief locked-to-soil fade (same textures, no lock icon),
+  with soft cutout sparks rising from near the bottom of each unlocking
+  plot (`prefers-reduced-motion`: fade only).
 - **Player desk removed** from the live UI (inventory shelf + Mix row gone).
   Desk art (`assets/scene/player_desk.png`) and desk firefly / flowering art
   are **parked** for a later redesign — do not delete. Crops stay on ready
@@ -931,8 +933,9 @@ Triggers:
   `src/state/tutorialFlow.js`; bubble UI in `src/ui/tutorialBubble.js`.
   Fresh / Reset start at `tapWheatPlot` with only plots `2`/`3` open.
   Existing saves missing `tutorialStep` load as `done` (skip FTUE) and keep
-  plot `locked` as saved. Soft plank `tutorialSeen` tips are retired for
-  teaching (legacy flags still normalized).
+  plot `locked` as saved. Soft plank `tutorialSeen` tips are removed; FTUE
+  speech bubbles and How to Play teach. Legacy `tutorialSeen` is stripped
+  on load.
 
   Path: plant Wheat on left (Turnip locked on real crop wheel) → grow
   (optional one water cue; 4× growth) → offer Wheat to Fox only (`1/5`
@@ -1054,8 +1057,7 @@ status: 'approaching' | 'sleeping' | 'waking', plotId?, wakeAt? }`.
   only after the epilogue line was displayed), `shrineEpilogueDueAt`
   (`null` | epoch ms while a wait is armed)
 - Tutorial: `tutorialStep` (`tapWheatPlot` … `done`),
-  `tutorialFoxWheatOffered` (boolean); legacy `tutorialSeen` still
-  normalized on load
+  `tutorialFoxWheatOffered` (boolean)
 - Discovery: `discoveredCropIds: string[]`,
   `discoveredAlchemyResultIds: string[]` — sticky until full Reset
 - State: `researchLevel`,
@@ -1065,7 +1067,7 @@ status: 'approaching' | 'sleeping' | 'waking', plotId?, wakeAt? }`.
   `discoveredCropIds`,
   `discoveredAlchemyResultIds`, `gameText`,
   `shrineEpilogueShown`, `shrineEpilogueDueAt`, `tutorialStep`,
-  `tutorialFoxWheatOffered`, `tutorialSeen`
+  `tutorialFoxWheatOffered`
 - Shrine def: `{ id, name, icon, theme, corner, tiers[] }`
 - Tier: `name`, `progressRequired`, `acceptedCropIds`, `tooltip` (effect
   text), plus blessing field (`growthSpeedBonus` | `researchBonus` |
