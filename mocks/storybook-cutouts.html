@@ -366,6 +366,134 @@
     @media (max-width: 700px) {
       .wave1-grid { grid-template-columns: 1fr; }
     }
+
+    .wave2-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .wave2-grid--3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .wave2-grid--5 {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .wave2-grid--6 {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    .wave3-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .wave4-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .wave4-set-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .wave4-set-grid--3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .wave4-set-grid--2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .wave4-set-grid .hero--wide {
+      width: min(100%, 22rem);
+      height: auto;
+      max-height: 9rem;
+      object-fit: contain;
+    }
+
+    .wave4-set-grid .hero--plank {
+      width: min(100%, 22rem);
+      height: auto;
+      max-height: 4.5rem;
+      object-fit: contain;
+    }
+
+    .wave4-set-grid .hero--journey {
+      width: min(100%, 12rem);
+      height: auto;
+      max-height: 16rem;
+      object-fit: contain;
+    }
+
+    .phone--wave4 .phone__scene {
+      /* keep existing phone styles */
+    }
+
+
+    @media (max-width: 1100px) {
+      .wave2-grid,
+      .wave2-grid--5,
+      .wave2-grid--6,
+      .wave3-grid,
+      .wave4-grid,
+      .wave4-set-grid,
+      .wave4-set-grid--3,
+      .wave4-set-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 700px) {
+      .wave2-grid,
+      .wave2-grid--3,
+      .wave2-grid--5,
+      .wave2-grid--6,
+      .wave3-grid,
+      .wave4-grid,
+      .wave4-set-grid,
+      .wave4-set-grid--3,
+      .wave4-set-grid--2 { grid-template-columns: 1fr; }
+    }
+
+    .compare-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      align-items: end;
+    }
+
+    .compare-pair__col {
+      display: grid;
+      gap: 0.3rem;
+      justify-items: center;
+    }
+
+    .compare-pair__col img {
+      width: min(100%, 7.5rem);
+      height: auto;
+      filter: drop-shadow(0 2px 6px rgba(36, 56, 44, 0.18));
+    }
+
+    .compare-pair__col img.tile {
+      width: 100%;
+      border-radius: 8px;
+      filter: none;
+    }
+
+    .stage--tile {
+      padding: 0.5rem;
+    }
+
+    .stage--tile img.tile {
+      width: 100%;
+      border-radius: 10px;
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -373,26 +501,1280 @@
     <header>
       <h1>Style 1 — Soft Storybook Cutouts</h1>
       <p>
-        Mock only — live assets unchanged. Side-by-side: current painterly icons
-        vs simplified storybook cutouts (fox shrine, wheat, title).
+        Mock only — live assets unchanged except promoted Soft B. Soft Storybook
+        B waves: leftovers mortar / grove live + lock pending (Wave 5), temple /
+        tanuki / opening / plank (Wave 4 locked), crafted crops (locked),
+        plantable crops (Wave 3 locked), board / FX / Field Notes faces
+        (Wave 2 locked), layered shrines (Wave 1 locked), hero fox + early
+        wheat + title.
       </p>
     </header>
 
     <p class="wave0-banner">
-      <strong>Wave 1 — Layered shrines (frog / monkey / fox / tiger).</strong>
-      Soft B siblings of
-      <code>shrine_fox_figure.png</code>.
-      Canonical pairs under
-      <code>mocks/storybook-cutouts/layered/shrine_{id}_*</code>.
-      Facing: frog/fox → right; monkey/tiger → left. Live assets untouched.
+      <strong>Wave 5 — mortar / grove promoted; lock pending.</strong>
+      Soft B under
+      <code>mocks/storybook-cutouts/wave5/</code>
+      — <code>mortar</code> + <code>grove_clearing</code> approved and copied
+      to live. Crop-picker <code>lock</code> PNG still pending (live
+      <code>lock.svg</code> unchanged). Style from fox-shrine-b + Soft B icons.
+    </p>
+
+    <p class="section-title">Wave 5 — Leftovers</p>
+    <div class="wave4-set-grid wave4-set-grid--3">
+      <article class="card">
+        <div>
+          <div class="card__tag">mortar</div>
+          <h2 class="card__name">Mortar</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/wave5/mortar.png" alt="Wave 5 Mortar" />
+        </div>
+        <div class="sizes" aria-label="Mortar sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/wave5/mortar.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/wave5/mortar.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/mortar.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/wave5/mortar.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">lock</div>
+          <h2 class="card__name">Lock (crop picker)</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/wave5/lock.png" alt="Wave 5 Lock" />
+        </div>
+        <div class="sizes" aria-label="Lock sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/wave5/lock.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/wave5/lock.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live SVG</span>
+            <img src="assets/icons/lock.svg" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/wave5/lock.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">grove_clearing</div>
+          <h2 class="card__name">Grove clearing</h2>
+        </div>
+        <div class="stage">
+          <img class="hero hero--journey" src="mocks/storybook-cutouts/wave5/grove_clearing.png" alt="Wave 5 Grove clearing" />
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/scene/grove_clearing.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/wave5/grove_clearing.png" alt="" />
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <p class="wave0-banner">
+      <strong>Wave 4 — temple / tanuki / opening / scene (LOCKED mocks).</strong>
+      Soft B mocks under
+      <code>mocks/storybook-cutouts/wave4/</code>
+      — temple sleep/wake + log faces, tanuki sleep, opening title/play/journey
+      (bg only), game_text_plank (no moss). Do not change unless asked. Style from
+      fox-shrine-b + layered only; live = composition refs.
+      <code>grove_clearing</code> Soft B promoted from Wave 5.
+      Live trees + parked desk untouched.
+    </p>
+
+    <p class="section-title">Wave 4 — Dragon Temple</p>
+    <div class="wave4-set-grid">
+      <article class="card">
+        <div>
+          <div class="card__tag">dragon_temple_rest</div>
+          <h2 class="card__name">Temple rest</h2>
+        </div>
+        <div class="stage">
+          <img class="hero hero--wide" src="mocks/storybook-cutouts/wave4/dragon_temple_rest.png" alt="Wave 4 Temple rest" />
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/dragon_temple_rest.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/wave4/dragon_temple_rest.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">dragon_temple_awake</div>
+          <h2 class="card__name">Temple awake</h2>
+        </div>
+        <div class="stage">
+          <img class="hero hero--wide" src="mocks/storybook-cutouts/wave4/dragon_temple_awake.png" alt="Wave 4 Temple awake" />
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/dragon_temple_awake.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/wave4/dragon_temple_awake.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">log_dragon_rest</div>
+          <h2 class="card__name">Log dragon rest</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/wave4/log_dragon_rest.png" alt="Wave 4 Log dragon rest" />
+        </div>
+        <div class="sizes" aria-label="Log dragon rest sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/wave4/log_dragon_rest.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/wave4/log_dragon_rest.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/log_dragon_rest.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/wave4/log_dragon_rest.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">log_dragon_awake</div>
+          <h2 class="card__name">Log dragon awake</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/wave4/log_dragon_awake.png" alt="Wave 4 Log dragon awake" />
+        </div>
+        <div class="sizes" aria-label="Log dragon awake sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/wave4/log_dragon_awake.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/wave4/log_dragon_awake.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/log_dragon_awake.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/wave4/log_dragon_awake.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+    </div>
+
+    <p class="section-title">Wave 4 — Tanuki (in-game sleep only)</p>
+    <div class="wave4-set-grid wave4-set-grid--2">
+      <article class="card">
+        <div>
+          <div class="card__tag">tanuki_sleep</div>
+          <h2 class="card__name">Sleep</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/wave4/tanuki_sleep.png" alt="Wave 4 Sleep" />
+        </div>
+        <div class="sizes" aria-label="Sleep sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/wave4/tanuki_sleep.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/wave4/tanuki_sleep.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/tanuki_sleep.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/wave4/tanuki_sleep.png" alt="" />
+          </div>
+        </div>
+      </article>
+      <article class="card">
+        <div>
+          <div class="card__tag">aside</div>
+          <h2 class="card__name">walk / stretch parked</h2>
+        </div>
+        <p style="font-size:0.82rem;color:var(--muted);line-height:1.4;margin:0;">
+          Not used in-game right now. Soft B mocks kept under
+          <code>mocks/storybook-cutouts/wave4_aside_unused_tanuki/</code>
+          (never deleted).
+        </p>
+      </article>
+    </div>
+
+    <p class="section-title">Wave 4 — Opening</p>
+    <div class="wave4-set-grid wave4-set-grid--3">
+      <article class="card">
+        <div>
+          <div class="card__tag">opening_title</div>
+          <h2 class="card__name">Title</h2>
+        </div>
+        <div class="stage">
+          <img class="hero hero--title" src="mocks/storybook-cutouts/wave4/opening_title.png" alt="Wave 4 Title" />
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/opening/opening_title.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/wave4/opening_title.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">opening_play</div>
+          <h2 class="card__name">Play</h2>
+        </div>
+        <div class="stage">
+          <img class="hero hero--wide" src="mocks/storybook-cutouts/wave4/opening_play.png" alt="Wave 4 Play" />
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/opening/opening_play.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/wave4/opening_play.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">opening_journey</div>
+          <h2 class="card__name">Journey</h2>
+        </div>
+        <div class="stage">
+          <img class="hero hero--journey" src="mocks/storybook-cutouts/wave4/opening_journey.png" alt="Wave 4 Journey" />
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/opening/opening_journey.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/wave4/opening_journey.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+    </div>
+
+    <div class="title-row" style="margin-top: 0.5rem;">
+      <article class="card">
+        <div>
+          <div class="card__tag">Wave 4 Soft B opening</div>
+          <h2 class="card__name">Title + Play on journey</h2>
+        </div>
+        <div class="phone" aria-label="Wave 4 Soft B opening preview">
+          <img class="phone__scene" src="mocks/storybook-cutouts/wave4/opening_journey.png" alt="" />
+          <div class="phone__veil"></div>
+          <h3 class="phone__title">
+            <img src="mocks/storybook-cutouts/wave4/opening_title.png" alt="Harmony Grove" />
+          </h3>
+          <div class="phone__play">
+            <img src="mocks/storybook-cutouts/wave4/opening_play.png" alt="" />
+          </div>
+        </div>
+      </article>
+      <article class="card">
+        <div>
+          <div class="card__tag">Live opening (compare)</div>
+          <h2 class="card__name">Current title / play / journey</h2>
+        </div>
+        <div class="phone" aria-label="Live opening preview">
+          <img class="phone__scene" src="assets/opening/opening_journey.png" alt="" />
+          <div class="phone__veil"></div>
+          <h3 class="phone__title">
+            <img src="assets/opening/opening_title.png" alt="Harmony Grove" style="mix-blend-mode: screen;" />
+          </h3>
+          <div class="phone__play">
+            <img src="assets/opening/opening_play.png" alt="" />
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <p class="section-title">Wave 4 — Scene</p>
+    <div class="wave4-set-grid wave4-set-grid--2">
+      <article class="card">
+        <div>
+          <div class="card__tag">game_text_plank</div>
+          <h2 class="card__name">Game text plank</h2>
+        </div>
+        <div class="stage">
+          <img class="hero hero--plank" src="mocks/storybook-cutouts/wave4/game_text_plank.png" alt="Wave 4 Game text plank" />
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/scene/game_text_plank.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/wave4/game_text_plank.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">grove_clearing</div>
+          <h2 class="card__name">See Wave 5</h2>
+        </div>
+        <div class="stage">
+          <img class="hero hero--journey" src="mocks/storybook-cutouts/wave5/grove_clearing.png" alt="Wave 5 Grove clearing mock" />
+        </div>
+        <p style="font-size:0.82rem;color:var(--muted);line-height:1.4;margin:0;">
+          Soft B promoted to live from Wave 5. <code>lock</code> still pending.
+        </p>
+      </article>
+    </div>
+
+
+<p class="wave0-banner">
+      <strong>Crafted crops — LOCKED Soft B mocks.</strong>
+      Soft B cutouts under
+      <code>mocks/storybook-cutouts/crafts/</code>
+      (do not change unless asked) — 15 alchemy mixes. Prior passes kept under
+      <code>crafts_pass*</code>. Live trees untouched.
+    </p>
+
+    <p class="section-title">Crafted crops (locked)</p>
+    <div class="wave4-grid">
+      <article class="card">
+        <div>
+          <div class="card__tag">root_loaf</div>
+          <h2 class="card__name">Root loaf</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/crafts/root_loaf.png" alt="Wave 4 Root loaf" />
+        </div>
+        <div class="sizes" aria-label="Root loaf sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/crafts/root_loaf.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/crafts/root_loaf.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/root_loaf.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/crafts/root_loaf.png" alt="" />
+          </div>
+        </div>
+      </article>
+      <article class="card">
+        <div>
+          <div class="card__tag">forest_bread</div>
+          <h2 class="card__name">Forest bread</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/crafts/forest_bread.png" alt="Wave 4 Forest bread" />
+        </div>
+        <div class="sizes" aria-label="Forest bread sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/crafts/forest_bread.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/crafts/forest_bread.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/forest_bread.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/crafts/forest_bread.png" alt="" />
+          </div>
+        </div>
+      </article>
+      <article class="card">
+        <div>
+          <div class="card__tag">moonlit_loaf</div>
+          <h2 class="card__name">Moonlit loaf</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/crafts/moonlit_loaf.png" alt="Wave 4 Moonlit loaf" />
+        </div>
+        <div class="sizes" aria-label="Moonlit loaf sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/crafts/moonlit_loaf.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/crafts/moonlit_loaf.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/moonlit_loaf.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/crafts/moonlit_loaf.png" alt="" />
+          </div>
+        </div>
+      </article>
+      <article class="card">
+        <div>
+          <div class="card__tag">golden_loaf</div>
+          <h2 class="card__name">Golden loaf</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/crafts/golden_loaf.png" alt="Wave 4 Golden loaf" />
+        </div>
+        <div class="sizes" aria-label="Golden loaf sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/crafts/golden_loaf.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/crafts/golden_loaf.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/golden_loaf.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/crafts/golden_loaf.png" alt="" />
+          </div>
+        </div>
+      </article>
+      <article class="card">
+        <div>
+          <div class="card__tag">sunbread</div>
+          <h2 class="card__name">Sunbread</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/crafts/sunbread.png" alt="Wave 4 Sunbread" />
+        </div>
+        <div class="sizes" aria-label="Sunbread sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/crafts/sunbread.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/crafts/sunbread.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/sunbread.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/crafts/sunbread.png" alt="" />
+          </div>
+        </div>
+      </article>
+      <article class="card">
+        <div>
+          <div class="card__tag">wildroot</div>
+          <h2 class="card__name">Wildroot</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/crafts/wildroot.png" alt="Wave 4 Wildroot" />
+        </div>
+        <div class="sizes" aria-label="Wildroot sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/crafts/wildroot.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/crafts/wildroot.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/wildroot.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/crafts/wildroot.png" alt="" />
+          </div>
+        </div>
+      </article>
+      <article class="card">
+        <div>
+          <div class="card__tag">moonroot</div>
+          <h2 class="card__name">Moonroot</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/crafts/moonroot.png" alt="Wave 4 Moonroot" />
+        </div>
+        <div class="sizes" aria-label="Moonroot sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/crafts/moonroot.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/crafts/moonroot.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/moonroot.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/crafts/moonroot.png" alt="" />
+          </div>
+        </div>
+      </article>
+      <article class="card">
+        <div>
+          <div class="card__tag">golden_root</div>
+          <h2 class="card__name">Golden root</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/crafts/golden_root.png" alt="Wave 4 Golden root" />
+        </div>
+        <div class="sizes" aria-label="Golden root sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/crafts/golden_root.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/crafts/golden_root.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/golden_root.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/crafts/golden_root.png" alt="" />
+          </div>
+        </div>
+      </article>
+      <article class="card">
+        <div>
+          <div class="card__tag">sunroot</div>
+          <h2 class="card__name">Sunroot</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/crafts/sunroot.png" alt="Wave 4 Sunroot" />
+        </div>
+        <div class="sizes" aria-label="Sunroot sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/crafts/sunroot.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/crafts/sunroot.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/sunroot.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/crafts/sunroot.png" alt="" />
+          </div>
+        </div>
+      </article>
+      <article class="card">
+        <div>
+          <div class="card__tag">moonberry</div>
+          <h2 class="card__name">Moonberry</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/crafts/moonberry.png" alt="Wave 4 Moonberry" />
+        </div>
+        <div class="sizes" aria-label="Moonberry sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/crafts/moonberry.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/crafts/moonberry.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/moonberry.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/crafts/moonberry.png" alt="" />
+          </div>
+        </div>
+      </article>
+      <article class="card">
+        <div>
+          <div class="card__tag">enchanted_jam</div>
+          <h2 class="card__name">Enchanted jam</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/crafts/enchanted_jam.png" alt="Wave 4 Enchanted jam" />
+        </div>
+        <div class="sizes" aria-label="Enchanted jam sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/crafts/enchanted_jam.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/crafts/enchanted_jam.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/enchanted_jam.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/crafts/enchanted_jam.png" alt="" />
+          </div>
+        </div>
+      </article>
+      <article class="card">
+        <div>
+          <div class="card__tag">sunberry</div>
+          <h2 class="card__name">Sunberry</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/crafts/sunberry.png" alt="Wave 4 Sunberry" />
+        </div>
+        <div class="sizes" aria-label="Sunberry sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/crafts/sunberry.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/crafts/sunberry.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/sunberry.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/crafts/sunberry.png" alt="" />
+          </div>
+        </div>
+      </article>
+      <article class="card">
+        <div>
+          <div class="card__tag">golden_bloom</div>
+          <h2 class="card__name">Golden bloom</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/crafts/golden_bloom.png" alt="Wave 4 Golden bloom" />
+        </div>
+        <div class="sizes" aria-label="Golden bloom sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/crafts/golden_bloom.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/crafts/golden_bloom.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/golden_bloom.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/crafts/golden_bloom.png" alt="" />
+          </div>
+        </div>
+      </article>
+      <article class="card">
+        <div>
+          <div class="card__tag">solar_bloom</div>
+          <h2 class="card__name">Solar bloom</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/crafts/solar_bloom.png" alt="Wave 4 Solar bloom" />
+        </div>
+        <div class="sizes" aria-label="Solar bloom sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/crafts/solar_bloom.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/crafts/solar_bloom.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/solar_bloom.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/crafts/solar_bloom.png" alt="" />
+          </div>
+        </div>
+      </article>
+      <article class="card">
+        <div>
+          <div class="card__tag">solar_gourd</div>
+          <h2 class="card__name">Solar gourd</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/crafts/solar_gourd.png" alt="Wave 4 Solar gourd" />
+        </div>
+        <div class="sizes" aria-label="Solar gourd sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/crafts/solar_gourd.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/crafts/solar_gourd.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/solar_gourd.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/crafts/solar_gourd.png" alt="" />
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <p class="wave0-banner">
+      <strong>Wave 3 — LOCKED plantable crop mocks.</strong>
+      Soft B cutouts under
+      <code>mocks/storybook-cutouts/crops/</code>
+      (do not change unless asked) — wheat, turnip, blueberry, moonflower,
+      golden_pumpkin, sunfruit.
+      Style refs: fox-shrine-b + layered shrines only (not live icons).
+      Prior pass:
+      <code>crops_pass1/</code>.
+      Live trees untouched. Shrines / Wave 2 not regenerated.
     </p>
 
     <p class="rules">
       <strong>Style lock (B):</strong>
       soft storybook cutouts · 2–3 value shading · cream rim · calm old-god
       presence · Fresh Moss + honey amber · no faceted/low-poly (reject C) ·
-      true transparency.
+      true transparency · plantables unmistakable at ~64px.
     </p>
+
+    <p class="section-title">Wave 3 — Plantable crops</p>
+    <div class="wave3-grid">
+      <article class="card">
+        <div>
+          <div class="card__tag">wheat</div>
+          <h2 class="card__name">Wheat</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/crops/wheat.png" alt="Wave 3 wheat" />
+        </div>
+        <div class="sizes" aria-label="Wheat sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/crops/wheat.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/crops/wheat.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/wheat.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/crops/wheat.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">turnip</div>
+          <h2 class="card__name">Turnip</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/crops/turnip.png" alt="Wave 3 turnip" />
+        </div>
+        <div class="sizes" aria-label="Turnip sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/crops/turnip.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/crops/turnip.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/turnip.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/crops/turnip.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">blueberry</div>
+          <h2 class="card__name">Blueberry</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/crops/blueberry.png" alt="Wave 3 blueberry" />
+        </div>
+        <div class="sizes" aria-label="Blueberry sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/crops/blueberry.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/crops/blueberry.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/blueberry.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/crops/blueberry.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">moonflower</div>
+          <h2 class="card__name">Moonflower</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/crops/moonflower.png" alt="Wave 3 moonflower" />
+        </div>
+        <div class="sizes" aria-label="Moonflower sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/crops/moonflower.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/crops/moonflower.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/moonflower.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/crops/moonflower.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">golden_pumpkin</div>
+          <h2 class="card__name">Golden pumpkin</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/crops/golden_pumpkin.png" alt="Wave 3 golden pumpkin" />
+        </div>
+        <div class="sizes" aria-label="Golden pumpkin sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/crops/golden_pumpkin.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/crops/golden_pumpkin.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/golden_pumpkin.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/crops/golden_pumpkin.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">sunfruit</div>
+          <h2 class="card__name">Sunfruit</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/crops/sunfruit.png" alt="Wave 3 sunfruit" />
+        </div>
+        <div class="sizes" aria-label="Sunfruit sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/crops/sunfruit.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/crops/sunfruit.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/sunfruit.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/crops/sunfruit.png" alt="" />
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <p class="wave0-banner">
+      <strong>Wave 2 — LOCKED mocks (board / FX / Field Notes faces).</strong>
+      Soft B under
+      <code>mocks/storybook-cutouts/wave2/</code>
+      (do not change unless asked). Prior passes:
+      <code>wave2_pass1/</code>,
+      <code>wave2_pass2_pre_face_fire/</code>.
+      Live trees untouched. Shrines not regenerated.
+    </p>
+
+    <p class="section-title">Wave 2 — Board</p>
+    <div class="wave2-grid wave2-grid--5">
+      <article class="card">
+        <div>
+          <div class="card__tag">farm_frame</div>
+          <h2 class="card__name">Board frame</h2>
+        </div>
+        <div class="stage stage--tile">
+          <img class="tile" src="mocks/storybook-cutouts/wave2/farm_frame.png" alt="Wave 2 farm frame" />
+        </div>
+        <div class="compare-pair" aria-label="Live vs Wave 2 farm frame">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img class="tile" src="assets/icons/farm_frame.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img class="tile" src="mocks/storybook-cutouts/wave2/farm_frame.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">plot_soil</div>
+          <h2 class="card__name">Soil</h2>
+        </div>
+        <div class="stage stage--tile">
+          <img class="tile" src="mocks/storybook-cutouts/wave2/plot_soil.png" alt="Wave 2 plot soil" />
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img class="tile" src="assets/icons/plot_soil.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img class="tile" src="mocks/storybook-cutouts/wave2/plot_soil.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">plot_soil_dry</div>
+          <h2 class="card__name">Dry</h2>
+        </div>
+        <div class="stage stage--tile">
+          <img class="tile" src="mocks/storybook-cutouts/wave2/plot_soil_dry.png" alt="Wave 2 dry soil" />
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img class="tile" src="assets/icons/plot_soil_dry.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img class="tile" src="mocks/storybook-cutouts/wave2/plot_soil_dry.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">plot_locked</div>
+          <h2 class="card__name">Locked</h2>
+        </div>
+        <div class="stage stage--tile">
+          <img class="tile" src="mocks/storybook-cutouts/wave2/plot_locked.png" alt="Wave 2 locked plot" />
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img class="tile" src="assets/icons/plot_locked.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img class="tile" src="mocks/storybook-cutouts/wave2/plot_locked.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">plot_soil_vined</div>
+          <h2 class="card__name">Vine overlay</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/wave2/plot_soil_vined.png" alt="Wave 2 vine overlay" />
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/plot_soil_vined.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/wave2/plot_soil_vined.png" alt="" />
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <p class="section-title">Wave 2 — Board parked (optional)</p>
+    <div class="row">
+      <article class="card">
+        <div>
+          <div class="card__tag">plot_soil_flowered · parked</div>
+          <h2 class="card__name">Flowered soil style match</h2>
+        </div>
+        <div class="stage stage--tile">
+          <img class="tile" src="mocks/storybook-cutouts/wave2/plot_soil_flowered.png" alt="Wave 2 flowered soil" />
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img class="tile" src="assets/icons/plot_soil_flowered.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img class="tile" src="mocks/storybook-cutouts/wave2/plot_soil_flowered.png" alt="" />
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <p class="section-title">Wave 2 — FX / UI</p>
+    <div class="wave2-grid wave2-grid--6">
+      <article class="card">
+        <div>
+          <div class="card__tag">water_drop</div>
+          <h2 class="card__name">Water</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/wave2/water_drop.png" alt="Wave 2 water drop" />
+        </div>
+        <div class="sizes" aria-label="Water sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/wave2/water_drop.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/wave2/water_drop.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/water_drop.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/wave2/water_drop.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">butterfly</div>
+          <h2 class="card__name">Butterfly</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/wave2/butterfly.png" alt="Wave 2 butterfly" />
+        </div>
+        <div class="sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/wave2/butterfly.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/wave2/butterfly.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/butterfly.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/wave2/butterfly.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">spark</div>
+          <h2 class="card__name">Spark</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/wave2/spark.png" alt="Wave 2 spark" />
+        </div>
+        <div class="sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/wave2/spark.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/wave2/spark.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/spark.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/wave2/spark.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">fire</div>
+          <h2 class="card__name">Fire</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/wave2/fire.png" alt="Wave 2 fire" />
+        </div>
+        <div class="sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/wave2/fire.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/wave2/fire.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/fire.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/wave2/fire.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">harvest</div>
+          <h2 class="card__name">Harvest</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/wave2/harvest.png" alt="Wave 2 harvest" />
+        </div>
+        <div class="sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/wave2/harvest.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/wave2/harvest.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/harvest.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/wave2/harvest.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">discovery_log</div>
+          <h2 class="card__name">Field Notes book</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/wave2/discovery_log.png" alt="Wave 2 discovery log" />
+        </div>
+        <div class="sizes">
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/wave2/discovery_log.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/wave2/discovery_log.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/discovery_log.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/wave2/discovery_log.png" alt="" />
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <p class="section-title">Wave 2 — Field Notes faces</p>
+    <div class="wave1-grid">
+      <article class="card">
+        <div>
+          <div class="card__tag">log_frog · face only</div>
+          <h2 class="card__name">Frog face</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/wave2/log_frog.png" alt="Wave 2 log frog" />
+        </div>
+        <div class="sizes">
+          <div class="sizes__item"><span class="sizes__label">128</span><img class="sz-128" src="mocks/storybook-cutouts/wave2/log_frog.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/wave2/log_frog.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/wave2/log_frog.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/log_frog.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/wave2/log_frog.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">log_monkey · face only</div>
+          <h2 class="card__name">Monkey face</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/wave2/log_monkey.png" alt="Wave 2 log monkey" />
+        </div>
+        <div class="sizes">
+          <div class="sizes__item"><span class="sizes__label">128</span><img class="sz-128" src="mocks/storybook-cutouts/wave2/log_monkey.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/wave2/log_monkey.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/wave2/log_monkey.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/log_monkey.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/wave2/log_monkey.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">log_fox · face only</div>
+          <h2 class="card__name">Fox face</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/wave2/log_fox.png" alt="Wave 2 log fox" />
+        </div>
+        <div class="sizes">
+          <div class="sizes__item"><span class="sizes__label">128</span><img class="sz-128" src="mocks/storybook-cutouts/wave2/log_fox.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/wave2/log_fox.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/wave2/log_fox.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/log_fox.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/wave2/log_fox.png" alt="" />
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div>
+          <div class="card__tag">log_tiger · face only</div>
+          <h2 class="card__name">Tiger face</h2>
+        </div>
+        <div class="stage">
+          <img class="hero" src="mocks/storybook-cutouts/wave2/log_tiger.png" alt="Wave 2 log tiger" />
+        </div>
+        <div class="sizes">
+          <div class="sizes__item"><span class="sizes__label">128</span><img class="sz-128" src="mocks/storybook-cutouts/wave2/log_tiger.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">64</span><img class="sz-64" src="mocks/storybook-cutouts/wave2/log_tiger.png" alt="" /></div>
+          <div class="sizes__item"><span class="sizes__label">40</span><img class="sz-40" src="mocks/storybook-cutouts/wave2/log_tiger.png" alt="" /></div>
+        </div>
+        <div class="compare-pair">
+          <div class="compare-pair__col">
+            <span class="sizes__label">Live</span>
+            <img src="assets/icons/log_tiger.png" alt="" />
+          </div>
+          <div class="compare-pair__col">
+            <span class="sizes__label">B mock</span>
+            <img src="mocks/storybook-cutouts/wave2/log_tiger.png" alt="" />
+          </div>
+        </div>
+      </article>
+    </div>
 
     <p class="section-title">Wave 1 — Four layered shrines</p>
     <div class="wave1-grid">
@@ -729,7 +2111,7 @@
       </article>
     </div>
 
-    <p class="section-title">Wheat crop</p>
+    <p class="section-title">Wheat crop (earlier Style 1 mock — kept)</p>
     <div class="row">
       <article class="card">
         <div>

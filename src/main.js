@@ -2,6 +2,7 @@ import {
   plantCrop,
   waterPlot,
   welcomeCritter,
+  pickNeediestShrine,
   isReady,
   needsWater,
   hasCritterVisit,
@@ -233,42 +234,41 @@ function handlePlotClick(plotId) {
 
   if (hasCritterVisit(plot, Date.now())) {
     const plotEl = gridEl.querySelector(`[data-plot-id="${plotId}"]`);
-    const sourceRect = plotEl?.getBoundingClientRect();
-    critterFlyingPlotIds.add(plotId);
+    const cueEl = plotEl?.querySelector('.plot__critter');
+    const sourceRect =
+      cueEl?.getBoundingClientRect() ?? plotEl?.getBoundingClientRect();
 
-    const result = welcomeCritter(state, plotId);
-    if (!result) {
-      critterFlyingPlotIds.delete(plotId);
-      return;
-    }
-
-    for (const unlockedId of result.unlockedPlotIds) {
-      unlockingPlotIds.add(unlockedId);
-    }
-
-    save(state);
-    renderFarm();
-    renderGameTextPanel(gameTextEl, state);
-
-    const shrineId = result.shrineId;
+    const shrineId = pickNeediestShrine(state);
     const targetIconEl = shrineId
       ? boardEl.querySelector(`#shrine-${shrineId} .shrine__icon`)
       : null;
     const targetRect = targetIconEl?.getBoundingClientRect();
 
+    critterFlyingPlotIds.add(plotId);
+    // Flyer first so the perched cue never vanishes for a frame.
     playCritterFly({
       sourceRect,
       targetRect,
       onComplete: () => {
         critterFlyingPlotIds.delete(plotId);
-        if ((result.tiersGained ?? 0) > 0 && shrineId) {
-          playShrineUpgradeSfx();
-          const shrineEl = boardEl.querySelector(`#shrine-${shrineId}`);
-          playShrineTierUp({ shrineEl });
+        const result = welcomeCritter(state, plotId);
+        if (result) {
+          for (const unlockedId of result.unlockedPlotIds) {
+            unlockingPlotIds.add(unlockedId);
+          }
+          save(state);
+          if ((result.tiersGained ?? 0) > 0 && result.shrineId) {
+            playShrineUpgradeSfx();
+            const shrineEl = boardEl.querySelector(
+              `#shrine-${result.shrineId}`,
+            );
+            playShrineTierUp({ shrineEl });
+          }
         }
         render();
       },
     });
+    renderFarm();
     return;
   }
 

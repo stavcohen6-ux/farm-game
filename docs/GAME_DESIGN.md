@@ -274,8 +274,8 @@ neither). At most one care cue per plant.
   instance will host a visit.
 - `critterVisitMinProgress` / `critterVisitMaxProgress` (0–1): random fraction
   of snapshotted `growthMs` when the butterfly appears (`critterVisitAt`).
-- `critterShrineProgress`: safe progress granted to the chosen shrine on
-  welcome.
+- `critterShrineProgress`: safe progress granted to the chosen shrine when
+  the butterfly lands.
 
 **Neediest shrine:** among non-maxed **feedable** shrines (active tier
 allowlist has at least one crop obtainable at current `researchLevel` —
@@ -331,15 +331,15 @@ welcome clears with no shrine progress.
   then the patch clears and soil reads as normal brown (or ready honey-glow if
   watering finished growth immediately). Shortens remaining growth by
   `waterTimeSavedSeconds` (clamped), sets `watered: true`.
-- Click a waiting-critter plot → apply and save `critterShrineProgress`
-  immediately (so a mid-flight quit keeps the points), set
-  `critterWelcomed: true`, then butterfly flies to the neediest shrine
-  at a constant gentle speed (nearer plots arrive sooner). Shrine progress
-  bar updates when it lands (no shrine pulse). No game-text message unless a
+- Click a waiting-critter plot → butterfly flies to the neediest shrine
+  at a constant gentle speed (nearer plots arrive sooner). When it lands,
+  apply and save `critterShrineProgress`, set `critterWelcomed: true`, and
+  update the shrine progress bar (no shrine pulse). No game-text message unless a
   tier-up occurs (then the normal shrine upgrade text applies, and rising
   overlay sparks play on that shrine when the butterfly lands — shrine art
   stays still). If all shrines are already maxed, welcome clears the visit
-  with no progress and no message.
+  with no progress and no message. Mid-flight reload leaves the visit waiting
+  (points are only awarded on land).
 - Ignore water or critter → full normal growth / no shrine gift. Offline: if
   still growing and still asking on return, cues wait; if already ready, the
   crop sits ready for drag / uproot as usual.

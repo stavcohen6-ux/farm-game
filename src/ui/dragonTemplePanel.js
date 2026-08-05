@@ -4,7 +4,7 @@ import { getHeldCropId, getHeldExpiresAt } from '../state/gameState.js';
 import { bindCropTip, hideCropTip } from './cropTip.js';
 import { CROP_DRAG_TYPE, parseCropDragData } from './shrinesPanel.js';
 import { applyDecayUrgencyClass, appendWiltMark } from './decayUrgency.js';
-import { setCropIcon, setIcon, UI_ICONS } from './icon.js';
+import { setCropIcon, UI_ICONS } from './icon.js';
 
 // After a successful tribute place, HTML5 drag may still fire a click on the
 // figure; skip that one so place does not also open the explainer.
@@ -385,13 +385,30 @@ function wireBurnFires(slotsRow, onBurnComplete) {
     });
 }
 
+// Keep rest + awake <img>s stacked and toggle visibility so ~1MB temple
+// PNGs are not destroyed and re-decoded on wake/sleep.
 function setTempleFigure(figure, active) {
-  setIcon(figure, {
-    src: active ? UI_ICONS.dragonAwake : UI_ICONS.dragonRest,
-    emoji: '🐲',
-    alt: active ? 'Dragon Temple (awake)' : 'Dragon Temple (sleeping)',
-    imgClass: 'game-icon game-icon--temple-object',
-  });
+  const imgClass = 'game-icon game-icon--temple-object';
+  let rest = figure.querySelector('[data-temple-state="rest"]');
+  let awake = figure.querySelector('[data-temple-state="awake"]');
+  if (!rest || !awake) {
+    figure.replaceChildren();
+    rest = document.createElement('img');
+    rest.src = UI_ICONS.dragonRest;
+    rest.alt = 'Dragon Temple (sleeping)';
+    rest.draggable = false;
+    rest.className = imgClass;
+    rest.dataset.templeState = 'rest';
+    awake = document.createElement('img');
+    awake.src = UI_ICONS.dragonAwake;
+    awake.alt = 'Dragon Temple (awake)';
+    awake.draggable = false;
+    awake.className = imgClass;
+    awake.dataset.templeState = 'awake';
+    figure.appendChild(rest);
+    figure.appendChild(awake);
+  }
+  figure.classList.toggle('dragon-temple__figure--active', active);
 }
 
 function clearTempleDropHandlers(container) {
@@ -405,8 +422,9 @@ function clearTempleDropHandlers(container) {
 
 // Renders the Dragon Temple: wrath meter, roof dragon, 1×4 holy farm board.
 // When demand is fully matched, place handlers auto-start burn (no Burn button).
-// Reuses the figure <img> and slot nodes across offers so ~1MB PNGs are not
-// re-decoded on every place. Full rebuild only when active/burning structure changes.
+// Reuses the figure (both temple PNGs) and slot nodes across offers / wake /
+// sleep so ~1MB art is not re-decoded. Full rebuild only when active/burning
+// structure changes; the figure node is kept across those rebuilds.
 export function renderDragonTemple(container, state, handlers) {
   const { onBurnComplete, onFigureClick } = handlers;
   const temple = state.dragonTemple;
@@ -447,6 +465,8 @@ export function renderDragonTemple(container, state, handlers) {
     return;
   }
 
+  // Keep the figure node (and its decoded PNGs) across structure rebuilds.
+  const reusedFigure = figure ?? null;
   container.replaceChildren();
   clearTempleDropHandlers(container);
   container.dataset.templeStructure = nextStructure;
@@ -456,7 +476,7 @@ export function renderDragonTemple(container, state, handlers) {
   const stageEl = document.createElement('div');
   stageEl.className = 'dragon-temple__stage';
 
-  const figureEl = document.createElement('div');
+  const figureEl = reusedFigure ?? document.createElement('div');
   figureEl.className = 'dragon-temple__figure';
   setTempleFigure(figureEl, active);
   wireTempleFigure(figureEl, onFigureClick);

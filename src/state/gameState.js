@@ -757,9 +757,14 @@ export function pickNeediestShrine(state) {
 // Welcome a waiting critter: safe shrine progress, never wakes the Dragon.
 // Returns `{ shrineId, unlockedPlotIds, tiersGained }` (shrineId null if none
 // feedable), or null if there was no visit to welcome.
+// Allows welcome after the crop becomes ready (e.g. mid-flight) as long as the
+// visit was scheduled and not yet welcomed.
 export function welcomeCritter(state, plotId, now = Date.now()) {
   const plot = state.plots.find((p) => p.id === plotId);
-  if (!plot || !hasCritterVisit(plot, now)) return null;
+  if (!plot?.crop) return null;
+  if (plot.crop.critterWelcomed) return null;
+  if (typeof plot.crop.critterVisitAt !== 'number') return null;
+  if (now < plot.crop.critterVisitAt) return null;
 
   plot.crop.critterWelcomed = true;
 

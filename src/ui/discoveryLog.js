@@ -147,11 +147,13 @@ export function openDiscoveryLog(state, onReset = null) {
     hideCropTip();
     logView.hidden = true;
     helpView.hidden = false;
+    modal.scrollTop = 0;
   }
 
   function showLog() {
     helpView.hidden = true;
     logView.hidden = false;
+    modal.scrollTop = 0;
   }
 
   function close() {

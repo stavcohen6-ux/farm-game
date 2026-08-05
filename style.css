@@ -78,7 +78,7 @@ body {
   --grove-pad-y: 0.55rem;
   --grove-gap: 0.65rem;
   --shrine-nudge-top: 18px;
-  --shrine-nudge-bottom: 10px;
+  --shrine-nudge-bottom: 18px;
   --radius: 0.75rem;
   --dock-pad: 0.75rem;
   --inventory-slots-inner: calc(6 * var(--tile) + 5 * var(--gap));
@@ -252,6 +252,7 @@ body {
 }
 
 .game-text {
+  position: relative;
   flex: 1 1 auto;
   width: 100%;
   min-width: 0;
@@ -259,6 +260,10 @@ body {
   --game-text-font-size: 0.875rem;
   --game-text-line-height: 1.4;
   --game-text-title-size: 0.75rem;
+  --game-text-plank: url('assets/scene/game_text_plank.png');
+  --game-text-depth:
+    drop-shadow(0 2px 0 rgba(90, 70, 40, 0.18))
+    drop-shadow(0 6px 14px rgba(42, 90, 60, 0.12));
   height: calc(
     var(--game-text-font-size) * var(--game-text-line-height) +
       var(--game-text-title-size) * var(--game-text-line-height) + 2 * 0.55rem +
@@ -271,7 +276,6 @@ body {
   font-weight: 600;
   line-height: var(--game-text-line-height);
   text-align: center;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -280,30 +284,46 @@ body {
   appearance: none;
   -webkit-appearance: none;
   border: none;
+  border-radius: 0;
   cursor: pointer;
   touch-action: manipulation;
-  background-color: #b9a882;
-  background-image:
-    linear-gradient(
-      180deg,
-      rgba(247, 252, 247, 0.3) 0%,
-      rgba(232, 240, 224, 0.16) 100%
-    ),
-    url('assets/scene/game_text_plank.png');
-  background-size: cover;
+  background-color: transparent;
+  background-image: var(--game-text-plank);
+  background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
-  border-radius: var(--radius);
   color: var(--ink);
   text-shadow: 0 1px 0 rgba(247, 252, 247, 0.45);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    0 2px 0 rgba(90, 70, 40, 0.18),
-    0 6px 18px rgba(42, 90, 60, 0.12);
-  transition: transform 80ms ease, filter 80ms ease, box-shadow 80ms ease;
+  box-shadow: none;
+  filter: var(--game-text-depth);
+  transition: transform 80ms ease, filter 80ms ease;
+}
+
+/* Faint linen wash clipped to the plank cutout (not a full rectangle). */
+.game-text::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: linear-gradient(
+    180deg,
+    rgba(247, 252, 247, 0.3) 0%,
+    rgba(232, 240, 224, 0.16) 100%
+  );
+  -webkit-mask-image: var(--game-text-plank);
+  mask-image: var(--game-text-plank);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
 }
 
 .game-text__message {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 100%;
   max-width: 100%;
@@ -314,6 +334,8 @@ body {
 }
 
 .game-text__title {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 100%;
   max-width: 100%;
@@ -325,17 +347,16 @@ body {
 }
 
 .game-text:hover {
-  filter: brightness(1.03);
+  filter: brightness(1.03) var(--game-text-depth);
 }
 
 .game-text:active,
 .game-text--pressed {
   transform: scale(0.96) translateY(3px);
-  filter: brightness(0.88);
-  box-shadow:
-    inset 0 4px 8px rgba(90, 70, 40, 0.38),
-    0 1px 0 rgba(90, 70, 40, 0.08),
-    0 1px 3px rgba(42, 90, 60, 0.05);
+  filter:
+    brightness(0.88)
+    drop-shadow(0 1px 0 rgba(90, 70, 40, 0.08))
+    drop-shadow(0 1px 3px rgba(42, 90, 60, 0.05));
 }
 
 .game-text:focus-visible {
@@ -410,13 +431,30 @@ body {
 }
 
 .dragon-temple__figure {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
+  display: grid;
   width: 100%;
   cursor: pointer;
   filter: drop-shadow(0 6px 12px rgba(42, 90, 60, 0.22));
   transition: filter 0.15s ease;
+}
+
+/* Stack rest + awake; toggle keeps both decoded so wake/sleep never blanks. */
+.dragon-temple__figure > .game-icon--temple-object {
+  grid-area: 1 / 1;
+  width: 100%;
+}
+
+.dragon-temple__figure > [data-temple-state='awake'] {
+  visibility: hidden;
+}
+
+.dragon-temple__figure--active > [data-temple-state='rest'] {
+  visibility: hidden;
+}
+
+.dragon-temple__figure--active > [data-temple-state='awake'] {
+  visibility: visible;
 }
 
 .dragon-temple--active .dragon-temple__figure {
@@ -808,7 +846,7 @@ body {
     ),
     calc(
       (var(--tile) - var(--shrine-figure)) / 2 +
-        var(--shrine-nudge-bottom, 10px)
+        var(--shrine-nudge-bottom, 18px)
     )
   );
 }
@@ -826,7 +864,7 @@ body {
     calc((var(--tile) - var(--shrine-col)) / 2),
     calc(
       (var(--tile) - var(--shrine-figure)) / 2 +
-        var(--shrine-nudge-bottom, 10px)
+        var(--shrine-nudge-bottom, 18px)
     )
   );
 }

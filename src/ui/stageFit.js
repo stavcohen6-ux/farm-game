@@ -46,7 +46,7 @@ function shrineFor(tile, availW) {
 function nudgesFor(tile) {
   return {
     top: Math.max(8, Math.round(tile * 0.22)),
-    bottom: Math.max(6, Math.round(tile * 0.12)),
+    bottom: Math.max(8, Math.round(tile * 0.22)),
   };
 }
 
