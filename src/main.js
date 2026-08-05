@@ -348,12 +348,6 @@ function handlePlotCropDrop(payload) {
 }
 
 function handleOffer(shrineId, cropId, plotId = null) {
-  const plotEl =
-    plotId != null
-      ? gridEl.querySelector(`[data-plot-id="${plotId}"]`)
-      : null;
-  const sourceRect = plotEl?.getBoundingClientRect() ?? null;
-
   const result = offerCrop(state, shrineId, cropId, plotId);
   if (!result) {
     // Allowlist rejects set game text / may tick decay; refresh farm + text
@@ -406,7 +400,7 @@ function handleOffer(shrineId, cropId, plotId = null) {
     );
     const crop = getCrop(result.cropId);
     playHarvestCropFly({
-      sourceRect,
+      shrineId,
       targetRect: shrineIconEl?.getBoundingClientRect() ?? null,
       cropId: result.cropId,
       icon: crop?.icon ?? '',

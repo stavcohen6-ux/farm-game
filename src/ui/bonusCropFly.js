@@ -1,34 +1,47 @@
+import { getShrine } from '../data/shrines.js';
 import { setIcon, cropIconSrc, UI_ICONS } from './icon.js';
 
-const FLY_MS = 3000;
-const ARC_LIFT_PX = 56;
+const FLY_MS = 1400;
+const ARC_LIFT_PX = 24;
 const FLYER_SIZE_PX = 36;
+const START_OFFSET_PX = 52;
 const TRAIL_COUNT = 4;
-const TRAIL_STAGGER_MS = 180;
-const TRAIL_SPARK_MS = 1050;
+const TRAIL_STAGGER_MS = 120;
+const TRAIL_SPARK_MS = 700;
 const TRAIL_SIZE_PX = 16;
 const PLUS_MS = 900;
 const PLUS_RISE_PX = 28;
 
-// Ghost crop icon arcs from plot → shrine, with a light spark trail.
-// On arrival: amber +1 pop over the shrine, then onComplete.
+/** Farm-side approach: toward board center into each corner shrine. */
+const CORNER_OFFSET = {
+  'top-left': { dx: 1, dy: 1 },
+  'top-right': { dx: -1, dy: 1 },
+  'bottom-left': { dx: 1, dy: -1 },
+  'bottom-right': { dx: -1, dy: -1 },
+};
+
+// Ghost crop hops a short arc from near the shrine into its icon.
+// On arrival: cream/ink +1 pop over the shrine, then onComplete.
 export function playHarvestCropFly({
-  sourceRect,
+  shrineId,
   targetRect,
   cropId = null,
   icon = '',
   withSparks = false,
   onComplete,
 }) {
-  if (!sourceRect || !targetRect) {
+  if (!targetRect) {
     onComplete?.();
     return;
   }
 
-  const startX = sourceRect.left + (sourceRect.width - FLYER_SIZE_PX) / 2;
-  const startY = sourceRect.top + (sourceRect.height - FLYER_SIZE_PX) / 2;
+  const corner = getShrine(shrineId)?.corner ?? 'bottom-right';
+  const offset = CORNER_OFFSET[corner] ?? CORNER_OFFSET['bottom-right'];
   const endX = targetRect.left + (targetRect.width - FLYER_SIZE_PX) / 2;
   const endY = targetRect.top + (targetRect.height - FLYER_SIZE_PX) / 2;
+  const len = Math.hypot(offset.dx, offset.dy);
+  const startX = endX + (offset.dx / len) * START_OFFSET_PX;
+  const startY = endY + (offset.dy / len) * START_OFFSET_PX;
   const midX = (startX + endX) / 2;
   const midY = Math.min(startY, endY) - ARC_LIFT_PX;
 

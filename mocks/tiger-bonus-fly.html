@@ -299,20 +299,18 @@
 <body>
   <div class="mock">
     <header>
-      <h1>Tiger bonus crop fly</h1>
+      <h1>Tiger bonus crop hop</h1>
       <p>
-        Ghost crop icon + spark trail + amber <strong>+1</strong> on land.
-        Live <code>playHarvestCropFly</code> from
-        <code>src/ui/bonusCropFly.js</code>. Hit Play and send notes.
+        Short farm-side hop into the shrine + spark trail + cream/ink
+        <strong>+1</strong> on land. Live
+        <code>playHarvestCropFly</code> from
+        <code>src/ui/bonusCropFly.js</code>.
       </p>
     </header>
 
     <div class="stage-wrap">
-      <div class="stage-label">Stage — empty plot after offer → Tiger shrine</div>
+      <div class="stage-label">Stage — near-shrine hop → Tiger shrine</div>
       <div class="stage" id="stage">
-        <div class="plot plot--empty" id="source-plot" aria-label="Source plot">
-          <span class="plot-crop" id="plot-crop"></span>
-        </div>
         <div class="shrine" id="target-shrine">
           <div class="shrine__icon" id="shrine-icon"></div>
           <div class="shrine__name">Tiger Shrine</div>
@@ -321,7 +319,7 @@
     </div>
 
     <div class="controls">
-      <button type="button" class="primary" id="btn-play">Play bonus fly</button>
+      <button type="button" class="primary" id="btn-play">Play bonus hop</button>
       <button type="button" id="btn-loop">Loop</button>
       <label class="opt">
         <input type="checkbox" id="opt-sparks" checked />
@@ -345,8 +343,9 @@
     <section class="panel">
       <h2>Live constants (<code>bonusCropFly.js</code>)</h2>
       <dl class="constants">
-        <div><dt>FLY_MS</dt><dd>3000</dd></div>
-        <div><dt>ARC_LIFT_PX</dt><dd>56</dd></div>
+        <div><dt>FLY_MS</dt><dd>1400</dd></div>
+        <div><dt>START_OFFSET_PX</dt><dd>52</dd></div>
+        <div><dt>ARC_LIFT_PX</dt><dd>24</dd></div>
         <div><dt>FLYER_SIZE_PX</dt><dd>36</dd></div>
         <div><dt>TRAIL_COUNT</dt><dd>4</dd></div>
         <div><dt>PLUS_MS</dt><dd>900</dd></div>
@@ -369,8 +368,8 @@
   </div>
 
   <script type="module">
-    import { playHarvestCropFly } from '../src/ui/bonusCropFly.js?v=fly3k';
-    import { setIcon, cropIconSrc, shrineIconSrc } from '../src/ui/icon.js?v=fly3k';
+    import { playHarvestCropFly } from '../src/ui/bonusCropFly.js?v=nearhop1400';
+    import { setIcon, shrineIconSrc } from '../src/ui/icon.js?v=nearhop1400';
 
     const CROP_EMOJI = {
       wheat: '🌾',
@@ -382,8 +381,6 @@
       solar_gourd: '🎃',
     };
 
-    const plotEl = document.getElementById('source-plot');
-    const plotCropEl = document.getElementById('plot-crop');
     const shrineIconEl = document.getElementById('shrine-icon');
     const cropSelect = document.getElementById('opt-crop');
     const sparksCheck = document.getElementById('opt-sparks');
@@ -405,18 +402,6 @@
       return cropSelect.value;
     }
 
-    function refreshPlotIcon() {
-      const cropId = selectedCropId();
-      setIcon(plotCropEl, {
-        src: cropIconSrc(cropId),
-        emoji: CROP_EMOJI[cropId] ?? '',
-        imgClass: 'game-icon',
-      });
-    }
-
-    refreshPlotIcon();
-    cropSelect.addEventListener('change', refreshPlotIcon);
-
     function setStatus(text) {
       statusEl.textContent = text;
     }
@@ -425,15 +410,12 @@
       if (playing) return Promise.resolve();
       playing = true;
       btnPlay.disabled = true;
-      setStatus('Flying…');
-
-      // Match in-game timing: plot is already empty when bonus flies.
-      plotEl.classList.add('plot--empty');
+      setStatus('Hopping…');
 
       const cropId = selectedCropId();
       return new Promise((resolve) => {
         playHarvestCropFly({
-          sourceRect: plotEl.getBoundingClientRect(),
+          shrineId: 'tiger',
           targetRect: shrineIconEl.getBoundingClientRect(),
           cropId,
           icon: CROP_EMOJI[cropId] ?? '',
@@ -467,11 +449,10 @@
       } else if (loopTimer) {
         window.clearTimeout(loopTimer);
         loopTimer = null;
-        setStatus(playing ? 'Flying…' : 'Loop stopped');
+        setStatus(playing ? 'Hopping…' : 'Loop stopped');
       }
     });
 
-    // Space to replay
     window.addEventListener('keydown', (e) => {
       if (e.code === 'Space' && e.target === document.body) {
         e.preventDefault();

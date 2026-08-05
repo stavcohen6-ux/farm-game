@@ -11,13 +11,13 @@ const SHRINE_BAR_WIDTH = 8;
 const SHRINE_BAR_GAP = 4.5; // ~0.28rem
 const BOARD_BORDER = 6; // 3px × 2
 const TEMPLE_METERS_H = 22; // ~1.35rem
-const TEMPLE_INNER_GAP = 6; // ~0.35rem between temple stacks
+const TEMPLE_INNER_GAP = 4; // ~0.25rem between temple stacks
 const APP_GAP = 6; // ~0.35rem grove ↔ info-band
-const GROVE_GAP_DEFAULT = 10; // ~0.65rem temple ↔ farm
-const GROVE_GAP_TIGHT = 6;
-const GROVE_PAD_Y_TOP = 9; // ~0.55rem
-const GROVE_PAD_Y_BOTTOM = 12; // ~0.75rem
-const FIT_SLACK_PX = 10;
+const GROVE_GAP_DEFAULT = 8; // ~0.5rem temple ↔ farm
+const GROVE_GAP_TIGHT = 4;
+const GROVE_PAD_Y_TOP = 6; // ~0.375rem
+const GROVE_PAD_Y_BOTTOM = 8; // ~0.5rem
+const FIT_SLACK_PX = 6;
 
 function clamp(n, lo, hi) {
   return Math.min(hi, Math.max(lo, n));

@@ -351,7 +351,7 @@ Ready crops stay on the plot. Short-click a ready plot to show the crop name
 (same tip UI as shrine accepts / discovery log; font-size matches Dragon
 Temple empty-slot “Drop” text). Drag a ready crop to:
 - a **shrine** — consumes the crop from the plot; Tiger bonus may apply
-  (extra same-crop progress + fly VFX from plot to shrine; not on mix/temple)
+  (extra same-crop progress + short near-shrine hop VFX; not on mix/temple)
 - the **Dragon Temple** — fills a matching demand slot from the plot
 - an **adjacent ready crop** (up/down/left/right only) — if the pair matches
   a recipe, mix immediately: source plot clears, result sits ready on the
@@ -596,10 +596,11 @@ shrine; 14 / 30 / 44 / 60 = 148; apex: Solar Gourd)
 4. Spirit Tiger — 100% for a bonus crop — golden_pumpkin, sunfruit, golden_loaf,
    golden_bloom, solar_gourd
 
-Bonus: a second same-type offering applies when the ghost-crop fly arrives
-(spark trail + cream/ink +1 on the shrine); bar progress for that second
-offering waits until land. Dragon win-buff multiplier applies to each
-offering separately if uses remain. No bonus on mix or temple.
+Bonus: a second same-type offering applies when the ghost-crop hop arrives
+(short farm-side arc near the offered shrine, spark trail + cream/ink +1);
+bar progress for that second offering waits until land. Dragon win-buff
+multiplier applies to each offering separately if uses remain. No bonus on
+mix or temple.
 
 ## Dragon Temple
 Matched-tribute challenge above the farm plot grid (not including shrines).
@@ -860,6 +861,12 @@ footer: How to Play, Music mute, then Reset.
   work well on touch). Main screen (grove + temple + farm + shrines + text
   plank) fits in `100dvh` **without vertical scrolling**; tile/shrine sizes
   scale via `stageFit.js`.
+- Portrait phones are often **height-limited**: temple figure height (roof art
+  aspect) plus farm board must fit under the info band, so `--tile` may stay
+  below the width budget and leave grove visible past the shrine bars. Freeing
+  vertical space (tighter grove pads/gaps, or a shorter temple) lets the board
+  grow toward full phone width. Shrine progress bars stay inset from the screen
+  edge via `--grove-pad-x` (`sidePadFor` in `stageFit.js`) — not flush.
 - Bands: scenic grove stage on top (`#grove-stage` holds Dragon Temple above
   the framed 4×4 farm board with a small temple↔farm gap; corner cells are
   shrine footings with oversized figures overflowing the frame and slim
