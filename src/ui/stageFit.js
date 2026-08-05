@@ -6,7 +6,7 @@ const MIN_TILE_PX = 36;
 const MAX_TILE_PX = 92;
 const MIN_SHRINE_PX = 44;
 const MAX_SHRINE_PX = 140;
-const DRAGON_ASPECT = 2.35; // display aspect (cover-crops source 1495×790 until Soft B redraw)
+const DRAGON_ASPECT = 1495 / 790;
 const SHRINE_BAR_WIDTH = 8;
 const SHRINE_BAR_GAP = 4.5; // ~0.28rem
 const BOARD_BORDER = 6; // 3px × 2
@@ -37,9 +37,9 @@ function boardInnerFor(tile) {
 
 function shrineFor(tile, availW) {
   return clamp(
-    Math.floor(tile * 1.32),
-    Math.max(MIN_SHRINE_PX, Math.floor(tile * 1.15)),
-    Math.min(MAX_SHRINE_PX, Math.floor(tile * 1.45), Math.floor(availW * 0.34)),
+    Math.floor(tile * 1.48),
+    Math.max(MIN_SHRINE_PX, Math.floor(tile * 1.2)),
+    Math.min(MAX_SHRINE_PX, Math.floor(tile * 1.6), Math.floor(availW * 0.34)),
   );
 }
 

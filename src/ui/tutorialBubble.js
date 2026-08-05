@@ -52,7 +52,8 @@ function clearInviteDismiss() {
 function wireInviteDismiss(onInviteDismiss) {
   if (inviteDismissWired || typeof onInviteDismiss !== 'function') return;
   inviteDismissWired = true;
-  // Wait out the prior gesture (Root Loaf drop / explore dismiss), then arm.
+  // Wait out the prior gesture and give time to read / avoid accidental
+  // dismiss (e.g. crop wheel open), then arm click-anywhere.
   inviteDismissTimer = window.setTimeout(() => {
     inviteDismissTimer = 0;
     const handler = () => {
@@ -66,7 +67,7 @@ function wireInviteDismiss(onInviteDismiss) {
     // Capture so plot/shrine handlers cannot swallow the dismiss.
     document.addEventListener('pointerdown', handler, true);
     document.addEventListener('click', handler, true);
-  }, 280);
+  }, 3000);
 }
 
 export function teardownTutorialBubble() {
