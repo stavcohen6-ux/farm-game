@@ -466,6 +466,10 @@ function handleDragonTemplePlace(slotIndex, cropId, plotId = null) {
   if (!canTutorialTemple(state)) return;
   if (!placeDragonTempleSlot(state, slotIndex, cropId, plotId)) return;
   playDragonSlotSfx();
+  // Win burn SFX with the rising flames, not after they finish.
+  if (state.dragonTemple?.burning) {
+    playDragonEventEndSfx();
+  }
   suppressNextDragonTempleFigureClick();
   save(state);
   render();
@@ -475,6 +479,9 @@ function handleDragonTemplePlaceNext(cropId, plotId = null) {
   if (!canTutorialTemple(state)) return;
   if (!placeDragonTempleNextSlot(state, cropId, plotId)) return;
   playDragonSlotSfx();
+  if (state.dragonTemple?.burning) {
+    playDragonEventEndSfx();
+  }
   suppressNextDragonTempleFigureClick();
   save(state);
   render();
@@ -491,7 +498,6 @@ function handleDragonTempleBurnComplete() {
   window.setTimeout(() => {
     if (state.dragonTemple?.pendingClose !== outcome) return;
     if (!finalizeDragonTempleClose(state)) return;
-    playDragonEventEndSfx();
     if (outcome === 'success') {
       playTempleWinPrize();
       return;

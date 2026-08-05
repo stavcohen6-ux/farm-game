@@ -209,7 +209,7 @@ export function playDiscoveryOpenSfx() {
   playSfx(BOOK_FLIP_OPEN);
 }
 
-/** Dragon temple event ended (win or lose). */
+/** Dragon temple burn — win crop flames or lose shrine fire. */
 export function playDragonEventEndSfx() {
   playSfx(THRUSTER_FIRE);
 }
