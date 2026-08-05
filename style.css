@@ -201,7 +201,7 @@ body {
   width: 100%;
   height: auto;
   max-width: 100%;
-  aspect-ratio: 1536 / 533;
+  aspect-ratio: 1495 / 790;
   object-fit: contain;
 }
 
@@ -290,7 +290,8 @@ body {
       rgba(232, 240, 224, 0.16) 100%
     ),
     url('assets/scene/game_text_plank.png');
-  background-size: 100% 100%;
+  background-size: cover;
+  background-position: center;
   background-repeat: no-repeat;
   border-radius: var(--radius);
   color: var(--ink);
@@ -903,9 +904,9 @@ body {
 }
 
 /* Dragon win blessing: thin amber silhouette rim (no bloom; bar untouched).
-   Rim lives on the PNG so it is not expanded by the figure's soft ground blur,
-   and stays off the flex-sized icon wrapper. */
-.shrine--dragon-blessed .shrine__icon .game-icon--shrine-object {
+   Rim lives on the layered stack so it is not expanded by the figure's soft
+   ground blur, and stays off the flex-sized icon wrapper. */
+.shrine--dragon-blessed .shrine__icon {
   filter: drop-shadow(3px 0 0 rgb(245, 176, 40))
     drop-shadow(-3px 0 0 rgb(245, 176, 40))
     drop-shadow(0 3px 0 rgb(245, 176, 40))
@@ -916,7 +917,7 @@ body {
   filter: drop-shadow(0 0 8px rgba(95, 154, 114, 0.75));
 }
 
-.shrine--dragon-blessed.shrine--drag-over .shrine__icon .game-icon--shrine-object {
+.shrine--dragon-blessed.shrine--drag-over .shrine__icon {
   filter: drop-shadow(3px 0 0 rgb(245, 176, 40))
     drop-shadow(-3px 0 0 rgb(245, 176, 40))
     drop-shadow(0 3px 0 rgb(245, 176, 40))
@@ -924,12 +925,31 @@ body {
 }
 
 .shrine__icon {
-  font-size: 1.75rem;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 0;
+  position: relative;
+  width: var(--shrine-figure);
+  height: var(--shrine-figure);
+  flex-shrink: 0;
+  line-height: 0;
+  display: block;
+}
+
+.shrine__layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  display: block;
+}
+
+.shrine__layer--pedestal {
+  z-index: 0;
+}
+
+.shrine__layer--figure {
+  z-index: 1;
 }
 
 /* Slim vertical progress track on the outer side of each shrine. */

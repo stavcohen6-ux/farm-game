@@ -6,7 +6,7 @@ import {
   isTutorialGated,
   getTutorialFoxProgress,
 } from '../state/gameState.js';
-import { setIcon, shrineIconSrc } from './icon.js';
+import { setLayeredShrineIcon } from './icon.js';
 
 const CROP_DRAG_TYPE = 'text/plain';
 const CROP_DRAG_PREFIX = 'farm-crop:';
@@ -146,11 +146,10 @@ function renderShrine(
     container.appendChild(plaque);
   }
 
-  setIcon(icon, {
-    src: shrineIconSrc(shrine.id),
+  setLayeredShrineIcon(icon, {
+    shrineId: shrine.id,
+    name: shrine.name,
     emoji: shrine.icon,
-    alt: shrine.name,
-    imgClass: 'game-icon game-icon--shrine-object',
   });
   fill.style.height = `${percent}%`;
 

@@ -25,18 +25,18 @@ thoughtful, and rewarding — the player is slowly nurturing something that
 grows over time. (confirmed)
 
 ## Visual direction
-**Cozy Lofi Grove** feel with **simplified Lofi Ghibli painterly** art
+**Cozy Lofi Grove** feel with **Soft Storybook Cutouts (fox B)** art
 (confirmed) and a deeper moss-stone farm board. Original art language for
 this game’s lore — old gods, animal shrines, Dragon Temple, forest harmony.
 Do not mimic another game’s UI chrome, character designs, icon sets, or layout.
 
 ### Feel
-Soft 2D painterly illustration with large, mobile-readable shapes (not
-hyper-detailed clutter). Crops, shrines, alchemy, and the Dragon Temple share
-one language over time; farm + shrines lead the new lock-in. Surfaces feel
-tactile but simple. Sacred grove calm; cool ambient with warm amber accents
-on runes and ready crops. Not clay sculpture, not 3D dioramas, not goofy-cute
-mascots.
+Soft storybook cutouts with **2–3 value** flats, a thin **cream rim** on lit
+edges, and large mobile-readable silhouettes (not hyper-detailed painterly
+clutter). Crops, shrines, alchemy, and the Dragon Temple share one Soft B
+language; farm + layered shrines lead the lock-in. Surfaces feel tactile but
+simple. Sacred grove calm; cool ambient with warm amber accents on runes and
+ready crops. Not clay sculpture, not 3D dioramas, not goofy-cute mascots.
 
 Guardian shrines: slightly humanoid seated animals (calm old-god presence) —
 readable torso/limbs, animal heads. Expressions are not goofy-cute mascots.
@@ -46,9 +46,13 @@ left. Each shrine has a mossy stone pedestal and one warm amber rune. Dress
 codes are unique per shrine (no shared cape rule) — e.g. frog leaf vest,
 monkey scholar beads/sash, fox traveler scarf + satchel, tiger fortune collar
 + charm tags. Body of the animal stays visible. Icons use true transparency
-(no baked checkerboard or solid backdrop). Approved locked copies:
-`assets/mood/locked_shrines/` — do not regenerate shrine icons unless art
-direction is intentionally revised.
+(no baked checkerboard or solid backdrop). Live farm-board shrines stack
+`shrine_{id}_pedestal.png` under `shrine_{id}_figure.png` in one hit target
+(idle breathe deferred). Soft B composites also live as `shrine_{id}.png` for
+single-image UI. Pre–Soft B live snapshot (revert):
+`assets/mood/archive_live_pre_storybook_b/`. Prior painterly lock kept forever
+in `assets/mood/locked_shrines/` (not the live style). **Never delete**
+artwork — live, mood, mocks, parked desk, backups, or archives.
 
 ### Palette — Fresh Moss (CSS tokens), farm deepened
 - Mint / sage canopy and soft sky-mist for the page atmosphere
@@ -67,22 +71,21 @@ direction is intentionally revised.
 - Info band (`#info-band`): below `#grove-stage`, same outer width as the
   grove stage (full app column; `width` / `max-width: 100%`). Holds only
   the game text plank (full width of the band).
-- Game text (`#game-text`): painted weathered wood plank
-  (`assets/scene/game_text_plank.png`) in the same Fresh Moss watercolor
-  language as the grove; faint linen readability wash over the plank; warm
-  worn-wood rim (not mint panel chrome). Fixed **two-line** height — line 1
-  is the dynamic message (single-line ellipsis); line 2 is the permanent
-  title **Field Notes**. Whole plank is a button that opens Field Notes.
+- Game text (`#game-text`): Soft B light wood plank
+  (`assets/scene/game_text_plank.png`, no moss); faint linen readability wash
+  over the plank; warm worn-wood rim (not mint panel chrome). Fixed **two-line**
+  height — line 1 is the dynamic message (single-line ellipsis); line 2 is the
+  permanent title **Field Notes**. Whole plank is a button that opens Field Notes.
 - Grove stage (`#grove-stage`): in-game scenic backdrop
   (`assets/scene/grove_clearing.png`) — misty canopy, empty clearing, moss
   foreground; no baked shrine alcoves (icons sit on top). Farm board with
   corner shrine footings sits on a deeper moss ground plane under the Dragon
-  Temple
-- Farm board: soft moss ground plane (quiet chrome) under the grid; painterly
+  Temple. Soft B pass intentionally kept live `grove_clearing` (not redrawn).
+- Farm board: soft moss ground plane (quiet chrome) under the grid; Soft B
   mossy-stone frame texture (`farm_frame.png`) and plot textures
   (`plot_soil.png`, full-tile `plot_soil_dry.png` when a plant asks for
   water, vine overlay `plot_soil_vined.png` on top of regular soil after
-  uproot while vines remain, `plot_locked.png`) matching shrine / mood art;
+  uproot while vines remain, `plot_locked.png`) matching shrine Soft B art;
   ready plots
   keep honey glow on dirt. Mood ref: `assets/mood/farm_board_lofi_ghibli_mood.png`
 - Locked farm plots: locked tile texture only — no lock emoji/icon overlay.
@@ -96,16 +99,15 @@ direction is intentionally revised.
   button on the main screen.
 - Modals: cream linen inside sage / frame borders (Field Notes, shrine
   detail, Dragon Temple explainer, reset confirm)
-- Shrines: simplified painterly guardian icons on small altars. Each corner
-  cell of the 4×4 board is a shrine **footing** (no plot); the figure is
-  **larger than a farm tile** and overflows past the farm frame border
-  (sits on the farm frame art — no filler tile behind). Main view shows
-  figure + a slim **vertical** progress track on the outer side of each
-  shrine (left of frog/fox, right of monkey/tiger); name / tier in the
-  click detail modal; no hover lift/scale on shrines
-- Dragon Temple: simplified Lofi Ghibli painterly roof dragon sitting above a
-  1×4 holy farm-style tribute board (`dragon_temple_rest.png` /
-  `dragon_temple_awake.png`; locked copies in `assets/mood/locked_shrines/`).
+- Shrines: Soft B layered guardian cutouts (pedestal + figure) on corner
+  footings. Each corner cell of the 4×4 board is a shrine **footing** (no
+  plot); the stacked figure is **larger than a farm tile** and overflows past
+  the farm frame border (sits on the farm frame art — no filler tile behind).
+  Main view shows figure + a slim **vertical** progress track on the outer
+  side of each shrine (left of frog/fox, right of monkey/tiger); name / tier
+  in the click detail modal; no hover lift/scale on shrines
+- Dragon Temple: Soft B roof dragon sitting above a 1×4 holy farm-style
+  tribute board (`dragon_temple_rest.png` / `dragon_temple_awake.png`).
   Same roof stone both states; only the dragon sleeps vs wakes. Four demand
   slots use farm-frame / locked-tile textures with a brighter holy tint.
   Layout reserves meter height above so resting vs active does not reflow the
@@ -119,25 +121,27 @@ direction is intentionally revised.
 - Buttons: moss fills; quiet, not neon
 
 ### Icons
-One artistic language for crops, shrines, Field Notes (book cutout), and the
-Dragon Temple: cozy lofi 2D painterly icons with true transparency (no baked
-checkerboard or cream canvas). Soft mist belongs on the scenic backdrop;
-cutout icons sit cleanly in the grove. Each crop must be unmistakable at
-~64px. Field Notes shrine-value faces (`log_frog.png`, `log_monkey.png`,
-`log_fox.png`, `log_tiger.png`) and Dragon Temple explainer faces
-(`log_dragon_rest.png`, `log_dragon_awake.png`) stay emoji-simple. Assets under
-`assets/icons/`; scene under `assets/scene/`. Emoji remain as fallback
-until an asset exists. Prior Fresh Moss backups:
-`assets/mood/archive_fresh_moss/`. Prior crop icon set:
-`assets/mood/archive_crops_prealchemy/`. Approved locked icons:
-`assets/mood/locked_shrines/` (animal shrines + Dragon Temple). Mood refs
-(not in-game UI): `assets/mood/farm_board_lofi_ghibli_mood.png`,
-`assets/mood/grove_clearing_lofi_ghibli_mood.png`.
+One Soft Storybook Cutouts language for crops, layered shrines, Field Notes
+(book cutout), and the Dragon Temple: 2–3 value flats, thin cream rim, true
+transparency (no baked checkerboard or cream canvas). Soft mist belongs on
+the scenic backdrop; cutout icons sit cleanly in the grove. Each crop must be
+unmistakable at ~64px. Field Notes shrine-value faces (`log_frog.png`,
+`log_monkey.png`, `log_fox.png`, `log_tiger.png`) and Dragon Temple explainer
+faces (`log_dragon_rest.png`, `log_dragon_awake.png`) stay emoji-simple. Assets
+under `assets/icons/`; scene under `assets/scene/`; opening under
+`assets/opening/`. Emoji remain as fallback until an asset exists. Pre–Soft B
+live revert snapshot: `assets/mood/archive_live_pre_storybook_b/`. Prior Fresh
+Moss backups: `assets/mood/archive_fresh_moss/`. Prior crop icon set:
+`assets/mood/archive_crops_prealchemy/`. Prior painterly shrine/temple lock
+(kept forever, not live): `assets/mood/locked_shrines/`. Style bible:
+`docs/ART_STYLE_STORYBOOK_B.md`. Mood refs (not in-game UI):
+`assets/mood/farm_board_lofi_ghibli_mood.png`,
+`assets/mood/grove_clearing_lofi_ghibli_mood.png`. A few live icons remain
+pre–Soft B until redrawn (`mortar.png`, `firefly.png`, SVGs, parked desk).
 
-Crop icons use two registers so harvest crops and alchemy mixes stay distinct
-at small size (same watercolor technique; prepared or enchanted form, not a
-recolored parent crop):
-- **Harvest crops** (`plantable: true`): muted natural botanical watercolor;
+Crop icons use two Soft B registers so harvest crops and alchemy mixes stay
+distinct at small size (prepared or enchanted form, not a recolored parent):
+- **Harvest crops** (`plantable: true`): muted natural botanical cutouts;
   close-cropped whole plant with foliage; large clear silhouette.
 - **Alchemy mixes** (`plantable: false`): a *changed* form — loaves
   distinguished by shape only (smooth crust, no fruit stuffed in, no deep
@@ -822,10 +826,10 @@ pendingClose, pendingReward, triggerChance }`
 ## Screens
 **Opening screen** then main farm. Opening (`#opening-screen`) shows on every
 fresh page load and again after confirmed **Reset game**. Journey-trail art
-(`assets/opening/opening_journey.png`) depicts the four guardian animals free
-in the forest (walking party — not shrine pedestal icons). Title uses a painted
-wordmark (`assets/opening/opening_title.png`, stacked Harmony / Grove with leaf
-flourish). Soft large **Play** uses matching cream parchment chrome
+(`assets/opening/opening_journey.png`) is a Soft B forest path background
+only (no guardian animals). Title uses a Soft B wordmark
+(`assets/opening/opening_title.png`, stacked Harmony / Grove with leaf
+flourish). Soft large **Play** uses matching Soft B cream parchment chrome
 (`assets/opening/opening_play.png`) with leaf accents, raised in the lower third
 (CSS only; background art unchanged). Play stays muted until **main grove**
 assets preload and decode (crops, soils, frame, shrines, temple, plank, common

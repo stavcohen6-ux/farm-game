@@ -3,7 +3,7 @@ import { startBackgroundMusic } from '../audio/backgroundMusic.js';
 import { preloadSfx, unlockSfx } from '../audio/sfx.js';
 import {
   listCropIconSrcs,
-  shrineIconSrc,
+  listShrineLayerSrcs,
   UI_ICONS,
 } from './icon.js';
 
@@ -36,10 +36,7 @@ const GAME_CRITICAL_ASSETS = [
   UI_ICONS.waterDrop,
   UI_ICONS.butterfly,
   UI_ICONS.tanukiSleep,
-  shrineIconSrc('frog'),
-  shrineIconSrc('monkey'),
-  shrineIconSrc('fox'),
-  shrineIconSrc('tiger'),
+  ...listShrineLayerSrcs(),
   ...listCropIconSrcs(),
 ];
 

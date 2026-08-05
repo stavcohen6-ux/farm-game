@@ -3,7 +3,7 @@
 
 const ICON_BASE = 'assets/icons';
 
-// Richer illustrated PNGs (Cozy Lofi Grove / Fresh Moss).
+// Soft Storybook Cutout PNGs (fox B).
 const PNG_CROPS = new Set([
   'wheat',
   'turnip',
@@ -39,9 +39,30 @@ export function listCropIconSrcs() {
   return [...PNG_CROPS].map((id) => cropIconSrc(id)).filter(Boolean);
 }
 
+/** Soft B composite (How to Play / single-image consumers). */
 export function shrineIconSrc(shrineId) {
   if (!shrineId) return null;
   return `${ICON_BASE}/shrine_${shrineId}.png`;
+}
+
+export function shrineFigureSrc(shrineId) {
+  if (!shrineId) return null;
+  return `${ICON_BASE}/shrine_${shrineId}_figure.png`;
+}
+
+export function shrinePedestalSrc(shrineId) {
+  if (!shrineId) return null;
+  return `${ICON_BASE}/shrine_${shrineId}_pedestal.png`;
+}
+
+/** Farm-board layered shrine URLs (for opening-screen preload). */
+export function listShrineLayerSrcs() {
+  const ids = ['frog', 'monkey', 'fox', 'tiger'];
+  return ids.flatMap((id) => [
+    shrinePedestalSrc(id),
+    shrineFigureSrc(id),
+    shrineIconSrc(id),
+  ]);
 }
 
 // Compact Discovery Log shrine-value faces (emoji-sized).
@@ -52,11 +73,11 @@ export function logShrineIconSrc(shrineId) {
 
 export const UI_ICONS = {
   discoveryLog: `${ICON_BASE}/discovery_log.png`,
-  // Query bust so rest/awake roof cutouts aren't stuck behind old full-temple caches.
-  dragonRest: `${ICON_BASE}/dragon_temple_rest.png?v=roof2`,
-  dragonAwake: `${ICON_BASE}/dragon_temple_awake.png?v=roof2`,
+  // Query bust after Soft Storybook B temple promote.
+  dragonRest: `${ICON_BASE}/dragon_temple_rest.png?v=softb`,
+  dragonAwake: `${ICON_BASE}/dragon_temple_awake.png?v=softb`,
   dragonFaceRest: `${ICON_BASE}/log_dragon_rest.png`,
-  dragonFaceAwake: `${ICON_BASE}/log_dragon_awake.png?v=2`,
+  dragonFaceAwake: `${ICON_BASE}/log_dragon_awake.png?v=softb`,
   fire: `${ICON_BASE}/fire.png`,
   mortar: `${ICON_BASE}/mortar.png`,
   harvest: `${ICON_BASE}/harvest.png`,
@@ -66,9 +87,56 @@ export const UI_ICONS = {
   waterDrop: `${ICON_BASE}/water_drop.png`,
   butterfly: `${ICON_BASE}/butterfly.png`,
   firefly: `${ICON_BASE}/firefly.png`,
-  // Tanuki nap poses (emoji fallback until painted PNGs land)
   tanukiSleep: `${ICON_BASE}/tanuki_sleep.png`,
 };
+
+/**
+ * Stack Soft B pedestal + figure inside a shrine icon container.
+ * Reuses existing layer imgs when srcs are unchanged.
+ * @param {HTMLElement} container
+ * @param {{ shrineId: string, name?: string, emoji?: string }} opts
+ */
+export function setLayeredShrineIcon(container, { shrineId, name = '', emoji = '' } = {}) {
+  const pedestalSrc = shrinePedestalSrc(shrineId);
+  const figureSrc = shrineFigureSrc(shrineId);
+  if (!pedestalSrc || !figureSrc) {
+    setIcon(container, {
+      src: shrineIconSrc(shrineId),
+      emoji,
+      alt: name,
+      imgClass: 'game-icon game-icon--shrine-object',
+    });
+    return;
+  }
+
+  const existing = container.querySelectorAll(':scope > img.shrine__layer');
+  if (
+    existing.length === 2 &&
+    existing[0].getAttribute('src') === pedestalSrc &&
+    existing[1].getAttribute('src') === figureSrc
+  ) {
+    existing[0].alt = '';
+    existing[1].alt = name;
+    return;
+  }
+
+  container.replaceChildren();
+
+  const pedestal = document.createElement('img');
+  pedestal.src = pedestalSrc;
+  pedestal.alt = '';
+  pedestal.draggable = false;
+  pedestal.className = 'shrine__layer shrine__layer--pedestal';
+  pedestal.setAttribute('aria-hidden', 'true');
+
+  const figure = document.createElement('img');
+  figure.src = figureSrc;
+  figure.alt = name;
+  figure.draggable = false;
+  figure.className = 'shrine__layer shrine__layer--figure';
+
+  container.append(pedestal, figure);
+}
 
 /**
  * Fill a container with an icon image (preferred) or emoji fallback.
