@@ -195,8 +195,7 @@ Approved Soft B setpiece mocks under `mocks/storybook-cutouts/wave4/`:
   `wave4_aside_unused_tanuki/`
 - Opening: `opening_title`, `opening_play`, `opening_journey` (journey =
   Soft B path background only — no animals)
-- Scene: `game_text_plank` (light Soft B chrome, no moss;
-  `grove_clearing` skipped — live already cohesive)
+- Scene: `game_text_plank` (light Soft B chrome, no moss)
 
 Style refs: fox-shrine-b + layered shrines only. Live paths = composition
 refs only. Parked `player_desk` untouched. Prior passes kept under
@@ -205,9 +204,22 @@ refs only. Parked `player_desk` untouched. Prior passes kept under
 **Do not change these mockups unless explicitly asked.** See
 `mocks/storybook-cutouts/wave4/README.md`. **Live promoted** into
 `assets/icons/`, `assets/opening/`, and `assets/scene/game_text_plank.png`
-(`grove_clearing` and parked desk left as-is).
+(parked desk left as-is).
 
 Crafted Soft B crops remain locked under `crafts/` (prior Soft B pass).
+
+---
+
+## Wave 5 Soft Storybook B leftovers
+
+**Approved + live promoted:** `mortar`, `grove_clearing` from
+`mocks/storybook-cutouts/wave5/` into `assets/icons/mortar.png` and
+`assets/scene/grove_clearing.png` (pre–Soft B copies remain in
+`archive_live_pre_storybook_b/`).
+
+**Still pending:** crop-picker `lock` PNG mock (live stays `lock.svg`).
+
+Prior pass: `wave5_pass1/` (too-much-moss mortar; ornate lock).
 
 ---
 
@@ -221,8 +233,6 @@ paths (`assets/icons|opening|scene` as mapped). Farm-board shrines use layered
 DOM. Pre–Soft B revert snapshot remains
 `assets/mood/archive_live_pre_storybook_b/` (do not modify).
 
-**Wave 5 (pending approval):** Soft B mocks under
-`mocks/storybook-cutouts/wave5/` — `mortar`, crop-picker `lock` PNG,
-`grove_clearing`. Mocks only until approved; live paths unchanged. Remaining
-pre–Soft B leftovers after Wave 5: `firefly`, other SVGs, parked desk /
-tanuki walk-stretch.
+**Wave 5:** `mortar` + `grove_clearing` promoted; `lock` mock still pending.
+Remaining pre–Soft B leftovers: `firefly`, SVGs (incl. `lock.svg`), parked
+desk / tanuki walk-stretch.

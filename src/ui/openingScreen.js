@@ -16,7 +16,7 @@ const FADE_MS = 480;
 // Must finish (load + decode) before Play enables. Opening journey/title/play
 // art is already in the opening DOM and must not block this gate.
 const GAME_CRITICAL_ASSETS = [
-  'assets/scene/grove_clearing.png',
+  'assets/scene/grove_clearing.png?v=softb',
   'assets/scene/game_text_plank.png',
   'assets/icons/farm_frame.png',
   'assets/icons/plot_soil.png',

@@ -77,10 +77,10 @@ artwork — live, mood, mocks, parked desk, backups, or archives.
   height — line 1 is the dynamic message (single-line ellipsis); line 2 is the
   permanent title **Field Notes**. Whole plank is a button that opens Field Notes.
 - Grove stage (`#grove-stage`): in-game scenic backdrop
-  (`assets/scene/grove_clearing.png`) — misty canopy, empty clearing, moss
-  foreground; no baked shrine alcoves (icons sit on top). Farm board with
+  (`assets/scene/grove_clearing.png`) — Soft B misty canopy, empty clearing,
+  moss foreground; no baked shrine alcoves (icons sit on top). Farm board with
   corner shrine footings sits on a deeper moss ground plane under the Dragon
-  Temple. Soft B pass intentionally kept live `grove_clearing` (not redrawn).
+  Temple.
 - Farm board: soft moss ground plane (quiet chrome) under the grid; Soft B
   mossy-stone frame texture (`farm_frame.png`) and plot textures
   (`plot_soil.png`, full-tile `plot_soil_dry.png` when a plant asks for
@@ -137,7 +137,8 @@ Moss backups: `assets/mood/archive_fresh_moss/`. Prior crop icon set:
 `docs/ART_STYLE_STORYBOOK_B.md`. Mood refs (not in-game UI):
 `assets/mood/farm_board_lofi_ghibli_mood.png`,
 `assets/mood/grove_clearing_lofi_ghibli_mood.png`. A few live icons remain
-pre–Soft B until redrawn (`mortar.png`, `firefly.png`, SVGs, parked desk).
+pre–Soft B until redrawn (`firefly.png`, SVGs including crop-picker
+`lock.svg`, parked desk).
 
 Crop icons use two Soft B registers so harvest crops and alchemy mixes stay
 distinct at small size (prepared or enchanted form, not a recolored parent):

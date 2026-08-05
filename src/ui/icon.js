@@ -79,7 +79,7 @@ export const UI_ICONS = {
   dragonFaceRest: `${ICON_BASE}/log_dragon_rest.png`,
   dragonFaceAwake: `${ICON_BASE}/log_dragon_awake.png?v=softb`,
   fire: `${ICON_BASE}/fire.png`,
-  mortar: `${ICON_BASE}/mortar.png`,
+  mortar: `${ICON_BASE}/mortar.png?v=softb`,
   harvest: `${ICON_BASE}/harvest.png`,
   spark: `${ICON_BASE}/spark.png`,
   lock: `${ICON_BASE}/lock.svg`,

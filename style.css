@@ -152,7 +152,7 @@ body {
       rgba(200, 221, 208, 0.2) 42%,
       rgba(168, 196, 168, 0.45) 100%
     ),
-    url('assets/scene/grove_clearing.png');
+    url('assets/scene/grove_clearing.png?v=softb');
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
