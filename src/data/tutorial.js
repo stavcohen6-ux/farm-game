@@ -31,11 +31,13 @@ export const TUTORIAL_STEPS = [
   'mix',
   'offerRootLoaf',
   'exploreBoard',
+  'fieldNotesInvite',
   'done',
 ];
 
 export const TUTORIAL_STEP_START = 'tapWheatPlot';
 export const TUTORIAL_STEP_EXPLORE = 'exploreBoard';
+export const TUTORIAL_STEP_FIELD_NOTES = 'fieldNotesInvite';
 export const TUTORIAL_STEP_DONE = 'done';
 
 /** Plots unlocked when the Fox FTUE bar completes (explore invite anchor). */
@@ -60,6 +62,8 @@ export const TUTORIAL_BUBBLE_LINES = {
   offerRootLoaf: 'Drag the Root Loaf to the Fox shrine.',
   exploreBoard:
     'The Fox thanks you for your offerings and has opened more land. Continue exploring the farm.',
+  fieldNotesInvite:
+    'Tap here to see all of your discovered crops and for tips on how to play',
 };
 
 /** @deprecated Soft plank tips — kept for critical-text helpers / legacy saves. */
@@ -94,14 +98,24 @@ export function isTutorialActive(state) {
   return isTutorialStep(state?.tutorialStep) && state.tutorialStep !== TUTORIAL_STEP_DONE;
 }
 
-/** Final invite after unlock — bubble only; no action gates. */
+/** Soft invite after unlock — bubble only; no action gates. */
 export function isTutorialExploreInvite(state) {
   return state?.tutorialStep === TUTORIAL_STEP_EXPLORE;
 }
 
+/** Soft invite pointing at Field Notes — bubble only; no action gates. */
+export function isTutorialFieldNotesInvite(state) {
+  return state?.tutorialStep === TUTORIAL_STEP_FIELD_NOTES;
+}
+
+/** Free-play suggestion bubbles (dismiss on next tap; not hard-gated). */
+export function isTutorialSoftInvite(state) {
+  return isTutorialExploreInvite(state) || isTutorialFieldNotesInvite(state);
+}
+
 /** True while FTUE still restricts planting / offers / temple / etc. */
 export function isTutorialGated(state) {
-  return isTutorialActive(state) && !isTutorialExploreInvite(state);
+  return isTutorialActive(state) && !isTutorialSoftInvite(state);
 }
 
 export function isTutorialComplete(state) {

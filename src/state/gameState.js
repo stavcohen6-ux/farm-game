@@ -51,6 +51,8 @@ import {
   isTutorialActive,
   isTutorialGated,
   isTutorialExploreInvite,
+  isTutorialFieldNotesInvite,
+  isTutorialSoftInvite,
   canTutorialPlant,
   canTutorialUproot,
   canTutorialOffer,
@@ -77,12 +79,16 @@ import {
   isTutorialPickerCropUnlocked,
   getTutorialPlantMask,
   dismissTutorialExploreInvite,
+  dismissTutorialFieldNotesInvite,
+  dismissTutorialSoftInvite,
 } from './tutorialFlow.js';
 
 export {
   isTutorialActive,
   isTutorialGated,
   isTutorialExploreInvite,
+  isTutorialFieldNotesInvite,
+  isTutorialSoftInvite,
   canTutorialOpenPicker,
   onTutorialPickerOpened,
   canTutorialUproot,
@@ -100,6 +106,8 @@ export {
   isTutorialPickerCropUnlocked,
   getTutorialPlantMask,
   dismissTutorialExploreInvite,
+  dismissTutorialFieldNotesInvite,
+  dismissTutorialSoftInvite,
 };
 
 export { TUTORIAL_STEP_DONE } from '../data/tutorial.js';

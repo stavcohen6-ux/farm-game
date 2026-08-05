@@ -90,7 +90,7 @@ direction is intentionally revised.
 - **Player desk removed** from the live UI (inventory shelf + Mix row gone).
   Desk art (`assets/scene/player_desk.png`) and desk firefly / flowering art
   are **parked** for a later redesign — do not delete. Crops stay on ready
-  plots until dragged (plot drag lands in a later milestone).
+  plots until the player drags them (shrine / temple / adjacent mix).
 - Field Notes: opened by clicking the game-text plank (`#game-text`); modal
   still uses `discovery_log.png` book art in the header. No standalone book
   button on the main screen.
@@ -389,8 +389,8 @@ Players can clear an unwanted crop from the farm without offering it.
 
 ## Inventory
 **Parked:** the inventory shelf UI is removed with the player desk. State may
-still carry an empty `inventory` object for migration. Crop holding is
-on-plot until plot drag ships.
+still carry an empty `inventory` object for migration. Ready crops stay on
+plots until the player drags them (shrine / temple / adjacent mix).
 
 ## Field Notes
 Opened by clicking the game-text plank in the info band (`#game-text` /
@@ -932,19 +932,23 @@ Triggers:
   demo bar) → plant Turnip on right (Wheat visible but locked on wheel;
   4× growth; optional water) → plant second Wheat on left (4× growth)
   → mix → offer Root Loaf to Fox (`5/5`) → Fox upgrade VFX + unlock
-  plots `0`/`1` → `exploreBoard` speech bubble → next tap → `done`.
+  plots `0`/`1` → `exploreBoard` speech bubble → next tap →
+  `fieldNotesInvite` bubble above the game-text plank → next tap
+  (anywhere; opening Field Notes is optional) → `done`.
   Water never blocks: ignore dry soil until ready and the step still
   advances. At most one water ask per plant. Uproot, shrine/temple detail
   popups, Tiger/Frog/Monkey offers, and Dragon wake are blocked until
-  `exploreBoard` (free play with invite bubble) / `done`. Non-Fox shrines
+  `exploreBoard` / `fieldNotesInvite` (free play with invite bubbles) /
+  `done`. Non-Fox shrines
   (+ temple) are greyed until then. Fox demo bar uses the normal progress
   UI with max 5 (scripted +1 wheat / fill on loaf); on complete Fox shrine
   progress resets to Forest Fox `0` for free play. `repairTutorialState` on
   load + tick fixes board/step desync.
 
   Bubble: one at a time, above the target (flip below if clipped); no
-  player dismiss — advances when the step completes. Exception:
-  `exploreBoard` dismisses on the next tap after unlock.
+  player dismiss — advances when the step completes. Exception: soft
+  invites `exploreBoard` and `fieldNotesInvite` dismiss on the next tap
+  (suggestion only; Field Notes is not required to finish FTUE).
 
 API (`src/state/gameState.js` / `tutorialFlow.js`): `tickTutorial`,
 `repairTutorialState`, `getTutorialFoxProgress`, gates

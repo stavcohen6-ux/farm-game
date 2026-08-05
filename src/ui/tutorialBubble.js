@@ -1,13 +1,13 @@
 /**
  * FTUE speech bubble anchored to a target element. No dismiss control —
- * advances when tutorial step changes. Exception: exploreBoard dismisses
- * on the next tap after unlock.
+ * advances when tutorial step changes. Exception: soft invites
+ * (`exploreBoard`, `fieldNotesInvite`) dismiss on the next tap.
  */
 
 import {
   getTutorialBubbleText,
   isTutorialActive,
-  isTutorialExploreInvite,
+  isTutorialSoftInvite,
   isTutorialFoxTarget,
   getTutorialTargetPlotIds,
 } from '../state/gameState.js';
@@ -15,12 +15,13 @@ import {
   TUTORIAL_LEFT_PLOT,
   TUTORIAL_RIGHT_PLOT,
   TUTORIAL_UNLOCK_PLOT_IDS,
+  TUTORIAL_STEP_FIELD_NOTES,
 } from '../data/tutorial.js';
 
 let bubbleEl = null;
-let exploreDismissWired = false;
-let exploreDismissHandler = null;
-let exploreDismissTimer = 0;
+let inviteDismissWired = false;
+let inviteDismissHandler = null;
+let inviteDismissTimer = 0;
 
 function ensureBubble() {
   if (bubbleEl) return bubbleEl;
@@ -32,33 +33,33 @@ function ensureBubble() {
   return bubbleEl;
 }
 
-function clearExploreDismiss() {
-  if (exploreDismissTimer) {
-    window.clearTimeout(exploreDismissTimer);
-    exploreDismissTimer = 0;
+function clearInviteDismiss() {
+  if (inviteDismissTimer) {
+    window.clearTimeout(inviteDismissTimer);
+    inviteDismissTimer = 0;
   }
-  if (exploreDismissHandler) {
-    document.removeEventListener('pointerdown', exploreDismissHandler, true);
-    document.removeEventListener('click', exploreDismissHandler, true);
-    exploreDismissHandler = null;
+  if (inviteDismissHandler) {
+    document.removeEventListener('pointerdown', inviteDismissHandler, true);
+    document.removeEventListener('click', inviteDismissHandler, true);
+    inviteDismissHandler = null;
   }
   if (bubbleEl) {
     bubbleEl.classList.remove('tutorial-bubble--dismissable');
   }
-  exploreDismissWired = false;
+  inviteDismissWired = false;
 }
 
-function wireExploreDismiss(onExploreDismiss) {
-  if (exploreDismissWired || typeof onExploreDismiss !== 'function') return;
-  exploreDismissWired = true;
-  // Wait out the Root Loaf drop gesture, then arm capture-phase dismiss.
-  exploreDismissTimer = window.setTimeout(() => {
-    exploreDismissTimer = 0;
+function wireInviteDismiss(onInviteDismiss) {
+  if (inviteDismissWired || typeof onInviteDismiss !== 'function') return;
+  inviteDismissWired = true;
+  // Wait out the prior gesture (Root Loaf drop / explore dismiss), then arm.
+  inviteDismissTimer = window.setTimeout(() => {
+    inviteDismissTimer = 0;
     const handler = () => {
-      clearExploreDismiss();
-      onExploreDismiss();
+      clearInviteDismiss();
+      onInviteDismiss();
     };
-    exploreDismissHandler = handler;
+    inviteDismissHandler = handler;
     if (bubbleEl) {
       bubbleEl.classList.add('tutorial-bubble--dismissable');
     }
@@ -69,7 +70,7 @@ function wireExploreDismiss(onExploreDismiss) {
 }
 
 export function teardownTutorialBubble() {
-  clearExploreDismiss();
+  clearInviteDismiss();
   if (bubbleEl) {
     bubbleEl.remove();
     bubbleEl = null;
@@ -119,7 +120,7 @@ function midPointAnchor(a, b) {
  *   boardEl: HTMLElement,
  *   gridEl: HTMLElement,
  *   now?: number,
- *   onExploreDismiss?: () => void,
+ *   onInviteDismiss?: () => void,
  * }} ctx
  */
 export function renderTutorialBubble(state, ctx) {
@@ -131,7 +132,7 @@ export function renderTutorialBubble(state, ctx) {
   const el = ensureBubble();
   // Grove warms under the title screen; keep FTUE bubbles off until Play.
   if (!isTutorialActive(state) || isOpeningVisible()) {
-    clearExploreDismiss();
+    clearInviteDismiss();
     el.classList.remove('is-on', 'is-below');
     el.textContent = '';
     return;
@@ -140,7 +141,7 @@ export function renderTutorialBubble(state, ctx) {
   const now = ctx.now ?? Date.now();
   const text = getTutorialBubbleText(state, now);
   if (!text) {
-    clearExploreDismiss();
+    clearInviteDismiss();
     el.classList.remove('is-on', 'is-below');
     el.textContent = '';
     return;
@@ -170,15 +171,22 @@ export function renderTutorialBubble(state, ctx) {
   el.classList.add('is-on');
 
   const boardRect = ctx.boardEl?.getBoundingClientRect();
-  if (boardRect) {
+  // Field Notes invite sits on the info band — clamp to the viewport plank,
+  // not the farm board (board clamp would push the bubble off-target).
+  const clampRect =
+    state.tutorialStep === TUTORIAL_STEP_FIELD_NOTES
+      ? document.getElementById('info-band')?.getBoundingClientRect() ??
+        anchor.getBoundingClientRect()
+      : boardRect;
+  if (clampRect) {
     const pad = 8;
     const half = el.offsetWidth / 2;
-    const minX = boardRect.left + pad + half;
-    const maxX = boardRect.right - pad - half;
+    const minX = clampRect.left + pad + half;
+    const maxX = clampRect.right - pad - half;
     const clampedX =
       maxX >= minX
         ? Math.min(Math.max(anchorX, minX), maxX)
-        : (boardRect.left + boardRect.right) / 2;
+        : (clampRect.left + clampRect.right) / 2;
     const tailOffset = anchorX - clampedX;
     // Keep connector diamond inside the bubble (inset from corners).
     const tailInset = 14;
@@ -192,10 +200,10 @@ export function renderTutorialBubble(state, ctx) {
     );
   }
 
-  if (isTutorialExploreInvite(state)) {
-    wireExploreDismiss(ctx.onExploreDismiss);
+  if (isTutorialSoftInvite(state)) {
+    wireInviteDismiss(ctx.onInviteDismiss);
   } else {
-    clearExploreDismiss();
+    clearInviteDismiss();
   }
 }
 
@@ -215,6 +223,9 @@ function resolveAnchorEl(state, { boardEl, gridEl }) {
     const b = gridEl?.querySelector(`[data-plot-id="${idB}"]`);
     if (a && b) return midPointAnchor(a, b);
     return a ?? b ?? null;
+  }
+  if (step === TUTORIAL_STEP_FIELD_NOTES) {
+    return document.getElementById('game-text');
   }
   if (step === 'pickWheat' || step === 'pickWheat2') {
     const slice = document.querySelector(

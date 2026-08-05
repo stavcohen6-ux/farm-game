@@ -12,10 +12,13 @@ import {
   TUTORIAL_FAST_GROWTH_DIVISOR,
   TUTORIAL_STEP_START,
   TUTORIAL_STEP_EXPLORE,
+  TUTORIAL_STEP_FIELD_NOTES,
   TUTORIAL_STEP_DONE,
   TUTORIAL_UNLOCK_PLOT_IDS,
   isTutorialActive,
   isTutorialExploreInvite,
+  isTutorialFieldNotesInvite,
+  isTutorialSoftInvite,
   isTutorialGated,
   isTutorialStep,
   isTutorialCropPlantable,
@@ -25,6 +28,8 @@ export {
   isTutorialActive,
   isTutorialComplete,
   isTutorialExploreInvite,
+  isTutorialFieldNotesInvite,
+  isTutorialSoftInvite,
   isTutorialGated,
   getTutorialBubbleText,
   getTutorialTargetPlotIds,
@@ -36,6 +41,7 @@ export {
   TUTORIAL_STEP_DONE,
   TUTORIAL_STEP_START,
   TUTORIAL_STEP_EXPLORE,
+  TUTORIAL_STEP_FIELD_NOTES,
 } from '../data/tutorial.js';
 
 function plotById(state, plotId) {
@@ -297,11 +303,24 @@ export function completeTutorial(state) {
   return unlockedPlotIds;
 }
 
-/** Dismiss the post-unlock explore bubble into free play. */
+/** Dismiss the post-unlock explore bubble → Field Notes suggestion. */
 export function dismissTutorialExploreInvite(state) {
   if (!isTutorialExploreInvite(state)) return false;
+  setTutorialStep(state, TUTORIAL_STEP_FIELD_NOTES);
+  return true;
+}
+
+/** Dismiss the Field Notes suggestion into done (any tap; opening log optional). */
+export function dismissTutorialFieldNotesInvite(state) {
+  if (!isTutorialFieldNotesInvite(state)) return false;
   setTutorialStep(state, TUTORIAL_STEP_DONE);
   return true;
+}
+
+/** Dismiss whichever soft invite bubble is showing. */
+export function dismissTutorialSoftInvite(state) {
+  if (dismissTutorialExploreInvite(state)) return true;
+  return dismissTutorialFieldNotesInvite(state);
 }
 
 export function onTutorialMixed(state) {

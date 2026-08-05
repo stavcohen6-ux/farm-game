@@ -25,7 +25,7 @@ import {
   uprootCrop,
   isTutorialActive,
   isTutorialGated,
-  dismissTutorialExploreInvite,
+  dismissTutorialSoftInvite,
   canTutorialOpenPicker,
   onTutorialPickerOpened,
   canTutorialUproot,
@@ -154,8 +154,8 @@ function showPlotCropName(plotId) {
   pinCropTip(plotEl, crop.name, { small: true });
 }
 
-function handleTutorialExploreDismiss() {
-  if (!dismissTutorialExploreInvite(state)) return;
+function handleTutorialInviteDismiss() {
+  if (!dismissTutorialSoftInvite(state)) return;
   save(state);
   render();
 }
@@ -165,7 +165,7 @@ function tutorialBubbleCtx(now = Date.now()) {
     boardEl,
     gridEl,
     now,
-    onExploreDismiss: handleTutorialExploreDismiss,
+    onInviteDismiss: handleTutorialInviteDismiss,
   };
 }
 
