@@ -862,13 +862,16 @@ footer: How to Play, Music mute, then Reset.
 - Target: desktop and portrait phone (see **Platform** — every feature must
   work well on touch). Main screen (grove + temple + farm + shrines + text
   plank) fits in `100dvh` **without vertical scrolling**; tile/shrine sizes
-  scale via `stageFit.js`.
+  scale via `stageFit.js` (about **~10% larger** tiles than the prior fit on
+  typical phones; app `--stage-pad` unchanged).
 - Portrait phones are often **height-limited**: temple figure height (roof art
   aspect) plus farm board must fit under the info band, so `--tile` may stay
   below the width budget and leave grove visible past the shrine bars. Freeing
   vertical space (tighter grove pads/gaps, or a shorter temple) lets the board
   grow toward full phone width. Shrine progress bars stay inset from the screen
-  edge via `--grove-pad-x` (`sidePadFor` in `stageFit.js`) — not flush.
+  edge via `--grove-pad-x` (`sidePadFor` in `stageFit.js`, floor ~14px) — a bit
+  closer than flush-avoidance padding alone, but not flush. Plot / shrine /
+  temple progress bar thickness scales with `--tile`.
 - Bands: scenic grove stage on top (`#grove-stage` holds Dragon Temple above
   the framed 4×4 farm board with a small temple↔farm gap; corner cells are
   shrine footings with oversized figures overflowing the frame and slim

@@ -3,32 +3,32 @@
 
 const INFO_FALLBACK_PX = 76;
 const MIN_TILE_PX = 36;
-const MAX_TILE_PX = 92;
+const MAX_TILE_PX = 105;
 const MIN_SHRINE_PX = 44;
 const MAX_SHRINE_PX = 140;
 const DRAGON_ASPECT = 1495 / 790;
-const SHRINE_BAR_WIDTH = 8;
-const SHRINE_BAR_GAP = 4.5; // ~0.28rem
+const SHRINE_BAR_GAP = 3.5;
 const BOARD_BORDER = 6; // 3px × 2
-const TEMPLE_METERS_H = 22; // ~1.35rem
+const TEMPLE_METERS_H = 18;
 const TEMPLE_INNER_GAP = 4; // ~0.25rem between temple stacks
 const APP_GAP = 6; // ~0.35rem grove ↔ info-band
-const GROVE_GAP_DEFAULT = 8; // ~0.5rem temple ↔ farm
+const GROVE_GAP_DEFAULT = 6;
 const GROVE_GAP_TIGHT = 4;
-const GROVE_PAD_Y_TOP = 6; // ~0.375rem
-const GROVE_PAD_Y_BOTTOM = 8; // ~0.5rem
-const FIT_SLACK_PX = 6;
+const GROVE_PAD_Y_TOP = 4;
+const GROVE_PAD_Y_BOTTOM = 6;
+const FIT_SLACK_PX = 3;
+const SIDE_PAD_FLOOR = 14;
 
 function clamp(n, lo, hi) {
   return Math.min(hi, Math.max(lo, n));
 }
 
 function plotGapFor(tile) {
-  return Math.max(4, Math.round(tile * 0.12));
+  return Math.max(3, Math.round(tile * 0.07));
 }
 
 function framePadFor(tile) {
-  return Math.max(8, Math.round(tile * 0.2));
+  return Math.max(6, Math.round(tile * 0.1));
 }
 
 function boardInnerFor(tile) {
@@ -37,28 +37,40 @@ function boardInnerFor(tile) {
 
 function shrineFor(tile, availW) {
   return clamp(
-    Math.floor(tile * 1.48),
-    Math.max(MIN_SHRINE_PX, Math.floor(tile * 1.2)),
-    Math.min(MAX_SHRINE_PX, Math.floor(tile * 1.6), Math.floor(availW * 0.34)),
+    Math.floor(tile * 1.25),
+    Math.max(MIN_SHRINE_PX, Math.floor(tile * 1.15)),
+    Math.min(MAX_SHRINE_PX, Math.floor(tile * 1.4), Math.floor(availW * 0.34)),
   );
 }
 
 function nudgesFor(tile) {
   return {
-    top: Math.max(8, Math.round(tile * 0.22)),
-    bottom: Math.max(8, Math.round(tile * 0.22)),
+    top: Math.max(6, Math.round(tile * 0.16)),
+    bottom: Math.max(6, Math.round(tile * 0.16)),
   };
 }
 
+function shrineBarWidthFor(tile) {
+  return Math.max(8, Math.round(tile * 0.12));
+}
+
+function plotProgressFor(tile) {
+  return Math.max(5, Math.round(tile * 0.08));
+}
+
+function templeTrackFor(tile) {
+  return Math.max(9, Math.round(tile * 0.12));
+}
+
 // Horizontal pad so corner shrines + outer progress bars stay on-screen.
-function sidePadFor(tile, shrine) {
+function sidePadFor(tile, shrine, barWidth) {
   const shrineCol = shrine + 6;
   const framePad = framePadFor(tile);
   const overhang = Math.max(
     0,
-    (shrineCol - tile) / 2 + SHRINE_BAR_WIDTH + SHRINE_BAR_GAP - framePad,
+    (shrineCol - tile) / 2 + barWidth + SHRINE_BAR_GAP - framePad,
   );
-  return Math.max(8, Math.ceil(overhang + BOARD_BORDER / 2 + 2));
+  return Math.max(SIDE_PAD_FLOOR, Math.ceil(overhang + BOARD_BORDER / 2 + 1));
 }
 
 function topOverhangFor(tile, shrine, nudgeTop) {
@@ -95,7 +107,10 @@ function layoutFor(tile, availW, groveGap, measuredTempleH, measuredTempleW) {
   const boardInner = boardInnerFor(tile);
   const boardOuter = boardInner + BOARD_BORDER;
   const shrine = shrineFor(tile, availW);
-  const sidePad = sidePadFor(tile, shrine);
+  const shrineBarWidth = shrineBarWidthFor(tile);
+  const plotProgress = plotProgressFor(tile);
+  const templeTrack = templeTrackFor(tile);
+  const sidePad = sidePadFor(tile, shrine, shrineBarWidth);
   const nudges = nudgesFor(tile);
   const topOver = topOverhangFor(tile, shrine, nudges.top);
   const bottomOver = bottomOverhangFor(tile, shrine, nudges.bottom);
@@ -127,6 +142,9 @@ function layoutFor(tile, availW, groveGap, measuredTempleH, measuredTempleW) {
     boardInner,
     boardOuter,
     shrine,
+    shrineBarWidth,
+    plotProgress,
+    templeTrack,
     sidePad,
     nudges,
     templeH,
@@ -200,6 +218,9 @@ export function installStageFit(appEl) {
       layout.plotGap,
       layout.framePad,
       layout.sidePad,
+      layout.shrineBarWidth,
+      layout.plotProgress,
+      layout.templeTrack,
       layout.nudges.top,
       layout.nudges.bottom,
       layout.groveGap,
@@ -217,6 +238,8 @@ export function installStageFit(appEl) {
     appEl.style.setProperty('--plot-gap', `${layout.plotGap}px`);
     appEl.style.setProperty('--frame-pad', `${layout.framePad}px`);
     appEl.style.setProperty('--grove-pad-x', `${layout.sidePad}px`);
+    appEl.style.setProperty('--grove-pad-y', `${GROVE_PAD_Y_TOP}px`);
+    appEl.style.setProperty('--grove-pad-y-bottom', `${GROVE_PAD_Y_BOTTOM}px`);
     appEl.style.setProperty('--grove-gap', `${layout.groveGap}px`);
     appEl.style.setProperty(
       '--shrine-nudge-top',
@@ -225,6 +248,19 @@ export function installStageFit(appEl) {
     appEl.style.setProperty(
       '--shrine-nudge-bottom',
       `${layout.nudges.bottom}px`,
+    );
+    appEl.style.setProperty(
+      '--shrine-bar-width',
+      `${layout.shrineBarWidth}px`,
+    );
+    appEl.style.setProperty('--shrine-bar-gap', `${SHRINE_BAR_GAP}px`);
+    appEl.style.setProperty(
+      '--plot-progress-size',
+      `${layout.plotProgress}px`,
+    );
+    appEl.style.setProperty(
+      '--temple-track-height',
+      `${layout.templeTrack}px`,
     );
   };
 
