@@ -867,6 +867,9 @@ footer: How to Play, Music mute, then Reset.
   vertical space (tighter grove pads/gaps, or a shorter temple) lets the board
   grow toward full phone width. Shrine progress bars stay inset from the screen
   edge via `--grove-pad-x` (`sidePadFor` in `stageFit.js`) — not flush.
+  Temple roof display aspect is **~2.35∶1** (`object-fit: cover` on the Soft B
+  PNG until a true wider/shorter redraw). Corner shrine figures scale at
+  ~**1.3×** tile (still larger than a plot footing).
 - Bands: scenic grove stage on top (`#grove-stage` holds Dragon Temple above
   the framed 4×4 farm board with a small temple↔farm gap; corner cells are
   shrine footings with oversized figures overflowing the frame and slim

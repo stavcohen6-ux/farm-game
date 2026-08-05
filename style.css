@@ -203,8 +203,10 @@ body {
   width: 100%;
   height: auto;
   max-width: 100%;
-  aspect-ratio: 1495 / 790;
-  object-fit: contain;
+  /* Shorter than source PNG (1495×790); cover-crops until Soft B wider roof redraw */
+  aspect-ratio: 2.35 / 1;
+  object-fit: cover;
+  object-position: center 35%;
 }
 
 .game-icon--discovery-log {
