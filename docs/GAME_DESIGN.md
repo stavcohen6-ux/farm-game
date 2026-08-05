@@ -622,8 +622,9 @@ No wall-clock timer; lose via plant-fueled wrath.
 | `wrathMax` | Wrath at or above this loses the event | 8 |
 | `wrathPerPlant` | Wrath added per successful plant while awake | 1 |
 | `wrathPerShrineOffer` | Wrath added when offering to an animal shrine while awake | 3 |
-| `burnPulseMs` | Length of one ember-wash fire pulse | 1.2s |
-| `burnPulseCount` | Fire pulses before crops clear | 3 |
+| `burnPulseMs` | Length of one rising-flame wave | 1.2s |
+| `burnPulseCount` | Flame waves before crops clear | 3 |
+| `burnFlames` | Rising `fire.png` specs per slot (left, drift, delay, size) | 4 flames |
 | `resultRevealMs` | Pause after burn before win close | 500ms |
 | `rewardBonusOfferings` | Bonus offerings granted by a win prize | 1 |
 | `rewardProgressMultiplier` | Progress multiplier while bonus offerings remain | 2 (100% bonus) |
@@ -725,8 +726,9 @@ hidden (`triggerChance`, never shown in UI) and persists across refresh/reload.
   dragon auto-takes the tribute: burn starts immediately (no Burn button;
   players do not touch the dragon). Place sweeps expired slots first.
 - On burn: slots stay filled and locked. The ready fire-edge escalates;
-  each slot pulses an ember wash `burnPulseCount` times at `burnPulseMs`
-  each; the crop icon chars and fades. While burning, crops cannot be removed or
+  each slot plays rising `fire.png` flames (`burnFlames`) for
+  `burnPulseCount` waves at `burnPulseMs` each; the crop icon chars and
+  fades. While burning, crops cannot be removed or
   replaced; temple drops are ignored; plant/offer wrath is not applied.
 - After the burn animation ends: slotted crops are consumed (cleared, not
   returned) and the event wins (`pendingClose: 'success'`).
@@ -1082,7 +1084,7 @@ status: 'approaching' | 'sleeping' | 'waking', plotId?, wakeAt? }`.
   `plotsToUnlock` | `bonusHarvestChance`)
 - Alchemy recipe: `{ inputs: [id, id], resultId }` (order-independent)
 - Dragon Temple config: `slotCount`, `wrathMax`, `wrathPerPlant`,
-  `wrathPerShrineOffer`, `burnPulseMs`, `burnPulseCount`,
+  `wrathPerShrineOffer`, `burnPulseMs`, `burnPulseCount`, `burnFlames`,
   `resultRevealMs`, `rewardBonusOfferings`,
   `rewardProgressMultiplier`, `rewardSparkCount`,
   `rewardSparkIcon`, `defaultTriggerChance`,

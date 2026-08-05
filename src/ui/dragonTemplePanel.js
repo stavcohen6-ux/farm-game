@@ -4,7 +4,7 @@ import { getHeldCropId, getHeldExpiresAt } from '../state/gameState.js';
 import { bindCropTip, hideCropTip } from './cropTip.js';
 import { CROP_DRAG_TYPE, parseCropDragData } from './shrinesPanel.js';
 import { applyDecayUrgencyClass, appendWiltMark } from './decayUrgency.js';
-import { setCropIcon, UI_ICONS } from './icon.js';
+import { setCropIcon, setIcon, UI_ICONS } from './icon.js';
 
 // After a successful tribute place, HTML5 drag may still fire a click on the
 // figure; skip that one so place does not also open the explainer.
@@ -170,10 +170,33 @@ function renderSlot(
     }
 
     if (burning) {
+      // Invisible timing pulse — drives animationend / burnPulseCount.
       const fire = document.createElement('span');
       fire.className = 'dragon-temple__fire';
       fire.setAttribute('aria-hidden', 'true');
       slotEl.appendChild(fire);
+
+      const flames = document.createElement('span');
+      flames.className = 'dragon-temple__flames';
+      flames.setAttribute('aria-hidden', 'true');
+      const slotStaggerMs = slotIndex * 70;
+      DRAGON_TEMPLE.burnFlames.forEach((spec) => {
+        const flame = document.createElement('span');
+        flame.className = 'dragon-temple__flame';
+        flame.style.left = spec.left;
+        flame.style.setProperty('--flame-dx', spec.dx);
+        flame.style.width = `${spec.sizePx}px`;
+        flame.style.height = `${spec.sizePx}px`;
+        flame.style.marginLeft = `${-spec.sizePx / 2}px`;
+        flame.style.animationDelay = `${spec.delayMs + slotStaggerMs}ms`;
+        setIcon(flame, {
+          src: UI_ICONS.fire,
+          emoji: '🔥',
+          imgClass: 'game-icon',
+        });
+        flames.appendChild(flame);
+      });
+      slotEl.appendChild(flames);
     }
 
     // Placed tribute is locked in until burn or lose discard.
@@ -362,8 +385,8 @@ function wireEmptySlotDrop(slotEl, slotIndex, onPlace) {
 }
 
 function wireBurnFires(slotsRow, onBurnComplete) {
-  const fires = slotsRow.querySelectorAll('.dragon-temple__fire');
   const { burnPulseMs, burnPulseCount } = DRAGON_TEMPLE;
+  const fires = slotsRow.querySelectorAll('.dragon-temple__fire');
   fires.forEach((fire, index) => {
     fire.style.animationDuration = `${burnPulseMs}ms`;
     fire.style.animationIterationCount = String(burnPulseCount);
@@ -378,8 +401,14 @@ function wireBurnFires(slotsRow, onBurnComplete) {
     }
   });
 
+  slotsRow.querySelectorAll('.dragon-temple__flame').forEach((flame) => {
+    flame.style.animationDuration = `${burnPulseMs}ms`;
+    flame.style.animationIterationCount = String(burnPulseCount);
+  });
+
   const burnMs = burnTotalMs();
-  slotsRow.querySelectorAll('.dragon-temple__slot--burning .dragon-temple__slot-icon')
+  slotsRow
+    .querySelectorAll('.dragon-temple__slot--burning .dragon-temple__slot-icon')
     .forEach((icon) => {
       icon.style.animationDuration = `${burnMs}ms`;
     });

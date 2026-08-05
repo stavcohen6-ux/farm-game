@@ -5,8 +5,15 @@ export const DRAGON_TEMPLE = {
   wrathMax: 8, // wrath at or above this loses the event
   wrathPerPlant: 1, // added per successful plant while awake
   wrathPerShrineOffer: 3, // added when offering to an animal shrine while awake
-  burnPulseMs: 1200, // half of ready-crop pulse (2.4s); one fire wash pulse
-  burnPulseCount: 3, // fire pulses before slotted crops disappear
+  burnPulseMs: 1200, // one rising-flame wave (also timing pulse length)
+  burnPulseCount: 3, // flame waves before slotted crops disappear
+  // Rising fire.png icons per burning slot (left / drift / delay / size)
+  burnFlames: [
+    { left: '28%', dx: '-7px', delayMs: 0, sizePx: 52 },
+    { left: '50%', dx: '5px', delayMs: 180, sizePx: 60 },
+    { left: '72%', dx: '9px', delayMs: 320, sizePx: 50 },
+    { left: '40%', dx: '-11px', delayMs: 520, sizePx: 48 },
+  ],
   resultRevealMs: 500, // pause after burn before win close
   // Win prize: next N offerings to the blessed shrine grant multiplied points
   rewardBonusOfferings: 1,
