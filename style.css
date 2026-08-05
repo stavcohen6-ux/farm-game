@@ -2008,6 +2008,110 @@ body {
   }
 }
 
+/* Brighter cream–honey wash when the mix is a first-time alchemy discovery. */
+.plot--mix-shine-discovery::before {
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 252, 235, 1) 0%,
+    rgba(255, 236, 170, 0.9) 40%,
+    rgba(230, 198, 90, 0.55) 100%
+  );
+  animation-name: mix-shine-wash-discovery;
+}
+
+@keyframes mix-shine-wash-discovery {
+  0% {
+    opacity: 0.95;
+  }
+  28% {
+    opacity: 0.78;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Result craft icon pop after on-plot mix (pauses ready-pulse for the beat). */
+.plot--ready .plot__icon.plot__icon--mix-appear {
+  animation: mix-result-appear 0.48s cubic-bezier(0.22, 1.2, 0.36, 1) forwards;
+}
+
+@keyframes mix-result-appear {
+  0% {
+    transform: scale(0.55);
+    opacity: 0;
+  }
+  55% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.mix-fx-spark {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 48;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 1px 2px rgba(80, 60, 20, 0.28));
+}
+
+.mix-fx-spark--discovery {
+  filter:
+    drop-shadow(0 0 3px rgba(255, 240, 190, 0.85))
+    drop-shadow(0 1px 2px rgba(80, 60, 20, 0.22));
+}
+
+.mix-fx-ring {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 47;
+  pointer-events: none;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 236, 170, 0.95);
+  box-shadow:
+    0 0 0 1px rgba(230, 198, 90, 0.35),
+    0 0 12px rgba(255, 236, 170, 0.45);
+  opacity: 0;
+}
+
+.mix-fx-chip {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 49;
+  pointer-events: none;
+  padding: 0.28rem 0.65rem;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #fbf6ea 0%, #f0e6d0 100%);
+  border: 1.5px solid #c4b48a;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow:
+    0 2px 0 rgba(90, 70, 40, 0.12),
+    0 4px 10px rgba(40, 50, 35, 0.12);
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plot--ready .plot__icon.plot__icon--mix-appear {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @keyframes ready-pulse {
   0%,
   100% {

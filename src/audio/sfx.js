@@ -30,10 +30,14 @@ const ALL_CLIPS = [
 
 /** @type {AudioContext | null} */
 let audioCtx = null;
+/** @type {Map<string, ArrayBuffer>} */
+const rawClips = new Map();
 /** @type {Map<string, AudioBuffer>} */
 const buffers = new Map();
 /** @type {Promise<void> | null} */
 let preloadPromise = null;
+/** @type {Promise<void> | null} */
+let decodePromise = null;
 
 function pickRandom(clips) {
   if (!clips.length) return null;
@@ -48,11 +52,54 @@ function getAudioContext() {
   return audioCtx;
 }
 
-/** Resume the shared AudioContext after a user gesture (unlocks autoplay). */
+async function decodePendingClips() {
+  const ctx = audioCtx;
+  if (!ctx) return;
+  const pending = [...rawClips.entries()];
+  await Promise.all(
+    pending.map(async ([src, data]) => {
+      if (buffers.has(src)) {
+        rawClips.delete(src);
+        return;
+      }
+      try {
+        const buffer = await ctx.decodeAudioData(data.slice(0));
+        buffers.set(src, buffer);
+        rawClips.delete(src);
+      } catch {
+        // Leave unloaded; playSfx will use HTMLAudio fallback.
+      }
+    }),
+  );
+}
+
+function kickDecode() {
+  if (decodePromise) return decodePromise;
+  decodePromise = decodePendingClips().finally(() => {
+    decodePromise = null;
+  });
+  return decodePromise;
+}
+
+/**
+ * Create/resume the shared AudioContext after a user gesture, then decode
+ * any prefetched clips. Safe to call repeatedly.
+ */
 export function unlockSfx() {
   const ctx = getAudioContext();
-  if (!ctx || ctx.state !== 'suspended') return;
-  ctx.resume().catch(() => {});
+  if (!ctx) return;
+
+  if (ctx.state === 'running') {
+    kickDecode();
+    return;
+  }
+
+  ctx
+    .resume()
+    .then(() => {
+      kickDecode();
+    })
+    .catch(() => {});
 }
 
 function playHtmlFallback(src) {
@@ -80,24 +127,24 @@ function playFromBuffer(src, buffer) {
     playHtmlFallback(src);
     return;
   }
-  // Never start while suspended — Chrome queues the node silently and may
-  // audibly play it only later when the context resumes (e.g. window restore).
-  if (ctx.state === 'suspended') {
-    ctx
-      .resume()
-      .then(() => {
-        if (ctx.state !== 'running') {
-          playHtmlFallback(src);
-          return;
-        }
-        startBufferSource(ctx, buffer);
-      })
-      .catch(() => {
-        playHtmlFallback(src);
-      });
+  // Never start unless running — Chrome queues BufferSources silently while
+  // suspended/interrupted and may only play them on later window restore.
+  if (ctx.state === 'running') {
+    startBufferSource(ctx, buffer);
     return;
   }
-  startBufferSource(ctx, buffer);
+  ctx
+    .resume()
+    .then(() => {
+      if (ctx.state !== 'running') {
+        playHtmlFallback(src);
+        return;
+      }
+      startBufferSource(ctx, buffer);
+    })
+    .catch(() => {
+      playHtmlFallback(src);
+    });
 }
 
 function playSfx(src) {
@@ -110,30 +157,32 @@ function playSfx(src) {
   playHtmlFallback(src);
 }
 
-async function loadBuffer(src) {
-  if (buffers.has(src)) return;
-  const ctx = getAudioContext();
-  if (!ctx) return;
+async function fetchClip(src) {
+  if (rawClips.has(src) || buffers.has(src)) return;
   try {
     const res = await fetch(src);
     if (!res.ok) return;
-    const data = await res.arrayBuffer();
-    const buffer = await ctx.decodeAudioData(data.slice(0));
-    buffers.set(src, buffer);
+    rawClips.set(src, await res.arrayBuffer());
   } catch {
     // Leave unloaded; playSfx will use HTMLAudio fallback.
   }
 }
 
 /**
- * Fetch + decode all one-shot clips into memory. Idempotent.
+ * Prefetch clip bytes into memory without creating an AudioContext. Idempotent.
  * @returns {Promise<void>}
  */
 export function preloadSfx() {
   if (preloadPromise) return preloadPromise;
-  preloadPromise = Promise.all(ALL_CLIPS.map(loadBuffer)).then(() => {});
+  preloadPromise = Promise.all(ALL_CLIPS.map(fetchClip)).then(() => {});
   return preloadPromise;
 }
+
+// Resume after tab focus only if a context already exists (do not create one).
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible' || !audioCtx) return;
+  unlockSfx();
+});
 
 /** Plant a crop. */
 export function playPlantSfx(cropId) {

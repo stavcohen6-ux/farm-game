@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Resolve assets/ relative to project root (not /mocks/). -->
+  <base href="../" />
+  <title>Mix effects — regular vs discovery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #2a3d30;
+      --muted: #5a6e60;
+      --panel: rgba(248, 252, 248, 0.92);
+      --line: #a8c9b4;
+      --moss: #5f9a72;
+      --moss-deep: #3f6b4c;
+      --honey: #e6c65a;
+      --honey-glow: rgba(230, 198, 90, 0.75);
+      --cream: #fff8e8;
+      --soil: #5f4634;
+      --tile: 5.75rem;
+      --plot-gap: 0.55rem;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100dvh;
+      font-family: 'Nunito', system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, #dff0e4 0%, transparent 55%),
+        linear-gradient(180deg, #cfe4d6 0%, #b4d0c0 55%, #9cbcac 100%);
+      padding: 1.25rem 1.25rem 2.5rem;
+    }
+
+    .page {
+      max-width: 56rem;
+      margin: 0 auto;
+      display: grid;
+      gap: 1.1rem;
+    }
+
+    header h1 {
+      font-size: 1.35rem;
+      font-weight: 800;
+    }
+
+    header p {
+      margin-top: 0.4rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      max-width: 44rem;
+    }
+
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 720px) {
+      .compare { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1.5px solid var(--line);
+      border-radius: 14px;
+      padding: 1rem 1.1rem 1.15rem;
+      display: grid;
+      gap: 0.85rem;
+      justify-items: center;
+    }
+
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 800;
+      justify-self: start;
+      width: 100%;
+    }
+
+    .card .note {
+      justify-self: start;
+      width: 100%;
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .stage {
+      position: relative;
+      width: calc(var(--tile) * 2 + var(--plot-gap) + 2.75rem);
+      height: calc(var(--tile) + 3.25rem);
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(ellipse 70% 60% at 50% 55%, rgba(90, 120, 80, 0.18), transparent 70%),
+        rgba(180, 200, 170, 0.35);
+      border-radius: 12px;
+      border: 1px dashed rgba(90, 120, 90, 0.35);
+      overflow: visible;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(2, var(--tile));
+      gap: var(--plot-gap);
+      position: relative;
+    }
+
+    .plot {
+      width: var(--tile);
+      height: var(--tile);
+      border-radius: 10px;
+      position: relative;
+      background-color: var(--soil);
+      background-image: url('assets/icons/plot_soil.png');
+      background-size: cover;
+      background-position: center;
+      box-shadow:
+        inset 0 3px 6px rgba(20, 12, 8, 0.4),
+        inset 0 -2px 0 rgba(180, 150, 110, 0.15),
+        0 2px 0 rgba(30, 40, 28, 0.28);
+      overflow: visible;
+    }
+
+    .plot__crop {
+      position: absolute;
+      inset: 12%;
+      width: 76%;
+      height: 76%;
+      margin: auto;
+      object-fit: contain;
+      pointer-events: none;
+      filter: drop-shadow(0 2px 2px rgba(30, 20, 10, 0.28));
+      transform-origin: center center;
+      z-index: 2;
+    }
+
+    .plot__crop.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .plot__bloom {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 1;
+      background: radial-gradient(
+        circle at center,
+        rgba(255, 248, 210, 0.95) 0%,
+        var(--honey-glow) 45%,
+        rgba(230, 198, 90, 0.45) 100%
+      );
+    }
+
+    .plot__bloom.is-discovery {
+      background: radial-gradient(
+        circle at center,
+        rgba(255, 252, 235, 1) 0%,
+        rgba(255, 236, 170, 0.9) 40%,
+        rgba(230, 198, 90, 0.55) 100%
+      );
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    button {
+      font: inherit;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #f7fff8;
+      background: var(--moss-deep);
+      border: none;
+      border-radius: 999px;
+      padding: 0.45rem 1rem;
+      cursor: pointer;
+    }
+
+    button:hover { filter: brightness(1.08); }
+    button:disabled { opacity: 0.55; cursor: default; filter: none; }
+
+    /* Fixed to viewport — same pattern as live mixEffects / plot-unlock sparks. */
+    .mix-spark {
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 80;
+      pointer-events: none;
+      display: grid;
+      place-items: center;
+      filter: drop-shadow(0 1px 2px rgba(80, 60, 20, 0.28));
+    }
+
+    .mix-spark img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .mix-spark.is-discovery {
+      filter:
+        drop-shadow(0 0 3px rgba(255, 240, 190, 0.85))
+        drop-shadow(0 1px 2px rgba(80, 60, 20, 0.22));
+    }
+
+    .mix-ring {
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 70;
+      pointer-events: none;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 236, 170, 0.95);
+      box-shadow:
+        0 0 0 1px rgba(230, 198, 90, 0.35),
+        0 0 12px rgba(255, 236, 170, 0.45);
+      opacity: 0;
+    }
+
+    .mix-chip {
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 90;
+      pointer-events: none;
+      padding: 0.28rem 0.65rem;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #fbf6ea 0%, #f0e6d0 100%);
+      border: 1.5px solid #c4b48a;
+      color: var(--ink);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+      box-shadow:
+        0 2px 0 rgba(90, 70, 40, 0.12),
+        0 4px 10px rgba(40, 50, 35, 0.12);
+      opacity: 0;
+    }
+
+    .legend {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.5;
+      max-width: 44rem;
+    }
+
+    .legend strong { color: var(--ink); font-weight: 800; }
+    .legend code {
+      font-size: 0.8em;
+      background: rgba(255, 255, 255, 0.45);
+      padding: 0.05em 0.3em;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>Mix effects — regular vs new discovery</h1>
+      <p>
+        Soft Storybook B juice for on-plot alchemy (now wired into the live game):
+        crops ease together, honey bloom, result pop, <strong>spark.png</strong> puff.
+        Discovery adds a cream ring, wider sparks, and a parchment chip.
+      </p>
+    </header>
+
+    <div class="compare">
+      <section class="card" data-mode="regular">
+        <h2>Regular mix</h2>
+        <p class="note">Wheat + Turnip → Root Loaf. Honey bloom + spark puff. No label.</p>
+        <div class="stage">
+          <div class="row" data-row>
+            <div class="plot" data-plot="from">
+              <img class="plot__crop" data-input-a src="assets/icons/wheat.png" alt="" />
+            </div>
+            <div class="plot" data-plot="to">
+              <img class="plot__crop" data-input-b src="assets/icons/turnip.png" alt="" />
+              <img class="plot__crop is-hidden" data-result src="assets/icons/root_loaf.png" alt="" />
+              <div class="plot__bloom" data-bloom aria-hidden="true"></div>
+            </div>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" data-play>Replay</button>
+        </div>
+      </section>
+
+      <section class="card" data-mode="discovery">
+        <h2>New discovery</h2>
+        <p class="note">Same beat + brighter bloom, expanding honey ring, wider sparks, parchment chip.</p>
+        <div class="stage">
+          <div class="row" data-row>
+            <div class="plot" data-plot="from">
+              <img class="plot__crop" data-input-a src="assets/icons/wheat.png" alt="" />
+            </div>
+            <div class="plot" data-plot="to">
+              <img class="plot__crop" data-input-b src="assets/icons/turnip.png" alt="" />
+              <img class="plot__crop is-hidden" data-result src="assets/icons/root_loaf.png" alt="" />
+              <div class="plot__bloom is-discovery" data-bloom aria-hidden="true"></div>
+            </div>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" data-play>Replay</button>
+        </div>
+      </section>
+    </div>
+
+    <p class="legend">
+      <strong>Live:</strong> <code>src/ui/mixEffects.js</code> on successful on-plot mix.
+      Sparks use <code>assets/icons/spark.png</code> (same cutout as plot unlock / shrine tier-up).
+    </p>
+  </div>
+
+  <script>
+    const SPARK_SRC = 'assets/icons/spark.png';
+    const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Same language as live mixEffects.js / plot-unlock sparks.
+    const REGULAR_DIRS = [
+      { startX: -0.06, dx: -0.35, dy: -1.35 },
+      { startX: 0.06, dx: 0.35, dy: -1.35 },
+      { startX: -0.22, dx: -0.75, dy: -1.15 },
+      { startX: 0.22, dx: 0.75, dy: -1.15 },
+      { startX: -0.12, dx: -0.55, dy: -1.55 },
+      { startX: 0.12, dx: 0.55, dy: -1.55 },
+      { startX: -0.28, dx: -1.05, dy: -0.85 },
+      { startX: 0.28, dx: 1.05, dy: -0.85 },
+    ];
+
+    const DISCOVERY_DIRS = [
+      { startX: -0.05, dx: -0.25, dy: -1.7 },
+      { startX: 0.05, dx: 0.25, dy: -1.7 },
+      { startX: -0.18, dx: -0.65, dy: -1.55 },
+      { startX: 0.18, dx: 0.65, dy: -1.55 },
+      { startX: -0.32, dx: -1.05, dy: -1.35 },
+      { startX: 0.32, dx: 1.05, dy: -1.35 },
+      { startX: -0.12, dx: -0.45, dy: -1.9 },
+      { startX: 0.12, dx: 0.45, dy: -1.9 },
+      { startX: -0.4, dx: -1.25, dy: -1.0 },
+      { startX: 0.4, dx: 1.25, dy: -1.0 },
+      { startX: -0.22, dx: -0.9, dy: -1.75 },
+      { startX: 0.22, dx: 0.9, dy: -1.75 },
+      { startX: -0.08, dx: -0.7, dy: -1.45 },
+      { startX: 0.08, dx: 0.7, dy: -1.45 },
+    ];
+
+    function cancelAnims(el) {
+      if (!el) return;
+      el.getAnimations().forEach((a) => a.cancel());
+    }
+
+    function resetCard(card) {
+      const inputA = card.querySelector('[data-input-a]');
+      const inputB = card.querySelector('[data-input-b]');
+      const result = card.querySelector('[data-result]');
+      const bloom = card.querySelector('[data-bloom]');
+
+      [inputA, inputB, result, bloom].forEach(cancelAnims);
+
+      inputA.classList.remove('is-hidden');
+      inputB.classList.remove('is-hidden');
+      result.classList.add('is-hidden');
+      inputA.style.cssText = '';
+      inputB.style.cssText = '';
+      result.style.cssText = '';
+      if (bloom) bloom.style.cssText = '';
+    }
+
+    function spawnSparks(plotEl, dirs, { discovery = false } = {}) {
+      const rect = plotEl.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return;
+
+      const size = discovery ? 22 : 20;
+      const half = size / 2;
+      const originX = rect.left + rect.width * 0.5;
+      const originY = rect.top + rect.height * 0.52;
+      const travel = Math.min(rect.width, rect.height) * (discovery ? 1.1 : 0.95);
+      const duration = discovery ? 1320 : 1180;
+      const stagger = discovery ? 55 : 70;
+
+      dirs.forEach((dir, i) => {
+        const ox = originX + dir.startX * rect.width;
+        const oy = originY + ((i % 3) - 1) * 2;
+        const spark = document.createElement('div');
+        spark.className = discovery ? 'mix-spark is-discovery' : 'mix-spark';
+        spark.setAttribute('aria-hidden', 'true');
+        const img = document.createElement('img');
+        img.src = SPARK_SRC;
+        img.alt = '';
+        spark.appendChild(img);
+        spark.style.width = `${size}px`;
+        spark.style.height = `${size}px`;
+        spark.style.left = `${ox - half}px`;
+        spark.style.top = `${oy - half}px`;
+        spark.style.opacity = '0';
+        document.body.appendChild(spark);
+
+        const tx = dir.dx * travel;
+        const ty = dir.dy * travel;
+        const flight = spark.animate(
+          [
+            { transform: 'translate(0, 0) scale(0.35)', opacity: 0 },
+            {
+              transform: `translate(${tx * 0.3}px, ${ty * 0.3}px) scale(1.1)`,
+              opacity: 1,
+              offset: 0.26,
+            },
+            {
+              transform: `translate(${tx}px, ${ty}px) scale(0.4)`,
+              opacity: 0,
+            },
+          ],
+          {
+            duration,
+            delay: i * stagger,
+            easing: 'ease-out',
+            fill: 'forwards',
+          },
+        );
+        flight.onfinish = () => spark.remove();
+      });
+    }
+
+    function playRing(plotEl) {
+      const rect = plotEl.getBoundingClientRect();
+      const size = Math.min(rect.width, rect.height) * 0.42;
+      const ring = document.createElement('div');
+      ring.className = 'mix-ring';
+      ring.setAttribute('aria-hidden', 'true');
+      ring.style.width = `${size}px`;
+      ring.style.height = `${size}px`;
+      ring.style.left = `${rect.left + rect.width / 2}px`;
+      ring.style.top = `${rect.top + rect.height / 2}px`;
+      document.body.appendChild(ring);
+      const flight = ring.animate(
+        [
+          { opacity: 0.95, transform: 'translate(-50%, -50%) scale(0.55)' },
+          { opacity: 0.7, transform: 'translate(-50%, -50%) scale(1.35)', offset: 0.4 },
+          { opacity: 0, transform: 'translate(-50%, -50%) scale(2.05)' },
+        ],
+        { duration: 900, easing: 'ease-out', fill: 'forwards' },
+      );
+      flight.onfinish = () => ring.remove();
+    }
+
+    function playChip(plotEl) {
+      const rect = plotEl.getBoundingClientRect();
+      const chip = document.createElement('div');
+      chip.className = 'mix-chip';
+      chip.textContent = 'New discovery';
+      chip.setAttribute('aria-hidden', 'true');
+      chip.style.left = `${rect.left + rect.width / 2}px`;
+      chip.style.top = `${rect.top - 4}px`;
+      document.body.appendChild(chip);
+      const flight = chip.animate(
+        [
+          { opacity: 0, transform: 'translate(-50%, -100%) translateY(0.45rem) scale(0.92)' },
+          {
+            opacity: 1,
+            transform: 'translate(-50%, -100%) translateY(0) scale(1)',
+            offset: 0.22,
+          },
+          {
+            opacity: 1,
+            transform: 'translate(-50%, -100%) translateY(0) scale(1)',
+            offset: 0.72,
+          },
+          { opacity: 0, transform: 'translate(-50%, -100%) translateY(-0.35rem) scale(1)' },
+        ],
+        { duration: 1400, delay: 120, easing: 'ease-out', fill: 'forwards' },
+      );
+      flight.onfinish = () => chip.remove();
+    }
+
+    function playMix(card) {
+      const discovery = card.dataset.mode === 'discovery';
+      const playBtn = card.querySelector('[data-play]');
+      playBtn.disabled = true;
+
+      resetCard(card);
+
+      const toPlot = card.querySelector('[data-plot="to"]');
+      const inputA = card.querySelector('[data-input-a]');
+      const inputB = card.querySelector('[data-input-b]');
+      const result = card.querySelector('[data-result]');
+      const bloom = card.querySelector('[data-bloom]');
+
+      const mergeMs = REDUCE ? 0 : 320;
+      const revealAt = REDUCE ? 40 : 300;
+      const totalMs = discovery ? 1700 : 1450;
+
+      if (!REDUCE) {
+        inputA.animate(
+          [
+            { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+            { transform: 'translate(42%, 0) scale(0.82)', opacity: 0.15 },
+          ],
+          { duration: mergeMs, easing: 'ease-in', fill: 'forwards' },
+        );
+        inputB.animate(
+          [
+            { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+            { transform: 'translate(-38%, 0) scale(0.82)', opacity: 0.15 },
+          ],
+          { duration: mergeMs, easing: 'ease-in', fill: 'forwards' },
+        );
+      }
+
+      window.setTimeout(() => {
+        inputA.classList.add('is-hidden');
+        inputB.classList.add('is-hidden');
+        result.classList.remove('is-hidden');
+
+        if (REDUCE) {
+          result.style.opacity = '1';
+          bloom.style.opacity = '0.55';
+          if (discovery) playChip(toPlot);
+          window.setTimeout(() => {
+            bloom.style.opacity = '0';
+            playBtn.disabled = false;
+          }, 900);
+          return;
+        }
+
+        result.animate(
+          [
+            { transform: 'scale(0.55)', opacity: 0 },
+            { transform: 'scale(1.08)', opacity: 1, offset: 0.55 },
+            { transform: 'scale(1)', opacity: 1 },
+          ],
+          { duration: 480, easing: 'cubic-bezier(0.22, 1.2, 0.36, 1)', fill: 'forwards' },
+        );
+
+        bloom.animate(
+          [
+            { opacity: discovery ? 0.95 : 0.85 },
+            { opacity: discovery ? 0.75 : 0.65, offset: 0.28 },
+            { opacity: 0 },
+          ],
+          { duration: discovery ? 1500 : 1400, easing: 'ease-out', fill: 'forwards' },
+        );
+
+        spawnSparks(toPlot, discovery ? DISCOVERY_DIRS : REGULAR_DIRS, { discovery });
+
+        if (discovery) {
+          playRing(toPlot);
+          playChip(toPlot);
+        }
+      }, revealAt);
+
+      window.setTimeout(() => {
+        playBtn.disabled = false;
+      }, totalMs);
+    }
+
+    document.querySelectorAll('.card').forEach((card) => {
+      card.querySelector('[data-play]').addEventListener('click', () => playMix(card));
+    });
+
+    window.requestAnimationFrame(() => {
+      window.setTimeout(() => {
+        document.querySelectorAll('.card').forEach((card, i) => {
+          window.setTimeout(() => playMix(card), i * 280);
+        });
+      }, 180);
+    });
+  </script>
+</body>
+</html>

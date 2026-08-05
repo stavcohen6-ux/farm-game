@@ -195,8 +195,7 @@ growthTimeSeconds, harvestAmount, shrineValues, plantable, decaySeconds,
 decayDisabled, maxStack, icon (emoji fallback; image at
 `assets/icons/{id}.png` or `.svg` when present). Plantables also have
 optional watering fields (see Watering): `waterRequestChance`,
-`waterRequestMinProgress`, `waterRequestMaxProgress`,
-`waterTimeSavedSeconds`; and optional critter-visit fields (see Critter
+`waterRequestMinProgress`, `waterRequestMaxProgress`; and optional critter-visit fields (see Critter
 Visits): `critterVisitChance`, `critterVisitMinProgress`,
 `critterVisitMaxProgress`, `critterShrineProgress`.
 
@@ -235,20 +234,21 @@ any tier. Shrine detail shows an Accepts line for the active tier’s allowlist
 
 Optional reward only — never mandatory. No wilt, no penalty for ignoring.
 
-| Crop | Chance | Window (of growth) | Time saved |
-|------|--------|--------------------|------------|
-| wheat | 0.55 | 0.25–0.70 | 8s |
-| turnip | 0.50 | 0.25–0.70 | 12s |
-| blueberry | 0.45 | 0.20–0.75 | 25s |
-| moonflower | 0.40 | 0.20–0.75 | 35s |
-| golden_pumpkin | 0.35 | 0.20–0.80 | 50s |
-| sunfruit | 0.30 | 0.20–0.80 | 70s |
+| Crop | Chance | Window (of growth) |
+|------|--------|--------------------|
+| wheat | 0.55 | 0.25–0.70 |
+| turnip | 0.50 | 0.25–0.70 |
+| blueberry | 0.45 | 0.20–0.75 |
+| moonflower | 0.40 | 0.20–0.75 |
+| golden_pumpkin | 0.35 | 0.20–0.80 |
+| sunfruit | 0.30 | 0.20–0.80 |
 
 - `waterRequestChance` (0–1): on plant, roll once; if hit, this instance will ask.
 - `waterRequestMinProgress` / `waterRequestMaxProgress` (0–1): random fraction of
   snapshotted `growthMs` when the ask appears (`waterRequestAt`).
-- `waterTimeSavedSeconds`: seconds removed from remaining growth when watered
-  (clamped to remaining). Convert with `getWaterTimeSavedMs`.
+- Time saved when watered: 20% of the crop’s base `growthTimeSeconds` (via
+  `getGrowthMs` / `WATER_TIME_SAVED_FRACTION`; ignores Frog buffs), clamped to
+  remaining. Convert with `getWaterTimeSavedMs`.
 
 ### Critter Visits (plantables)
 
@@ -331,8 +331,8 @@ welcome clears with no shrine progress.
 - Click a needing-water plot → soft rain sprinkle (~1.625s) falling top-to-bottom
   over the dry patch using water-drop sprites (`assets/icons/water_drop.png`),
   then the patch clears and soil reads as normal brown (or ready honey-glow if
-  watering finished growth immediately). Shortens remaining growth by
-  `waterTimeSavedSeconds` (clamped), sets `watered: true`.
+  watering finished growth immediately). Shortens remaining growth by 20% of
+  the crop’s base growth time (ignores Frog; clamped), sets `watered: true`.
 - Click a waiting-critter plot → butterfly flies to the neediest shrine
   at a constant gentle speed (nearer plots arrive sooner). When it lands,
   apply and save `critterShrineProgress`, set `critterWelcomed: true`, and
@@ -356,7 +356,12 @@ Temple empty-slot “Drop” text). Drag a ready crop to:
 - an **adjacent ready crop** (up/down/left/right only) — if the pair matches
   a recipe, mix immediately: source plot clears, result sits ready on the
   target plot; invalid pairs snap back with no change. After every successful
-  mix (not discovery-only), the target plot shines brightly for ~1.5s.
+  mix (not discovery-only), the target plot shines brightly for ~1.5s, the
+  result icon pops in, and a short honey spark puff rises from the plot
+  (`spark.png`, same language as plot-unlock / shrine sparks). First-time
+  alchemy discoveries use a brighter cream–honey wash, a brief expanding
+  honey ring, a wider spark puff, and a parchment **New discovery** chip
+  above the plot (quiet grove wonder — not a modal).
 - Idle hint: when two orthogonally adjacent ready crops match a recipe, a
   dual-tone moss seam appears on the shared plot edge (darker core, soft
   lighter outer edge; no badges or second ring). The seam gently compresses
@@ -619,6 +624,7 @@ No wall-clock timer; lose via plant-fueled wrath.
 | Key | Meaning | Current |
 |-----|---------|---------|
 | `slotCount` | Demand board slots to match before auto-burn | 4 |
+| `maxSameCropInDemand` | Max copies of one crop in a demand | 2 |
 | `wrathMax` | Wrath at or above this loses the event | 8 |
 | `wrathPerPlant` | Wrath added per successful plant while awake | 1 |
 | `wrathPerShrineOffer` | Wrath added when offering to an animal shrine while awake | 3 |
@@ -630,7 +636,7 @@ No wall-clock timer; lose via plant-fueled wrath.
 | `rewardProgressMultiplier` | Progress multiplier while bonus offerings remain | 2 (100% bonus) |
 | `rewardSparkCount` | Sparks that fly temple → shrine | 4 |
 | `rewardSparkIcon` | Spark emoji | ✨ |
-| `defaultTriggerChance` | Starting / post-event offering wake chance | 10% (0.1) |
+| `defaultTriggerChance` | Starting / post-event offering wake chance | 0% (0) |
 | `shrineTriggerChanceIncrease` | Per-shrine chance added after a missed roll | 5% (0.05) each |
 
 One matched auto-burn calms the dragon (no multi-round progress points). Each
@@ -699,11 +705,16 @@ hidden (`triggerChance`, never shown in UI) and persists across refresh/reload.
   unchanged — locked discoveries stay in the Discovery Log but are excluded
   from demand until research is restored. Ignores current inventory ownership
   (no inventory bias).
-- Length = `slotCount` (4). Repeats allowed (needed early when few discoveries).
+- Length = `slotCount` (4). Repeats allowed, but no crop may appear more than
+  `maxSameCropInDemand` (2) times. If the pool is too small to fill under that
+  cap (e.g. only one discovered crop), further slots fall back to the full
+  pool so the board still fills.
 - **Jealous echo (required):** at least one slot is the crop that was just
   offered to the shrine that woke the dragon (even if that crop is no longer
-  obtainable).
-- Remaining slots: uniform random from the pool with replacement.
+  obtainable). Echo is placed first, then remaining slots are filled, then the
+  demand is shuffled.
+- Remaining slots: uniform random from pool crops still under the repeat cap
+  (or the full pool when every candidate is already at the cap).
 - If the filtered pool is empty, fall back to currently unlocked plantables
   (always at least wheat and turnip at research 1). If that is also empty,
   fall back to the echo crop alone.

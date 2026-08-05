@@ -486,7 +486,8 @@ export function placeReadyCropOnPlot(state, plotId, cropId, now = Date.now()) {
 
 /**
  * Mix two adjacent ready crops in place. Result sits on `toPlotId`;
- * `fromPlotId` is cleared. Returns `{ resultId, fromPlotId, toPlotId }` or null.
+ * `fromPlotId` is cleared.
+ * Returns `{ resultId, fromPlotId, toPlotId, isNewDiscovery }` or null.
  */
 export function mixAdjacentReadyPlots(state, fromPlotId, toPlotId, now = Date.now()) {
   if (!canTutorialMix(state, fromPlotId, toPlotId)) return null;
@@ -500,6 +501,9 @@ export function mixAdjacentReadyPlots(state, fromPlotId, toPlotId, now = Date.no
   const resultId = findAlchemyResult(from.crop.cropId, to.crop.cropId);
   if (!resultId) return null;
 
+  const discovered = state.discoveredAlchemyResultIds ?? [];
+  const isNewDiscovery = !discovered.includes(resultId);
+
   from.crop = null;
   from.flowered = false;
   to.crop = null;
@@ -507,7 +511,7 @@ export function mixAdjacentReadyPlots(state, fromPlotId, toPlotId, now = Date.no
   placeReadyCropOnPlot(state, toPlotId, resultId, now);
   markAlchemyRecipeDiscovered(state, resultId);
   onTutorialMixed(state);
-  return { resultId, fromPlotId, toPlotId };
+  return { resultId, fromPlotId, toPlotId, isNewDiscovery };
 }
 
 // True when a growing plant is currently asking for optional water.
@@ -633,8 +637,9 @@ export function plantCrop(state, plotId, cropId) {
   if (lose) return lose;
 }
 
-// Optional water: shortens remaining growth by crop.waterTimeSavedSeconds.
-// Returns true if watered. Ignoring needs-water has no penalty.
+// Optional water: shortens remaining growth by 20% of the crop's base
+// growth time (ignores Frog buffs). Returns true if watered. Ignoring
+// needs-water has no penalty.
 export function waterPlot(state, plotId, now = Date.now()) {
   const plot = state.plots.find((p) => p.id === plotId);
   if (!plot || !needsWater(plot, now)) return false;
@@ -1381,24 +1386,33 @@ function buildDragonTempleDemand(state, echoCropId) {
     return Array(count).fill(null);
   }
 
+  const maxSame = DRAGON_TEMPLE.maxSameCropInDemand;
   const demand = [];
-  const echoIndex = echo
-    ? Math.floor(Math.random() * count)
-    : -1;
+  const counts = Object.create(null);
 
-  for (let i = 0; i < count; i++) {
-    if (i === echoIndex) {
-      demand.push(echo);
-    } else {
-      demand.push(
-        effectivePool[Math.floor(Math.random() * effectivePool.length)],
-      );
-    }
+  if (echo) {
+    demand.push(echo);
+    counts[echo] = 1;
   }
 
-  // Guarantee jealous echo even if random fill somehow missed (echoIndex path).
-  if (echo && !demand.includes(echo)) {
-    demand[0] = echo;
+  while (demand.length < count) {
+    let candidates = effectivePool.filter(
+      (id) => (counts[id] || 0) < maxSame,
+    );
+    if (candidates.length === 0) {
+      candidates = effectivePool;
+    }
+    const id = candidates[Math.floor(Math.random() * candidates.length)];
+    demand.push(id);
+    counts[id] = (counts[id] || 0) + 1;
+  }
+
+  // Shuffle so the echo is not stuck in a fixed slot.
+  for (let i = demand.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = demand[i];
+    demand[i] = demand[j];
+    demand[j] = tmp;
   }
   return demand;
 }

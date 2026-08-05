@@ -2,6 +2,7 @@
 // See docs/GAME_DESIGN.md → Dragon Temple.
 export const DRAGON_TEMPLE = {
   slotCount: 4, // demand board slots; auto-burn when all match
+  maxSameCropInDemand: 2, // max copies of one crop in a demand (relax if pool too small)
   wrathMax: 8, // wrath at or above this loses the event
   wrathPerPlant: 1, // added per successful plant while awake
   wrathPerShrineOffer: 3, // added when offering to an animal shrine while awake
@@ -21,7 +22,7 @@ export const DRAGON_TEMPLE = {
   rewardSparkCount: 4, // spark emojis that fly temple → shrine
   rewardSparkIcon: '✨',
   // Hidden chance that a shrine offering wakes the dragon (0–1)
-  defaultTriggerChance: 0.1,
+  defaultTriggerChance: 0,
   // Added to triggerChance after a missed offering roll, per shrine (capped at 1)
   shrineTriggerChanceIncrease: {
     frog: 0.05,

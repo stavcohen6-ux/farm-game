@@ -2,9 +2,10 @@
 // getGrowthMs when comparing against plantedAt timestamps.
 // shrineValues is how much one crop contributes when offered to each shrine.
 // plantable crops appear in the crop picker; alchemy products do not.
-// Plantables may define optional watering fields (chance, progress window,
-// time saved) and optional critter-visit fields (chance, progress window,
-// safe shrine progress); see docs/GAME_DESIGN.md.
+// Plantables may define optional watering fields (chance, progress window)
+// and optional critter-visit fields (chance, progress window, safe shrine
+// progress); watering time-save is a global fraction of base growth — see
+// docs/GAME_DESIGN.md.
 //
 // Alchemy shrine values follow the economy rules in docs/GAME_DESIGN.md:
 //   sum[s] = parentA[s] + parentB[s]
@@ -27,7 +28,6 @@ export const CROPS = [
     waterRequestChance: 0.55,
     waterRequestMinProgress: 0.25,
     waterRequestMaxProgress: 0.7,
-    waterTimeSavedSeconds: 8,
     critterVisitChance: 0.6,
     critterVisitMinProgress: 0.4,
     critterVisitMaxProgress: 0.85,
@@ -50,7 +50,6 @@ export const CROPS = [
     waterRequestChance: 0.5,
     waterRequestMinProgress: 0.25,
     waterRequestMaxProgress: 0.7,
-    waterTimeSavedSeconds: 12,
     critterVisitChance: 0.32,
     critterVisitMinProgress: 0.4,
     critterVisitMaxProgress: 0.85,
@@ -73,7 +72,6 @@ export const CROPS = [
     waterRequestChance: 0.45,
     waterRequestMinProgress: 0.2,
     waterRequestMaxProgress: 0.75,
-    waterTimeSavedSeconds: 25,
     critterVisitChance: 0.28,
     critterVisitMinProgress: 0.4,
     critterVisitMaxProgress: 0.85,
@@ -96,7 +94,6 @@ export const CROPS = [
     waterRequestChance: 0.4,
     waterRequestMinProgress: 0.2,
     waterRequestMaxProgress: 0.75,
-    waterTimeSavedSeconds: 35,
     critterVisitChance: 0.25,
     critterVisitMinProgress: 0.4,
     critterVisitMaxProgress: 0.85,
@@ -119,7 +116,6 @@ export const CROPS = [
     waterRequestChance: 0.35,
     waterRequestMinProgress: 0.2,
     waterRequestMaxProgress: 0.8,
-    waterTimeSavedSeconds: 50,
     critterVisitChance: 0.22,
     critterVisitMinProgress: 0.4,
     critterVisitMaxProgress: 0.85,
@@ -142,7 +138,6 @@ export const CROPS = [
     waterRequestChance: 0.3,
     waterRequestMinProgress: 0.2,
     waterRequestMaxProgress: 0.8,
-    waterTimeSavedSeconds: 70,
     critterVisitChance: 0.2,
     critterVisitMinProgress: 0.4,
     critterVisitMaxProgress: 0.85,
@@ -331,10 +326,12 @@ export function getGrowthMs(crop) {
   return crop.growthTimeSeconds * 1000;
 }
 
+// Fraction of base growth time removed when watering (ignores Frog buffs).
+export const WATER_TIME_SAVED_FRACTION = 0.2;
+
 export function getWaterTimeSavedMs(crop) {
-  const seconds = crop?.waterTimeSavedSeconds;
-  if (typeof seconds !== 'number' || seconds <= 0) return 0;
-  return seconds * 1000;
+  if (!crop || typeof crop.growthTimeSeconds !== 'number') return 0;
+  return getGrowthMs(crop) * WATER_TIME_SAVED_FRACTION;
 }
 
 export function getCritterShrineProgress(crop) {

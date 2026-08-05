@@ -65,12 +65,15 @@ import { pinCropTip } from './ui/cropTip.js';
 import { installStageFit } from './ui/stageFit.js';
 import { installOpeningScreen } from './ui/openingScreen.js';
 import { renderTutorialBubble } from './ui/tutorialBubble.js';
+import { playMixEffects } from './ui/mixEffects.js';
 import {
   playPlantSfx,
   playMixSfx,
   playShrineUpgradeSfx,
   playDragonSlotSfx,
   playDragonEventEndSfx,
+  playDiscoveryOpenSfx,
+  unlockSfx,
 } from './audio/sfx.js';
 
 const RENDER_INTERVAL_MS = 1000;
@@ -86,6 +89,7 @@ const tanukiArrivingPlotIds = new Set();
 const tanukiLeavingPlotIds = new Set();
 const uprootingPlotIds = new Set();
 const mixShinePlotIds = new Set();
+const mixDiscoveryShinePlotIds = new Set();
 // Shrine ids whose Dragon-bonus glow is deferred until sparks land.
 const pendingBlessingVisualShrineIds = new Set();
 
@@ -122,6 +126,7 @@ function renderFarm() {
     handleUprootHold,
     uprootingPlotIds,
     mixShinePlotIds,
+    mixDiscoveryShinePlotIds,
   );
 }
 
@@ -313,11 +318,20 @@ function handleMixReadyPlots(fromPlotId, toPlotId) {
   if (!mixResult) return;
   playMixSfx(mixResult.resultId);
   mixShinePlotIds.add(toPlotId);
+  if (mixResult.isNewDiscovery) {
+    mixDiscoveryShinePlotIds.add(toPlotId);
+  }
   save(state);
   render();
+  const plotEl = gridEl?.querySelector(`[data-plot-id="${toPlotId}"]`);
+  playMixEffects({
+    plotEl,
+    discovery: mixResult.isNewDiscovery,
+  });
   window.setTimeout(() => {
     if (!mixShinePlotIds.has(toPlotId)) return;
     mixShinePlotIds.delete(toPlotId);
+    mixDiscoveryShinePlotIds.delete(toPlotId);
     render();
   }, MIX_SHINE_MS);
 }
@@ -636,6 +650,7 @@ function handleResetGame() {
     tanukiLeavingPlotIds.clear();
     uprootingPlotIds.clear();
     mixShinePlotIds.clear();
+    mixDiscoveryShinePlotIds.clear();
     pendingBlessingVisualShrineIds.clear();
     save(state);
     groveWarmed = false;
@@ -648,11 +663,15 @@ function handleResetGame() {
 const GAME_TEXT_PRESS_MS = 140;
 
 function handleDiscoveryLog() {
+  if (gameTextEl?.dataset.opening === '1') return;
+  // Fire SFX in the click gesture (not after the press delay) so Chrome can
+  // unlock / resume the AudioContext.
+  unlockSfx();
+  playDiscoveryOpenSfx();
   if (!gameTextEl) {
     openDiscoveryLog(state, handleResetGame);
     return;
   }
-  if (gameTextEl.dataset.opening === '1') return;
   gameTextEl.dataset.opening = '1';
   gameTextEl.classList.add('game-text--pressed');
   window.setTimeout(() => {

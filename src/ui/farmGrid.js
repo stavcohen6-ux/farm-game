@@ -46,6 +46,7 @@ let suppressPlotClickAfterDrag = false;
 // the crop stays in state until the animation finishes.
 //
 // `mixShinePlotIds` holds plots briefly flashing after a successful on-plot mix.
+// `mixDiscoveryShinePlotIds` — same window, brighter wash for a new alchemy discovery.
 //
 // `onFlowerPlot(plotId, cropId)` — drop a plantable on an empty plot to flower it.
 // `onPlotCropDrop({ cropId, fromPlotId, clientX, clientY })` — pointer drag end.
@@ -66,6 +67,7 @@ export function renderGrid(
   onUprootHold = null,
   uprootingPlotIds = new Set(),
   mixShinePlotIds = new Set(),
+  mixDiscoveryShinePlotIds = new Set(),
 ) {
   container.style.gridTemplateColumns = `repeat(${BOARD_COLS}, var(--tile))`;
   container.style.gridTemplateRows = `repeat(${BOARD_ROWS}, var(--tile))`;
@@ -85,6 +87,7 @@ export function renderGrid(
     const napLeaving = tanukiLeavingPlotIds.has(plot.id);
     const uprooting = uprootingPlotIds.has(plot.id);
     const mixShine = mixShinePlotIds.has(plot.id);
+    const mixDiscoveryShine = mixDiscoveryShinePlotIds.has(plot.id);
     const key = plotKey(
       plot,
       state,
@@ -107,6 +110,7 @@ export function renderGrid(
       // cut ready-pulse mid-cycle; sync the class on the reused node.
       if (key.startsWith('ready:')) {
         existing.classList.toggle('plot--mix-shine', mixShine);
+        existing.classList.toggle('plot--mix-shine-discovery', mixDiscoveryShine);
       }
       nextEls.push(existing);
     } else {
@@ -122,6 +126,7 @@ export function renderGrid(
         napLeaving,
         uprooting,
         mixShine,
+        mixDiscoveryShine,
         wateringPlotIds,
       );
       if (unlocking && onUnlockAnimationEnd) {
@@ -404,6 +409,7 @@ function renderPlot(
   napLeaving,
   uprooting,
   mixShine,
+  mixDiscoveryShine = false,
   wateringPlotIds = new Set(),
 ) {
   const el = document.createElement('div');
@@ -472,6 +478,9 @@ function renderPlot(
   el.classList.add(ready ? 'plot--ready' : 'plot--growing');
   if (ready && mixShine) {
     el.classList.add('plot--mix-shine');
+  }
+  if (ready && mixDiscoveryShine) {
+    el.classList.add('plot--mix-shine-discovery');
   }
   if (thirsty) {
     el.classList.add('plot--needs-water');

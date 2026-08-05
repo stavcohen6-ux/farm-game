@@ -2,7 +2,6 @@ import { CROPS, getCrop } from '../data/crops.js';
 import { getAlchemyRecipeByResultId } from '../data/alchemyRecipes.js';
 import { SHRINES, shrineAcceptsCrop } from '../data/shrines.js';
 import { isMusicMuted, setMusicMuted } from '../audio/backgroundMusic.js';
-import { playDiscoveryOpenSfx } from '../audio/sfx.js';
 import { bindCropTip, hideCropTip } from './cropTip.js';
 import { FIELD_NOTES_TITLE } from './gameTextPanel.js';
 import { renderHowToPlay } from './howToPlay.js';
@@ -137,7 +136,6 @@ export function openDiscoveryLog(state, onReset = null) {
   modal.appendChild(helpView);
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
-  playDiscoveryOpenSfx();
 
   overlay.addEventListener('click', (event) => {
     if (event.target === overlay) close();
