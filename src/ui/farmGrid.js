@@ -79,6 +79,8 @@ export function renderGrid(
   }
 
   const nextEls = [];
+  // Sparks need layout (getBoundingClientRect) — wire only after syncChildren.
+  const pendingUnlockAnims = [];
   for (const plot of state.plots) {
     const unlocking = unlockingPlotIds.has(plot.id);
     const watering = wateringPlotIds.has(plot.id);
@@ -130,13 +132,16 @@ export function renderGrid(
         wateringPlotIds,
       );
       if (unlocking && onUnlockAnimationEnd) {
-        wireUnlockAnimation(el, plot.id, unlockingPlotIds, onUnlockAnimationEnd);
+        pendingUnlockAnims.push({ el, plotId: plot.id });
       }
       nextEls.push(el);
     }
   }
 
   syncChildren(container, nextEls);
+  for (const { el, plotId } of pendingUnlockAnims) {
+    wireUnlockAnimation(el, plotId, unlockingPlotIds, onUnlockAnimationEnd);
+  }
   applyTutorialPlotHighlights(container, state);
 
   container.onclick = (event) => {
