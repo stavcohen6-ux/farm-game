@@ -836,15 +836,17 @@ the opening out and reveals the already-warmed grove. Reset clears progress then
 re-shows the opening (no full page reload).
 Ambient BGM (`assets/audio/farm_background_music.mp3`) starts on the opening
 screen (autoplay when the browser allows; otherwise on the first tap). Native
-loop; no mute control yet. Music keeps playing after Play and across Reset.
-Pauses while the page is hidden (minimized window, backgrounded tab/app) and
-resumes when the page becomes visible again.
+loop. Mute toggle in Field Notes footer (Music: On / Music: Off); preference
+persists in localStorage across refresh and Reset. Music keeps playing after
+Play and across Reset when not muted. Pauses while the page is hidden
+(minimized window, backgrounded tab/app) and resumes when the page becomes
+visible again (unless muted).
 
 Main farm in a scenic grove stage + info band (Field Notes game-text plank) +
 Dragon Temple. Overlays: radial crop picker (anchored to the clicked plot),
 uproot confirm (anchored to the held plot), shrine detail, Field Notes modal,
 reset confirm (Yes/No then swipe-to-reset). No separate menus. Field Notes
-footer: How to Play above Reset.
+footer: How to Play, Music mute, then Reset.
 
 ### Layout (current)
 - Target: desktop and portrait phone (see **Platform** — every feature must

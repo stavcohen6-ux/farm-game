@@ -1,11 +1,16 @@
 import { CROPS, getCrop } from '../data/crops.js';
 import { getAlchemyRecipeByResultId } from '../data/alchemyRecipes.js';
 import { SHRINES, shrineAcceptsCrop } from '../data/shrines.js';
+import { isMusicMuted, setMusicMuted } from '../audio/backgroundMusic.js';
 import { playDiscoveryOpenSfx } from '../audio/sfx.js';
 import { bindCropTip, hideCropTip } from './cropTip.js';
 import { FIELD_NOTES_TITLE } from './gameTextPanel.js';
 import { renderHowToPlay } from './howToPlay.js';
 import { logShrineIconSrc, setCropIcon, setIcon, UI_ICONS } from './icon.js';
+
+function musicMuteLabel() {
+  return isMusicMuted() ? 'Music: Off' : 'Music: On';
+}
 
 // Opens a modal listing discovered crops with shrine values and origin.
 // `onReset` — optional; when set, shows Reset at the bottom of the log.
@@ -99,6 +104,17 @@ export function openDiscoveryLog(state, onReset = null) {
     showHelp();
   });
   footer.appendChild(howToPlayBtn);
+
+  const musicBtn = document.createElement('button');
+  musicBtn.type = 'button';
+  musicBtn.className = 'reset-game';
+  musicBtn.textContent = musicMuteLabel();
+  musicBtn.addEventListener('click', (event) => {
+    event.stopPropagation();
+    setMusicMuted(!isMusicMuted());
+    musicBtn.textContent = musicMuteLabel();
+  });
+  footer.appendChild(musicBtn);
 
   if (typeof onReset === 'function') {
     const resetBtn = document.createElement('button');
