@@ -482,9 +482,18 @@ export function canTutorialPlant(state, plotId, cropId) {
   return false;
 }
 
+/** True for the first FTUE wheat plant — no water cue, no random roll. */
+export function shouldSkipTutorialWater(state, cropId) {
+  if (!isTutorialGated(state)) return false;
+  if (cropId !== 'wheat') return false;
+  const step = state.tutorialStep;
+  return step === 'pickWheat' || step === 'tapWheatPlot';
+}
+
 export function shouldForceTutorialWater(state, cropId) {
   if (!isTutorialGated(state)) return false;
-  // One forced cue on every FTUE plant of wheat/turnip
+  // First wheat: no water. Later FTUE wheat/turnip: one forced cue.
+  if (shouldSkipTutorialWater(state, cropId)) return false;
   return cropId === 'wheat' || cropId === 'turnip';
 }
 

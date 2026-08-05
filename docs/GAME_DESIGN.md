@@ -950,22 +950,22 @@ Triggers:
   on load.
 
   Path: plant Wheat on left (Turnip locked on real crop wheel) → grow
-  (optional one water cue; 4× growth) → offer Wheat to Fox only (`1/5`
+  (no water cue; 4× growth) → offer Wheat to Fox only (`1/5`
   demo bar) → plant Turnip on right (Wheat visible but locked on wheel;
-  4× growth; optional water) → plant second Wheat on left (4× growth)
-  → mix → offer Root Loaf to Fox (`5/5`) → Fox upgrade VFX + unlock
-  plots `0`/`1` → `exploreBoard` speech bubble → next tap →
+  4× growth; optional water) → plant second Wheat on left (4× growth;
+  optional water) → mix → offer Root Loaf to Fox (`5/5`) → Fox upgrade
+  VFX + unlock plots `0`/`1` → `exploreBoard` speech bubble → next tap →
   `fieldNotesInvite` bubble above the game-text plank → next tap
   (anywhere; opening Field Notes is optional) → `done`.
   Water never blocks: ignore dry soil until ready and the step still
-  advances. At most one water ask per plant. Uproot, shrine/temple detail
-  popups, Tiger/Frog/Monkey offers, and Dragon wake are blocked until
-  `exploreBoard` / `fieldNotesInvite` (free play with invite bubbles) /
-  `done`. Non-Fox shrines
-  (+ temple) are greyed until then. Fox demo bar uses the normal progress
-  UI with max 5 (scripted +1 wheat / fill on loaf); on complete Fox shrine
-  progress resets to Forest Fox `0` for free play. `repairTutorialState` on
-  load + tick fixes board/step desync.
+  advances. At most one water ask per plant (turnip / second wheat only
+  in FTUE). Uproot, shrine/temple detail popups, Tiger/Frog/Monkey
+  offers, and Dragon wake are blocked until `exploreBoard` /
+  `fieldNotesInvite` (free play with invite bubbles) / `done`. Non-Fox
+  shrines (+ temple) are greyed until then. Fox demo bar uses the normal
+  progress UI with max 5 (scripted +1 wheat / fill on loaf); on complete
+  Fox shrine progress resets to Forest Fox `0` for free play.
+  `repairTutorialState` on load + tick fixes board/step desync.
 
   Bubble: one at a time, above the target (flip below if clipped); no
   player dismiss — advances when the step completes. Exception: soft

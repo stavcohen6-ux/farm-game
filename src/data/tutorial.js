@@ -45,8 +45,7 @@ export const TUTORIAL_UNLOCK_PLOT_IDS = [0, 1];
 export const TUTORIAL_BUBBLE_LINES = {
   tapWheatPlot: 'Tap this plot to plant.',
   pickWheat: 'Choose Wheat.',
-  growWheat: 'Wait for Wheat to ripen. Tap to water if the soil looks dry.',
-  growWheatDry: 'Tap the dry plot to water it.',
+  growWheat: 'Wait for Wheat to ripen.',
   offerWheat: 'Drag ready Wheat to the Fox shrine.',
   tapTurnipPlot: 'Tap this plot to plant Turnip.',
   pickTurnip: 'Choose Turnip.',
@@ -102,9 +101,6 @@ export function getTutorialBubbleText(state, now = Date.now()) {
   const step = state?.tutorialStep;
   if (!isTutorialStep(step) || step === TUTORIAL_STEP_DONE) return '';
 
-  if (step === 'growWheat' && plotNeedsWater(state, TUTORIAL_LEFT_PLOT, now)) {
-    return TUTORIAL_BUBBLE_LINES.growWheatDry;
-  }
   if (step === 'growTurnip' && plotNeedsWater(state, TUTORIAL_RIGHT_PLOT, now)) {
     return TUTORIAL_BUBBLE_LINES.growTurnipDry;
   }

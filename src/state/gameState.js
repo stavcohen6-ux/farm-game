@@ -64,6 +64,7 @@ import {
   repairTutorialState,
   forceWaterRequest,
   getTutorialPlantGrowthMs,
+  shouldSkipTutorialWater,
   shouldForceTutorialWater,
   shouldSuppressDragonDuringTutorial,
   shouldSuppressPlotNapperDuringTutorial,
@@ -598,6 +599,10 @@ export function plantCrop(state, plotId, cropId) {
     // Flowered: guaranteed butterfly, no water on this plant.
     water = { watered: false, waterRequestAt: null };
     critter = forceCritterVisit(crop, plantedAt, growthMs);
+  } else if (shouldSkipTutorialWater(state, cropId)) {
+    // First FTUE wheat: no water cue, no butterfly.
+    water = { watered: false, waterRequestAt: null };
+    critter = { critterWelcomed: false, critterVisitAt: null };
   } else if (shouldForceTutorialWater(state, cropId)) {
     // FTUE: one forced water cue; no butterfly on that plant.
     water = forceWaterRequest(plantedAt, growthMs);
