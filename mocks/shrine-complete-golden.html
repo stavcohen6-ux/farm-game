@@ -3,9 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- Resolve assets/ relative to project root (not /mocks/). -->
-  <base href="../" />
-  <title>Complete shrine — golden look mockup</title>
+  <title>Complete shrine — golden pedestal mockup</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet" />
@@ -62,6 +60,7 @@
       flex-wrap: wrap;
       gap: 0.4rem;
       align-items: center;
+      margin-top: 0.75rem;
     }
 
     .picker span {
@@ -164,7 +163,7 @@
       background-color: #7a9e86;
       background-image:
         radial-gradient(ellipse 70% 80% at 50% 50%, rgba(255, 255, 255, 0.28), transparent),
-        url('assets/icons/farm_frame.png');
+        url('../assets/icons/farm_frame.png');
       background-size: cover, 100% 100%;
       background-position: center;
     }
@@ -242,114 +241,75 @@
       background: linear-gradient(180deg, #d4b050, #b89030);
     }
 
-    /* —— Live baselines —— */
+    /* —— Baselines —— */
     .shrine--progress .shrine__progress-fill { height: 55%; }
 
-    .shrine--maxed-now .shrine__progress-fill { height: 100%; }
-    .shrine--maxed-now .shrine__progress-track {
+    .shrine--maxed-bar .shrine__progress-fill { height: 100%; }
+    .shrine--maxed-bar .shrine__progress-track {
       border-color: rgba(212, 160, 48, 0.9);
       box-shadow:
         inset 0 1px 1px rgba(255, 230, 160, 0.4),
         0 0 0 1px rgba(245, 176, 40, 0.28);
     }
-    .shrine--maxed-now .shrine__progress-fill {
-      box-shadow: inset 0 1px 2px rgba(255, 235, 180, 0.5);
-      filter: brightness(1.1) saturate(1.08);
-    }
 
-    .shrine--blessed .shrine__icon {
-      filter:
-        drop-shadow(3px 0 0 var(--amber))
-        drop-shadow(-3px 0 0 var(--amber))
-        drop-shadow(0 3px 0 var(--amber))
-        drop-shadow(0 -3px 0 var(--amber));
-    }
-
-    /* —— A: soft golden hue (whole stack) —— */
-    .shrine--gold-soft .shrine__progress-fill { height: 100%; }
-    .shrine--gold-soft .shrine__progress-track {
-      border-color: rgba(212, 160, 48, 0.9);
-      box-shadow:
-        inset 0 1px 1px rgba(255, 230, 160, 0.4),
-        0 0 0 1px rgba(245, 176, 40, 0.28);
-    }
-    .shrine--gold-soft .shrine__icon {
-      filter:
-        sepia(0.38) saturate(1.35) brightness(1.06)
-        hue-rotate(-4deg);
-    }
-
-    /* —— B: richer gold hue —— */
-    .shrine--gold-rich .shrine__progress-fill { height: 100%; }
-    .shrine--gold-rich .shrine__progress-track {
-      border-color: rgba(212, 160, 48, 0.95);
-      box-shadow:
-        inset 0 1px 1px rgba(255, 230, 160, 0.45),
-        0 0 0 1px rgba(245, 176, 40, 0.35);
-    }
-    .shrine--gold-rich .shrine__progress-fill {
-      background: linear-gradient(180deg, #f0d878, #d4a030);
-      box-shadow: inset 0 1px 2px rgba(255, 245, 200, 0.55);
-    }
-    .shrine--gold-rich .shrine__icon {
-      filter:
-        sepia(0.55) saturate(1.55) brightness(1.1)
-        hue-rotate(-6deg) contrast(1.04);
-    }
-
-    /* —— C: figure gold only (pedestal stays natural) —— */
-    .shrine--gold-figure .shrine__progress-fill { height: 100%; }
-    .shrine--gold-figure .shrine__progress-track {
-      border-color: rgba(212, 160, 48, 0.9);
-      box-shadow:
-        inset 0 1px 1px rgba(255, 230, 160, 0.4),
-        0 0 0 1px rgba(245, 176, 40, 0.28);
-    }
-    .shrine--gold-figure .shrine__layer--figure {
-      filter:
-        sepia(0.5) saturate(1.5) brightness(1.08)
-        hue-rotate(-5deg);
-    }
-
-    /* —— D: warm ground glow (no hue shift) —— */
-    .shrine--gold-glow .shrine__progress-fill { height: 100%; }
-    .shrine--gold-glow .shrine__progress-track {
-      border-color: rgba(212, 160, 48, 0.9);
-      box-shadow:
-        inset 0 1px 1px rgba(255, 230, 160, 0.4),
-        0 0 0 1px rgba(245, 176, 40, 0.28);
-    }
-    .shrine--gold-glow .shrine__figure {
-      filter:
-        drop-shadow(0 6px 10px rgba(42, 90, 60, 0.18))
-        drop-shadow(0 0 14px rgba(245, 176, 40, 0.45))
-        drop-shadow(0 0 4px rgba(240, 216, 120, 0.55));
-    }
-
-    /* —— E: soft hue + thin honey rim (vs blessing amber rim) —— */
-    .shrine--gold-rim .shrine__progress-fill { height: 100%; }
-    .shrine--gold-rim .shrine__progress-track {
-      border-color: rgba(212, 160, 48, 0.95);
-      box-shadow:
-        inset 0 1px 1px rgba(255, 230, 160, 0.45),
-        0 0 0 1px rgba(245, 176, 40, 0.35);
-    }
-    .shrine--gold-rim .shrine__icon {
-      filter:
-        sepia(0.32) saturate(1.3) brightness(1.05)
-        hue-rotate(-4deg)
-        drop-shadow(2px 0 0 rgba(230, 198, 90, 0.95))
-        drop-shadow(-2px 0 0 rgba(230, 198, 90, 0.95))
-        drop-shadow(0 2px 0 rgba(230, 198, 90, 0.95))
-        drop-shadow(0 -2px 0 rgba(230, 198, 90, 0.95));
-    }
-
-    /* —— F: sealed bar (hide progress; gold icon only) —— */
-    .shrine--gold-sealed .shrine__plaque { opacity: 0; }
-    .shrine--gold-sealed .shrine__icon {
+    .shrine--sealed-prev .shrine__plaque { display: none; }
+    .shrine--sealed-prev .shrine__icon {
       filter:
         sepia(0.48) saturate(1.45) brightness(1.08)
         hue-rotate(-5deg);
+    }
+
+    /* —— Sealed + pedestal gold only —— */
+    .shrine--ped-soft .shrine__plaque,
+    .shrine--ped-mid .shrine__plaque,
+    .shrine--ped-rich .shrine__plaque,
+    .shrine--ped-bright .shrine__plaque,
+    .shrine--ped-glow .shrine__plaque,
+    .shrine--ped-rune .shrine__plaque {
+      display: none;
+    }
+
+    /* Soft: quiet honey stone */
+    .shrine--ped-soft .shrine__layer--pedestal {
+      filter:
+        sepia(0.42) saturate(1.35) brightness(1.06)
+        hue-rotate(-4deg);
+    }
+
+    /* Mid: clearer gold stone (lean candidate) */
+    .shrine--ped-mid .shrine__layer--pedestal {
+      filter:
+        sepia(0.58) saturate(1.5) brightness(1.1)
+        hue-rotate(-6deg) contrast(1.04);
+    }
+
+    /* Rich: strong gold pedestal */
+    .shrine--ped-rich .shrine__layer--pedestal {
+      filter:
+        sepia(0.72) saturate(1.65) brightness(1.12)
+        hue-rotate(-8deg) contrast(1.06);
+    }
+
+    /* Bright: gold + slight lift so stone reads metallic */
+    .shrine--ped-bright .shrine__layer--pedestal {
+      filter:
+        sepia(0.65) saturate(1.7) brightness(1.18)
+        hue-rotate(-6deg) contrast(1.05);
+    }
+
+    /* Soft gold pedestal + tiny honey bloom under stone only */
+    .shrine--ped-glow .shrine__layer--pedestal {
+      filter:
+        sepia(0.55) saturate(1.45) brightness(1.1)
+        hue-rotate(-5deg)
+        drop-shadow(0 0 6px rgba(245, 176, 40, 0.4));
+    }
+
+    /* Mid gold + warm amber rune punch (boosts the baked rune spot) */
+    .shrine--ped-rune .shrine__layer--pedestal {
+      filter:
+        sepia(0.58) saturate(1.55) brightness(1.12)
+        hue-rotate(-5deg) contrast(1.08);
     }
 
     .ideas {
@@ -383,12 +343,11 @@
 <body>
   <div class="mock">
     <header>
-      <h1>Complete shrine look</h1>
+      <h1>Complete shrine — golden pedestal</h1>
       <p>
-        When a shrine is maxed, it should read as finished — and stay safe
-        from Dragon burn. Today only the progress bar gets a gold crown.
-        Compare treatments below (same Soft B cutouts as live). Pick a
-        guardian with the chips to check frog / monkey / fox / tiger.
+        Direction: hide the progress bar when maxed, and tint only the
+        <strong>pedestal</strong> layer gold. The animal figure stays natural
+        (separate Soft B cutouts). Compare strengths below.
       </p>
       <div class="picker" role="group" aria-label="Shrine">
         <span>Guardian</span>
@@ -404,80 +363,74 @@
         <span class="badge badge--now">Live</span>
         <h2>In progress</h2>
         <div class="stage" data-variant="progress"></div>
-        <p class="note">Natural colors, partial bar.</p>
+        <p class="note">Natural pedestal + figure, partial bar.</p>
       </section>
 
       <section class="panel">
         <span class="badge badge--now">Live</span>
         <h2>Maxed today</h2>
-        <div class="stage" data-variant="maxed-now"></div>
-        <p class="note">Gold bar only — icon unchanged.</p>
+        <div class="stage" data-variant="maxed-bar"></div>
+        <p class="note">Gold bar only — both layers unchanged.</p>
       </section>
 
       <section class="panel">
-        <span class="badge badge--warn">Don’t confuse</span>
-        <h2>Dragon blessing</h2>
-        <div class="stage" data-variant="blessed"></div>
-        <p class="note">Temporary amber silhouette rim. Complete should not copy this.</p>
+        <span class="badge badge--warn">Prev pick</span>
+        <h2>Sealed, whole stack gold</h2>
+        <div class="stage" data-variant="sealed-prev"></div>
+        <p class="note">What you liked, but animal also goes gold — too much.</p>
       </section>
 
       <section class="panel">
-        <span class="badge badge--a">A · prefer</span>
-        <h2>Soft golden hue</h2>
-        <div class="stage" data-variant="gold-soft"></div>
-        <p class="note">Whole stack lightly sepia-gold. Quiet, readable at board size.</p>
+        <span class="badge badge--c">A</span>
+        <h2>Sealed · soft pedestal</h2>
+        <div class="stage" data-variant="ped-soft"></div>
+        <p class="note">Quiet honey stone. Animal untouched.</p>
       </section>
 
       <section class="panel">
-        <span class="badge badge--b">B</span>
-        <h2>Rich gold hue</h2>
-        <div class="stage" data-variant="gold-rich"></div>
-        <p class="note">Stronger “statue” gold + brighter bar. More obvious; can wash greens.</p>
+        <span class="badge badge--a">B · lean</span>
+        <h2>Sealed · mid pedestal</h2>
+        <div class="stage" data-variant="ped-mid"></div>
+        <p class="note">Clearer gold stone; guardian still reads as themselves.</p>
       </section>
 
       <section class="panel">
-        <span class="badge badge--c">C</span>
-        <h2>Figure only</h2>
-        <div class="stage" data-variant="gold-figure"></div>
-        <p class="note">Guardian goes gold; mossy pedestal stays natural. Nice contrast.</p>
+        <span class="badge badge--b">C</span>
+        <h2>Sealed · rich pedestal</h2>
+        <div class="stage" data-variant="ped-rich"></div>
+        <p class="note">Stronger gold shrine. Louder at board size.</p>
       </section>
 
       <section class="panel">
         <span class="badge badge--c">D</span>
-        <h2>Warm ground glow</h2>
-        <div class="stage" data-variant="gold-glow"></div>
-        <p class="note">No color shift — soft honey bloom under the figure. Subtle; easy to miss.</p>
+        <h2>Sealed · bright pedestal</h2>
+        <div class="stage" data-variant="ped-bright"></div>
+        <p class="note">Same idea + brightness lift (more “metal”).</p>
       </section>
 
       <section class="panel">
         <span class="badge badge--c">E</span>
-        <h2>Hue + thin honey rim</h2>
-        <div class="stage" data-variant="gold-rim"></div>
-        <p class="note">Soft gold + thinner honey outline. Clear, but closer to blessing language.</p>
+        <h2>Sealed · pedestal + glow</h2>
+        <div class="stage" data-variant="ped-glow"></div>
+        <p class="note">Mid gold + soft honey bloom on the stone only.</p>
       </section>
 
       <section class="panel">
-        <span class="badge badge--c">F</span>
-        <h2>Sealed (no bar)</h2>
-        <div class="stage" data-variant="gold-sealed"></div>
-        <p class="note">Hide the progress plaque when maxed. Icon alone carries “done.”</p>
+        <span class="badge badge--a">F · shipped</span>
+        <h2>Sealed · pedestal + rune punch</h2>
+        <div class="stage" data-variant="ped-rune"></div>
+        <p class="note">Live: mid gold + contrast so the amber rune pops.</p>
       </section>
     </div>
 
     <section class="ideas">
-      <h2>Other notes</h2>
+      <h2>Notes</h2>
       <ul>
-        <li><strong>Burn immunity:</strong> exclude maxed shrines from
-          <code>pickBurnableShrine</code>. If every shrine with progress is
-          maxed, keep today’s lucky line (“wrath fades”).</li>
-        <li><strong>Differentiate from blessing:</strong> blessing = temporary
-          amber rim; complete = permanent gold tint (A/B/C). Avoid making
-          complete look like a permanent blessing.</li>
-        <li><strong>My lean:</strong> A (soft hue) or C (figure only). Both
-          read “finished” without fighting Soft B colors or the blessing rim.
-          B if you want it louder.</li>
-        <li><strong>Skip for now:</strong> sparkles, checkmarks, crown badges —
-          clutter at corner size and fight the “no shrine pulse” rule.</li>
+        <li>All options hide the progress plaque when complete.</li>
+        <li>Gold filter is on <code>.shrine__layer--pedestal</code> only —
+          figure stays natural Soft B color.</li>
+        <li>Shipped: <strong>F</strong> (sealed + pedestal rune punch) +
+          maxed shrines immune to Dragon burn.</li>
       </ul>
     </section>
   </div>
@@ -504,12 +457,12 @@
 
       const pedestal = document.createElement('img');
       pedestal.className = 'shrine__layer shrine__layer--pedestal';
-      pedestal.src = `assets/icons/shrine_${shrineId}_pedestal.png`;
+      pedestal.src = `../assets/icons/shrine_${shrineId}_pedestal.png`;
       pedestal.alt = '';
 
       const figureImg = document.createElement('img');
       figureImg.className = 'shrine__layer shrine__layer--figure';
-      figureImg.src = `assets/icons/shrine_${shrineId}_figure.png`;
+      figureImg.src = `../assets/icons/shrine_${shrineId}_figure.png`;
       figureImg.alt = NAMES[shrineId];
 
       icon.append(pedestal, figureImg);

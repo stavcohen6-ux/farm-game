@@ -106,8 +106,10 @@ artwork — live, mood, mocks, parked desk, backups, or archives.
   plot); the stacked figure is **larger than a farm tile** and overflows past
   the farm frame border (sits on the farm frame art — no filler tile behind).
   Main view shows figure + a slim **vertical** progress track on the outer
-  side of each shrine (left of frog/fox, right of monkey/tiger); name / tier
-  in the click detail modal; no hover lift/scale on shrines
+  side of each shrine (left of frog/fox, right of monkey/tiger); when a shrine
+  is maxed the track is hidden and only the pedestal layer gets a mid gold
+  tint (figure stays natural; not the temporary dragon-blessing amber rim);
+  name / tier in the click detail modal; no hover lift/scale on shrines
 - Dragon Temple: Soft B roof dragon sitting above a 1×4 holy farm-style
   tribute board (`dragon_temple_rest.png` / `dragon_temple_awake.png`).
   Same roof stone both states; only the dragon sleeps vs wakes. Four demand
@@ -557,7 +559,8 @@ Corner cards show icon, name, next/max tier name, and active-tier progress.
   different shrines stack. On tier-up, rising overlay sparks climb the shrine
   icon (shrine art does not pulse or move); multi-tier overflow in one grant
   plays the VFX once.
-- Maxed shrines reject offerings.
+- Maxed shrines reject offerings. On the farm board they hide the progress
+  track and tint only the pedestal gold (figure unchanged).
 - Mid/late Frog / Fox / Tiger tiers demand researched crops, so Monkey is a
   natural progression gate. Every alchemy mix appears on at least one tier.
 
@@ -791,11 +794,12 @@ While active and not burning / pending close:
 
 ### Lose shrine burn
 On lose: pick one random shrine that has progress (`tier > 0` or
-`progress > 0`). Drop it by one tier and clear its current progress bar
-(`progress = 0`). Also clear that shrine’s remaining `dragonBonusOfferings`
-(if any). If already at tier 0 with bar progress only, stay at
-tier 0 and clear the bar. The player can offer again from the new tier’s
-bar. If none have progress, skip the burn (message line 1 only).
+`progress > 0`) and is **not maxed**. Drop it by one tier and clear its
+current progress bar (`progress = 0`). Also clear that shrine’s remaining
+`dragonBonusOfferings` (if any). If already at tier 0 with bar progress
+only, stay at tier 0 and clear the bar. The player can offer again from
+the new tier’s bar. Maxed shrines are immune (complete). If none are
+burnable, skip the burn (message line 1 only).
 UI: when a shrine is burned from plant or offer wrath, rising fire overlays
 climb that shrine icon once (same timing as tier-up sparks; shrine art stays
 still). Lucky lose (nothing to burn) and load/tick catch-up skip the VFX.

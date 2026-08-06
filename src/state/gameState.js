@@ -1336,10 +1336,10 @@ function shrineHasProgress(state, shrineId) {
   return progress.tier > 0 || progress.progress > 0;
 }
 
-// Random shrine among those with progress; null if none.
+// Random shrine among those with progress that are not maxed; null if none.
 export function pickBurnableShrine(state) {
-  const pool = SHRINES.map((s) => s.id).filter((id) =>
-    shrineHasProgress(state, id),
+  const pool = SHRINES.map((s) => s.id).filter(
+    (id) => shrineHasProgress(state, id) && !isShrineMaxed(state, id),
   );
   if (pool.length === 0) return null;
   return pool[Math.floor(Math.random() * pool.length)];
