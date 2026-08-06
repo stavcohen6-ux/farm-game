@@ -21,6 +21,9 @@ export const DRAGON_TEMPLE = {
   rewardProgressMultiplier: 2, // 100% bonus = double offering progress
   rewardSparkCount: 4, // spark emojis that fly temple → shrine
   rewardSparkIcon: '✨',
+  // First-time soft tip after a real win blessing lands on a shrine
+  blessingTipText:
+    "This shrine glows with the Dragon's blessing. Your next offering here counts double.",
   // Hidden chance that a shrine offering wakes the dragon (0–1)
   defaultTriggerChance: 0,
   // Added to triggerChance after a missed offering roll, per shrine (capped at 1)

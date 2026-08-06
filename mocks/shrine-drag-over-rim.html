@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Resolve assets/ relative to project root (not /mocks/). -->
+  <base href="../" />
+  <title>Shrine drag-over — dual-tone silhouette mockup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --moss: #5f9a72;
+      --moss-deep: #3d7a52;
+      --parchment: #f4faf4;
+      --ink: #2a3d30;
+      --muted: #5f7466;
+      --shrine-figure: 5.5rem;
+      --shrine-col: 5.75rem;
+      --shrine-bar-width: 8px;
+      --shrine-bar-gap: 3.5px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100dvh;
+      font-family: 'Nunito', system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 90% 70% at 50% 0%, #e8fff0 0%, transparent 55%),
+        linear-gradient(180deg, #d8f0e0 0%, #b8dcc8 50%, #9ecab0 100%);
+      padding: 1.25rem;
+    }
+
+    .mock {
+      max-width: 52rem;
+      margin: 0 auto;
+      display: grid;
+      gap: 1rem;
+    }
+
+    header h1 {
+      font-size: 1.35rem;
+      font-weight: 800;
+    }
+
+    header p {
+      margin-top: 0.35rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(11.5rem, 1fr));
+      gap: 0.85rem;
+    }
+
+    .panel {
+      background: rgba(244, 250, 244, 0.72);
+      border: 1.5px solid #9ec9aa;
+      border-radius: 16px;
+      padding: 0.9rem 0.85rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .panel h2 {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .panel .note {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .stage {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 8.5rem;
+      padding: 1.1rem 0.75rem;
+      border-radius: 14px;
+      background-color: #7a9e86;
+      background-image:
+        radial-gradient(ellipse 70% 80% at 50% 50%, rgba(255, 255, 255, 0.28), transparent),
+        url('assets/icons/farm_frame.png');
+      background-size: cover, 100% 100%;
+      background-position: center;
+    }
+
+    .shrine {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: var(--shrine-bar-gap);
+      background: transparent;
+      border: none;
+      cursor: default;
+    }
+
+    .shrine__figure {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      width: var(--shrine-col);
+      height: var(--shrine-figure);
+      flex-shrink: 0;
+      contain: size layout;
+      overflow: visible;
+      filter: drop-shadow(0 6px 10px rgba(42, 90, 60, 0.22));
+      transition: filter 0.14s ease;
+    }
+
+    .shrine__icon {
+      position: relative;
+      width: var(--shrine-figure);
+      height: var(--shrine-figure);
+      flex-shrink: 0;
+      line-height: 0;
+      display: block;
+    }
+
+    .shrine__layer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      pointer-events: none;
+      user-select: none;
+      display: block;
+    }
+
+    .shrine__layer--pedestal { z-index: 0; }
+    .shrine__layer--figure { z-index: 1; }
+
+    .shrine__plaque {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      align-self: center;
+    }
+
+    .shrine__progress-track {
+      width: var(--shrine-bar-width);
+      height: calc(var(--shrine-figure) * 0.7);
+      border-radius: 999px;
+      background: rgba(30, 40, 34, 0.28);
+      border: 1px solid rgba(90, 110, 96, 0.35);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      box-shadow: inset 0 1px 1px rgba(20, 28, 24, 0.2);
+    }
+
+    .shrine__progress-fill {
+      width: 100%;
+      height: 55%;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #d4b050, #b89030);
+    }
+
+    .shrine--dragon-blessed .shrine__icon {
+      filter:
+        drop-shadow(3px 0 0 rgb(245, 176, 40))
+        drop-shadow(-3px 0 0 rgb(245, 176, 40))
+        drop-shadow(0 3px 0 rgb(245, 176, 40))
+        drop-shadow(0 -3px 0 rgb(245, 176, 40));
+    }
+
+    /* Current live: soft bloom */
+    .shrine--current-drag .shrine__figure {
+      filter: drop-shadow(0 0 8px rgba(95, 154, 114, 0.75));
+    }
+
+    .shrine--current-drag .shrine__progress-track {
+      outline: 2px solid var(--moss);
+      outline-offset: 2px;
+    }
+
+    .shrine--dragon-blessed.shrine--current-drag .shrine__figure {
+      filter: drop-shadow(0 0 8px rgba(95, 154, 114, 0.75));
+    }
+
+    .shrine--dragon-blessed.shrine--current-drag .shrine__icon {
+      filter:
+        drop-shadow(3px 0 0 rgb(245, 176, 40))
+        drop-shadow(-3px 0 0 rgb(245, 176, 40))
+        drop-shadow(0 3px 0 rgb(245, 176, 40))
+        drop-shadow(0 -3px 0 rgb(245, 176, 40));
+    }
+
+    /* Option B: parchment only */
+    .shrine--parchment-drag .shrine__figure {
+      filter: drop-shadow(0 6px 10px rgba(42, 90, 60, 0.22));
+    }
+
+    .shrine--parchment-drag .shrine__icon {
+      filter:
+        drop-shadow(3px 0 0 var(--parchment))
+        drop-shadow(-3px 0 0 var(--parchment))
+        drop-shadow(0 3px 0 var(--parchment))
+        drop-shadow(0 -3px 0 var(--parchment));
+    }
+
+    .shrine--parchment-drag .shrine__progress-track {
+      outline: 2px solid var(--parchment);
+      outline-offset: 2px;
+    }
+
+    .shrine--dragon-blessed.shrine--parchment-drag .shrine__icon {
+      filter:
+        drop-shadow(3px 0 0 var(--parchment))
+        drop-shadow(-3px 0 0 var(--parchment))
+        drop-shadow(0 3px 0 var(--parchment))
+        drop-shadow(0 -3px 0 var(--parchment));
+    }
+
+    /* Option C: moss-deep core + parchment outer (mix-seam language) */
+    .shrine--dual-drag .shrine__figure {
+      filter: drop-shadow(0 6px 10px rgba(42, 90, 60, 0.22));
+    }
+
+    .shrine--dual-drag .shrine__icon {
+      filter:
+        drop-shadow(2px 0 0 var(--moss-deep))
+        drop-shadow(-2px 0 0 var(--moss-deep))
+        drop-shadow(0 2px 0 var(--moss-deep))
+        drop-shadow(0 -2px 0 var(--moss-deep))
+        drop-shadow(4px 0 0 var(--parchment))
+        drop-shadow(-4px 0 0 var(--parchment))
+        drop-shadow(0 4px 0 var(--parchment))
+        drop-shadow(0 -4px 0 var(--parchment));
+    }
+
+    .shrine--dual-drag .shrine__progress-track {
+      outline: 2px solid var(--parchment);
+      outline-offset: 2px;
+      box-shadow: 0 0 0 1px var(--moss-deep);
+    }
+
+    .shrine--dragon-blessed.shrine--dual-drag .shrine__icon {
+      filter:
+        drop-shadow(2px 0 0 var(--moss-deep))
+        drop-shadow(-2px 0 0 var(--moss-deep))
+        drop-shadow(0 2px 0 var(--moss-deep))
+        drop-shadow(0 -2px 0 var(--moss-deep))
+        drop-shadow(4px 0 0 var(--parchment))
+        drop-shadow(-4px 0 0 var(--parchment))
+        drop-shadow(0 4px 0 var(--parchment))
+        drop-shadow(0 -4px 0 var(--parchment));
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      padding: 0.15rem 0.45rem;
+      border-radius: 6px;
+      width: fit-content;
+    }
+
+    .badge--now {
+      background: rgba(95, 154, 114, 0.2);
+      color: var(--moss-deep);
+    }
+
+    .badge--b {
+      background: rgba(244, 250, 244, 0.95);
+      color: #5a6e60;
+      border: 1px solid #c5d9cc;
+    }
+
+    .badge--c {
+      background: rgba(245, 176, 40, 0.28);
+      color: #7a5a12;
+    }
+  </style>
+</head>
+<body>
+  <div class="mock">
+    <header>
+      <h1>Shrine accept highlight</h1>
+      <p>
+        Compare B (parchment only) vs C (moss-deep core + parchment outer).
+        C keeps a quiet green edge and uses cream only as the outer ring so
+        it isn’t pure white.
+      </p>
+    </header>
+
+    <div class="grid">
+      <section class="panel">
+        <span class="badge badge--now">Current</span>
+        <h2>Soft bloom</h2>
+        <div class="stage" data-shrine="current"></div>
+        <p class="note">Today’s figure bloom.</p>
+      </section>
+
+      <section class="panel">
+        <span class="badge badge--b">Option B</span>
+        <h2>Parchment only</h2>
+        <div class="stage" data-shrine="parchment"></div>
+        <p class="note">Cream rim — clear, but no moss green.</p>
+      </section>
+
+      <section class="panel">
+        <span class="badge badge--c">Option C</span>
+        <h2>Dual-tone rim</h2>
+        <div class="stage" data-shrine="dual"></div>
+        <p class="note">Moss-deep core + parchment outer.</p>
+      </section>
+
+      <section class="panel">
+        <span class="badge badge--b">Option B</span>
+        <h2>Blessed + parchment</h2>
+        <div class="stage" data-shrine="blessed-parchment"></div>
+        <p class="note">Parchment replaces amber while hovering.</p>
+      </section>
+
+      <section class="panel">
+        <span class="badge badge--c">Option C</span>
+        <h2>Blessed + dual-tone</h2>
+        <div class="stage" data-shrine="blessed-dual"></div>
+        <p class="note">Dual rim replaces amber while hovering.</p>
+      </section>
+
+      <section class="panel">
+        <span class="badge badge--now">Idle</span>
+        <h2>Dragon blessed only</h2>
+        <div class="stage" data-shrine="blessed"></div>
+        <p class="note">Amber rim for comparison.</p>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    function buildShrine(extraClass = '') {
+      const shrine = document.createElement('div');
+      shrine.className = `shrine ${extraClass}`.trim();
+      shrine.innerHTML = `
+        <div class="shrine__figure">
+          <span class="shrine__icon">
+            <img class="shrine__layer shrine__layer--pedestal" src="assets/icons/shrine_fox_pedestal.png" alt="" draggable="false" aria-hidden="true" />
+            <img class="shrine__layer shrine__layer--figure" src="assets/icons/shrine_fox_figure.png" alt="Fox Shrine" draggable="false" />
+          </span>
+        </div>
+        <div class="shrine__plaque">
+          <div class="shrine__progress-track">
+            <div class="shrine__progress-fill"></div>
+          </div>
+        </div>
+      `;
+      return shrine;
+    }
+
+    const variants = {
+      current: 'shrine--current-drag',
+      parchment: 'shrine--parchment-drag',
+      dual: 'shrine--dual-drag',
+      blessed: 'shrine--dragon-blessed',
+      'blessed-parchment': 'shrine--dragon-blessed shrine--parchment-drag',
+      'blessed-dual': 'shrine--dragon-blessed shrine--dual-drag',
+    };
+
+    for (const stage of document.querySelectorAll('[data-shrine]')) {
+      const key = stage.getAttribute('data-shrine');
+      stage.append(buildShrine(variants[key] ?? ''));
+    }
+  </script>
+</body>
+</html>

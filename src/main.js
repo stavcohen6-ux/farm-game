@@ -27,6 +27,8 @@ import {
   isTutorialActive,
   isTutorialGated,
   dismissTutorialSoftInvite,
+  armDragonBlessingTip,
+  dismissDragonBlessingTip,
   canTutorialOpenPicker,
   onTutorialPickerOpened,
   canTutorialUproot,
@@ -53,6 +55,7 @@ import { openResetConfirm } from './ui/resetConfirm.js';
 import { openUprootConfirm } from './ui/uprootConfirm.js';
 import { openDiscoveryLog } from './ui/discoveryLog.js';
 import { playHarvestCropFly } from './ui/bonusCropFly.js';
+import { playOfferingProgressPop } from './ui/offeringProgressPop.js';
 import {
   playTempleRewardSparks,
 } from './ui/templeRewardFly.js';
@@ -65,6 +68,7 @@ import { pinCropTip } from './ui/cropTip.js';
 import { installStageFit } from './ui/stageFit.js';
 import { installOpeningScreen } from './ui/openingScreen.js';
 import { renderTutorialBubble } from './ui/tutorialBubble.js';
+import { renderDragonBlessingTip } from './ui/dragonBlessingTip.js';
 import { playMixEffects } from './ui/mixEffects.js';
 import {
   playPlantSfx,
@@ -148,6 +152,7 @@ function render() {
     dragonTempleEl?.classList.remove('dragon-temple--tutorial-inactive');
   }
   renderTutorialBubble(state, tutorialBubbleCtx(now));
+  renderDragonBlessingTip(state, dragonBlessingTipCtx());
 }
 
 function showPlotCropName(plotId) {
@@ -166,12 +171,25 @@ function handleTutorialInviteDismiss() {
   render();
 }
 
+function handleDragonBlessingTipDismiss() {
+  if (!dismissDragonBlessingTip(state)) return;
+  save(state);
+  render();
+}
+
 function tutorialBubbleCtx(now = Date.now()) {
   return {
     boardEl,
     gridEl,
     now,
     onInviteDismiss: handleTutorialInviteDismiss,
+  };
+}
+
+function dragonBlessingTipCtx() {
+  return {
+    boardEl,
+    onDismiss: handleDragonBlessingTipDismiss,
   };
 }
 
@@ -384,6 +402,14 @@ function handleOffer(shrineId, cropId, plotId = null) {
   save(state);
   render();
 
+  if (result.flushedTigerBonus) {
+    playOfferingProgressAtShrine(
+      result.flushedTigerBonus.shrineId,
+      result.flushedTigerBonus.progressAmount,
+    );
+  }
+  playOfferingProgressAtShrine(shrineId, result.progressAmount);
+
   if (result.flushedTigerBonus?.tiersGained > 0) {
     playShrineUpgradeSfx();
     const flushedEl = boardEl.querySelector(
@@ -442,6 +468,10 @@ function handleOffer(shrineId, cropId, plotId = null) {
         }
         save(state);
         render();
+        playOfferingProgressAtShrine(
+          shrineId,
+          bonusResult.progressAmount,
+        );
         if ((bonusResult.tiersGained ?? 0) > 0) {
           playShrineUpgradeSfx();
           const shrineEl = boardEl.querySelector(`#shrine-${shrineId}`);
@@ -450,6 +480,17 @@ function handleOffer(shrineId, cropId, plotId = null) {
       },
     });
   }
+}
+
+function playOfferingProgressAtShrine(shrineId, amount) {
+  if (typeof amount !== 'number' || amount <= 0) return;
+  const shrineEl = boardEl.querySelector(`#shrine-${shrineId}`);
+  playOfferingProgressPop({
+    trackEl: shrineEl?.querySelector('.shrine__progress-track') ?? null,
+    iconEl: shrineEl?.querySelector('.shrine__icon') ?? null,
+    amount,
+    shrineId,
+  });
 }
 
 function handleShrineClick(shrineId) {
@@ -531,6 +572,10 @@ function playTempleWinPrize() {
   const iconEl = shrineEl?.querySelector('.shrine__icon');
   if (!iconEl) {
     pendingBlessingVisualShrineIds.delete(shrineId);
+    if (!maxed) {
+      armDragonBlessingTip(state, shrineId);
+      save(state);
+    }
     render();
     return;
   }
@@ -540,6 +585,10 @@ function playTempleWinPrize() {
     targetIconEl: iconEl,
     onComplete: () => {
       pendingBlessingVisualShrineIds.delete(shrineId);
+      if (!maxed) {
+        armDragonBlessingTip(state, shrineId);
+        save(state);
+      }
       render();
     },
   });
@@ -628,6 +677,7 @@ function tick() {
 
   renderFarm();
   renderTutorialBubble(state, tutorialBubbleCtx(now));
+  renderDragonBlessingTip(state, dragonBlessingTipCtx());
   if (isTutorialActive(state)) {
     renderShrines(
       boardEl,
@@ -661,6 +711,7 @@ function handleResetGame() {
     save(state);
     groveWarmed = false;
     opening.show();
+    render();
   });
 }
 

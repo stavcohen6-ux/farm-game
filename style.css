@@ -77,7 +77,7 @@ body {
   --grove-pad-x: 0.75rem;
   --grove-pad-y: 0.375rem;
   --grove-pad-y-bottom: 0.5rem;
-  --grove-gap: 0.5rem;
+  --grove-gap: 0.75rem;
   --shrine-nudge-top: 18px;
   --shrine-nudge-bottom: 18px;
   --shrine-bar-width: 8px;
@@ -145,7 +145,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--grove-gap, 0.5rem);
+  gap: var(--grove-gap, 0.75rem);
   padding: var(--grove-pad-y, 0.375rem) var(--grove-pad-x, 0.75rem)
     var(--grove-pad-y-bottom, 0.5rem);
   border-radius: 1.25rem;
@@ -477,6 +477,7 @@ body {
 .dragon-temple__board {
   box-sizing: border-box;
   width: 100%;
+  margin-top: -6px;
   padding: var(--frame-pad);
   border-radius: 14px;
   border: 3px solid #5a5040;
@@ -957,12 +958,17 @@ body {
   outline: none;
 }
 
-.shrine--drag-over .shrine__figure {
-  filter: drop-shadow(0 0 8px rgba(95, 154, 114, 0.75));
+/* Valid crop hover: parchment silhouette rim (same technique as blessing;
+   cream reads on moss board without bloom). Keep figure ground shadow. */
+.shrine--drag-over .shrine__icon {
+  filter: drop-shadow(3px 0 0 var(--parchment))
+    drop-shadow(-3px 0 0 var(--parchment))
+    drop-shadow(0 3px 0 var(--parchment))
+    drop-shadow(0 -3px 0 var(--parchment));
 }
 
 .shrine--drag-over .shrine__progress-track {
-  outline: 2px solid var(--moss);
+  outline: 2px solid var(--parchment);
   outline-offset: 2px;
 }
 
@@ -990,15 +996,12 @@ body {
     drop-shadow(0 -3px 0 rgb(245, 176, 40));
 }
 
-.shrine--dragon-blessed.shrine--drag-over .shrine__figure {
-  filter: drop-shadow(0 0 8px rgba(95, 154, 114, 0.75));
-}
-
+/* Accept feedback takes priority: parchment replaces amber while drag-over. */
 .shrine--dragon-blessed.shrine--drag-over .shrine__icon {
-  filter: drop-shadow(3px 0 0 rgb(245, 176, 40))
-    drop-shadow(-3px 0 0 rgb(245, 176, 40))
-    drop-shadow(0 3px 0 rgb(245, 176, 40))
-    drop-shadow(0 -3px 0 rgb(245, 176, 40));
+  filter: drop-shadow(3px 0 0 var(--parchment))
+    drop-shadow(-3px 0 0 var(--parchment))
+    drop-shadow(0 3px 0 var(--parchment))
+    drop-shadow(0 -3px 0 var(--parchment));
 }
 
 .shrine__icon {
@@ -2545,6 +2548,52 @@ body {
   -webkit-text-stroke: 3px #2a3d30;
   paint-order: stroke fill;
   text-shadow: 0 2px 6px rgba(20, 30, 18, 0.55);
+}
+
+/* Offering progress: honey chip farm-inward of the bar (not Tiger +1). */
+.offering-progress-chip {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1002;
+  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.22rem 0.5rem;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #fff8e4 0%, #f3e6c0 100%);
+  border: 1.5px solid rgba(212, 168, 64, 0.85);
+  color: var(--ink);
+  font-family: 'Nunito', system-ui, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow:
+    0 2px 0 rgba(90, 70, 40, 0.12),
+    0 4px 10px rgba(40, 50, 35, 0.14),
+    0 0 0 1px rgba(255, 250, 230, 0.5) inset;
+  will-change: transform, opacity;
+}
+
+.offering-progress-chip__face {
+  width: 0.95rem;
+  height: 0.95rem;
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+.offering-progress-chip__amt {
+  color: #8a6420;
+  font-variant-numeric: tabular-nums;
+}
+
+.shrine__progress-track.offering-progress-tick {
+  outline: 2px solid rgba(230, 198, 90, 0.85);
+  outline-offset: 2px;
 }
 
 .temple-reward-spark {

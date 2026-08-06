@@ -227,8 +227,8 @@ any tier. Shrine detail shows an Accepts line for the active tier’s allowlist
 | turnip | 60s | 1 | 1 | 4 | 2 | Fox primary |
 | blueberry | 90s | 1 | 2 | 5 | 1 | Fox primary, Monkey secondary |
 | moonflower | 150s | 2 | 6 | 1 | 2 | Monkey primary |
-| golden_pumpkin | 300s | 2 | 2 | 2 | 7 | Tiger primary |
-| sunfruit | 480s | 6 | 2 | 2 | 7 | Frog + Tiger dual primary |
+| golden_pumpkin | 300s | 2 | 2 | 2 | 6 | Tiger primary |
+| sunfruit | 480s | 6 | 2 | 2 | 6 | Frog + Tiger dual primary |
 
 ### Watering (plantables)
 
@@ -264,9 +264,9 @@ Not an offering: does not spend a crop, does not enter inventory, and does
 | wheat | 0.60 | 0.40–0.85 | 2 |
 | turnip | 0.32 | 0.40–0.85 | 2 |
 | blueberry | 0.28 | 0.40–0.85 | 2 |
-| moonflower | 0.25 | 0.40–0.85 | 3 |
-| golden_pumpkin | 0.22 | 0.40–0.85 | 3 |
-| sunfruit | 0.20 | 0.40–0.85 | 3 |
+| moonflower | 0.25 | 0.40–0.85 | 2 |
+| golden_pumpkin | 0.22 | 0.40–0.85 | 2 |
+| sunfruit | 0.20 | 0.40–0.85 | 2 |
 
 On plant, water rolls first. If water hits, this plant never hosts a
 critter. If water misses, roll `critterVisitChance` (may get a butterfly or
@@ -506,12 +506,12 @@ apex includes that shrine’s strongest plantable crop(s).
 | moonroot | 4 | 8 | 6 | 5 | normal |
 | golden_root | 4 | 4 | 7 | 10 | normal |
 | sunroot | 8 | 4 | 7 | 10 | normal |
-| moonberry | 3 | 11 | 6 | 3 | Monkey apex |
+| moonberry | 3 | 10 | 6 | 3 | Monkey apex |
 | enchanted_jam | 4 | 5 | 8 | 9 | normal |
 | sunberry | 8 | 5 | 8 | 9 | normal |
 | golden_bloom | 5 | 9 | 4 | 10 | normal |
 | solar_bloom | 9 | 9 | 4 | 10 | normal |
-| solar_gourd | 8 | 4 | 4 | 17 | Tiger apex |
+| solar_gourd | 8 | 4 | 4 | 13 | Tiger apex |
 
 ### Alchemy products
 - `root_loaf`, `forest_bread`, `moonlit_loaf`, `golden_loaf`,
@@ -542,11 +542,16 @@ Corner cards show icon, name, next/max tier name, and active-tier progress.
 ### Offerings and progression
 - Drag one inventory crop onto a shrine. Only crops on the **active tier’s
   allowlist** (`acceptedCropIds`) are accepted; others are rejected for now
-  (not value 0 — locked until a later tier lists them) with short game text
-  (e.g. `The Frog shrine wants a different offering now.`).
+  (not value 0 — locked until a later tier lists them) with no Field Notes
+  message (shrine detail Accepts line shows what is wanted).
 - An accepted offering adds that crop’s `shrineValues[shrineId]` to progress;
   `progressRequired` per tier is data-driven (escalating; see Tiers).
   Overflow carries to the next tier. Dragon bonus multiplier still applies.
+  Feedback: a quiet honey/parchment chip (log face + applied `+N`) floats
+  farm-inward between the progress track and figure, with a brief honey tick
+  on the bar. Distinct from Tiger fortune’s cream/ink `+1` on the figure
+  after the ghost-crop hop. Chip shows the applied amount (×2 under Dragon
+  win-buff). Critter progress grants do not use this chip.
 - Starts at tier 0 (no blessing). Completing a bar unlocks the next tier and
   applies that blessing immediately. Same-shrine tiers replace earlier ones;
   different shrines stack. On tier-up, rising overlay sparks climb the shrine
@@ -571,41 +576,39 @@ Each tier lists `acceptedCropIds`.
 
 **Frog — Growth** (12 / 24 / 40 / 52 = 128; apex: Sunbread)
 1. Sleeping Frog — 25% faster crop growth — wheat, root_loaf
-2. Rainkeeper Frog — 50% faster crop growth — wheat, turnip, root_loaf
-3. Ancient River Frog — 75% faster crop growth — blueberry, forest_bread, moonlit_loaf
-4. Spirit Frog — 100% faster crop growth — sunfruit, sunbread, sunroot, sunberry,
-   solar_bloom
+2. Rainkeeper Frog — 50% faster crop growth — wheat, forest_bread
+3. Ancient River Frog — 75% faster crop growth — moonlit_loaf, sunroot, sunberry
+4. Spirit Frog — 100% faster crop growth — sunfruit, sunbread, solar_bloom
 
 **Monkey — Research** (`researchLevel = 1 + bonus`; 12 / 24 / 40 = 76;
 apex: Moonberry)
 1. Curious Monkey — Discover more crops to grow. — wheat, turnip, root_loaf
-2. Clever Monkey — Unlock rarer crops. — blueberry, forest_bread, wildroot
+2. Clever Monkey — Unlock rarer crops. — blueberry, forest_bread
 3. Wise Monkey — Unlock more unique crops. — moonflower, moonlit_loaf,
-   moonroot, moonberry
+   moonberry
 
 **Fox — Expansion** (`plotsToUnlock` 2 / 2 / 2 / 2; unlock order from
 `farmLayout.js` by unlock tier — see Farm sketch; 12 / 24 / 36 / 50 = 122;
 apex: Wildroot)
-1. Forest Fox — Open more farming plots (2) — turnip, root_loaf
-2. Valley Fox — Still more plots (2) — blueberry, forest_bread, wildroot
-3. Mountain Fox — Even more plots (2) — moonflower, moonroot, moonberry
-4. Guardian Fox — Last plots unlocked (2) — golden_pumpkin,
-   golden_root, enchanted_jam, sunberry
+1. Forest Fox — Open more farming plots (2) — wheat, turnip, root_loaf
+2. Valley Fox — Still more plots (2) — blueberry, wildroot
+3. Mountain Fox — Even more plots (2) — moonroot, enchanted_jam
+4. Guardian Fox — Last plots unlocked (2) — golden_pumpkin, golden_root,
+   sunberry
 
 **Tiger — Fortune** (+1 offering chance when dragging a ready crop to a
 shrine; 14 / 30 / 44 / 60 = 148; apex: Solar Gourd)
-1. Young Tiger — 25% for a bonus crop — wheat, turnip
-2. Hunting Tiger — 50% for a bonus crop — blueberry, forest_bread, wildroot
-3. Golden Tiger — 75% for a bonus crop — moonflower, moonlit_loaf, moonroot,
-   moonberry
-4. Spirit Tiger — 100% for a bonus crop — golden_pumpkin, sunfruit, golden_loaf,
-   golden_bloom, solar_gourd
+1. Young Tiger — 15% for a bonus crop — turnip, root_loaf
+2. Hunting Tiger — 30% for a bonus crop — blueberry, forest_bread
+3. Golden Tiger — 45% for a bonus crop — moonflower, golden_bloom, solar_bloom
+4. Spirit Tiger — 60% for a bonus crop — golden_pumpkin, sunfruit, golden_loaf,
+   solar_gourd
 
 Bonus: a second same-type offering applies when the ghost-crop hop arrives
 (short farm-side arc near the offered shrine, spark trail + cream/ink +1);
-bar progress for that second offering waits until land. Dragon win-buff
-multiplier applies to each offering separately if uses remain. No bonus on
-mix or temple.
+bar progress for that second offering waits until land, then the honey
+progress chip plays for that amount. Dragon win-buff multiplier applies to
+each offering separately if uses remain. No bonus on mix or temple.
 
 ## Dragon Temple
 Matched-tribute challenge above the farm plot grid (not including shrines).
@@ -636,6 +639,7 @@ No wall-clock timer; lose via plant-fueled wrath.
 | `rewardProgressMultiplier` | Progress multiplier while bonus offerings remain | 2 (100% bonus) |
 | `rewardSparkCount` | Sparks that fly temple → shrine | 4 |
 | `rewardSparkIcon` | Spark emoji | ✨ |
+| `blessingTipText` | First-time soft tip copy for the win blessing | (see data) |
 | `defaultTriggerChance` | Starting / post-event offering wake chance | 0% (0) |
 | `shrineTriggerChanceIncrease` | Per-shrine chance added after a missed roll | 5% (0.05) each |
 
@@ -759,6 +763,14 @@ hidden (`triggerChance`, never shown in UI) and persists across refresh/reload.
   `dragonBonusOfferings > 0` and clears when the uses are spent, the shrine is
   maxed, or that shrine is burned. No icon pulse. The player can keep farming
   during the fly.
+- **First-time tip:** the first time a real win blessing is granted (not when
+  every shrine is maxed), a soft speech bubble anchors to the blessed shrine
+  after sparks land (or immediately on load snap-claim). Copy explains that
+  the glow means the next offering there counts double. Dismiss on next tap
+  after a short arm delay (same pattern as FTUE soft invites). State:
+  `dragonBlessingTipSeen`, `dragonBlessingTipShrineId`. Hidden while FTUE is
+  still active or the opening screen is up. Sticky until Reset; never shown
+  again after dismiss.
 - While `dragonBonusOfferings > 0` on a shrine, each successful **player** crop
   offering to that shrine (`offerCrop` only) grants
   `shrineValues × rewardProgressMultiplier` progress and consumes one use.
@@ -1080,6 +1092,9 @@ status: 'approaching' | 'sleeping' | 'waking', plotId?, wakeAt? }`.
 - Shrine epilogue: `shrineEpilogueShown` (boolean, sticky until Reset; true
   only after the epilogue line was displayed), `shrineEpilogueDueAt`
   (`null` | epoch ms while a wait is armed)
+- Dragon blessing tip: `dragonBlessingTipSeen` (boolean, sticky until Reset;
+  true after the first-time tip was dismissed), `dragonBlessingTipShrineId`
+  (`null` | shrine id while the soft bubble is armed)
 - Tutorial: `tutorialStep` (`tapWheatPlot` … `done`),
   `tutorialFoxWheatOffered` (boolean)
 - Discovery: `discoveredCropIds: string[]`,
@@ -1090,7 +1105,8 @@ status: 'approaching' | 'sleeping' | 'waking', plotId?, wakeAt? }`.
   `plotNapper`,
   `discoveredCropIds`,
   `discoveredAlchemyResultIds`, `gameText`,
-  `shrineEpilogueShown`, `shrineEpilogueDueAt`, `tutorialStep`,
+  `shrineEpilogueShown`, `shrineEpilogueDueAt`, `dragonBlessingTipSeen`,
+  `dragonBlessingTipShrineId`, `tutorialStep`,
   `tutorialFoxWheatOffered`
 - Shrine def: `{ id, name, icon, theme, corner, tiers[] }`
 - Tier: `name`, `progressRequired`, `acceptedCropIds`, `tooltip` (effect
@@ -1101,7 +1117,7 @@ status: 'approaching' | 'sleeping' | 'waking', plotId?, wakeAt? }`.
   `wrathPerShrineOffer`, `burnPulseMs`, `burnPulseCount`, `burnFlames`,
   `resultRevealMs`, `rewardBonusOfferings`,
   `rewardProgressMultiplier`, `rewardSparkCount`,
-  `rewardSparkIcon`, `defaultTriggerChance`,
+  `rewardSparkIcon`, `blessingTipText`, `defaultTriggerChance`,
   `shrineTriggerChanceIncrease`
 
 ## Persistence
@@ -1125,6 +1141,10 @@ backfilled to `[]`. Missing or invalid `gameText` backfilled to `null`.
 Missing or invalid `shrineEpilogueShown` → `false`; invalid
 `shrineEpilogueDueAt` → `null`. On load, `maybeShowShrineEpilogue` runs so
 a due wait past its time can fire (or cancel) immediately.
+Missing or invalid `dragonBlessingTipSeen` → `false`; invalid
+`dragonBlessingTipShrineId` → `null` (also cleared if already seen). On load,
+after claiming any `pendingReward`, `maybeArmDragonBlessingTipFromUses` arms
+the tip when uses remain and the tip has not been seen.
 Plot count must match `TOTAL_PLOTS` (12) or the save is replaced.
 
 No server. Player can wipe progress via Reset (two-step confirm required).

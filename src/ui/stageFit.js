@@ -11,9 +11,10 @@ const SHRINE_BAR_GAP = 3.5;
 const BOARD_BORDER = 6; // 3px × 2
 const TEMPLE_METERS_H = 18;
 const TEMPLE_INNER_GAP = 4; // ~0.25rem between temple stacks
+const TEMPLE_BOARD_PULL = 6; // matches .dragon-temple__board margin-top
 const APP_GAP = 6; // ~0.35rem grove ↔ info-band
-const GROVE_GAP_DEFAULT = 6;
-const GROVE_GAP_TIGHT = 4;
+const GROVE_GAP_DEFAULT = 12;
+const GROVE_GAP_TIGHT = 8;
 const GROVE_PAD_Y_TOP = 4;
 const GROVE_PAD_Y_BOTTOM = 6;
 const FIT_SLACK_PX = 3;
@@ -88,7 +89,8 @@ function estimateTempleH(boardInner, tile) {
     TEMPLE_METERS_H +
     TEMPLE_INNER_GAP +
     figureH +
-    TEMPLE_INNER_GAP +
+    TEMPLE_INNER_GAP -
+    TEMPLE_BOARD_PULL +
     tributeH
   );
 }

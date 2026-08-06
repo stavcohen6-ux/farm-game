@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Resolve assets/ relative to project root (not /mocks/). -->
+  <base href="../" />
+  <title>Offering progress chip — mockup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --moss: #5f9a72;
+      --moss-deep: #3d7a52;
+      --honey: #e6c65a;
+      --honey-glow: #f0d878;
+      --parchment: #f4faf4;
+      --ink: #2a3d30;
+      --muted: #5f7466;
+      --soil: #5f4634;
+      --panel-border: #9ec9aa;
+      --shrine-figure: 5.5rem;
+      --shrine-bar-width: 10px;
+      --shrine-bar-gap: 0.45rem;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100dvh;
+      font-family: 'Nunito', system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 90% 70% at 50% 0%, #e8fff0 0%, transparent 55%),
+        linear-gradient(180deg, #d8f0e0 0%, #b8dcc8 50%, #9ecab0 100%);
+      padding: 1.25rem 1.25rem 2.5rem;
+    }
+
+    .mock {
+      max-width: 48rem;
+      margin: 0 auto;
+      display: grid;
+      gap: 1rem;
+    }
+
+    header h1 {
+      font-size: 1.35rem;
+      font-weight: 800;
+    }
+
+    header p {
+      margin-top: 0.4rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      max-width: 40rem;
+    }
+
+    .panel {
+      background: rgba(244, 250, 244, 0.78);
+      border: 1.5px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 1.1rem 1.25rem 1.25rem;
+    }
+
+    .panel h2 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.85rem;
+    }
+
+    .stages {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 720px) {
+      .stages { grid-template-columns: 1fr; }
+    }
+
+    .stage {
+      display: grid;
+      gap: 0.75rem;
+      justify-items: center;
+      padding: 0.85rem 0.75rem 1rem;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.35);
+      border: 1px solid rgba(158, 201, 170, 0.55);
+    }
+
+    .stage__title {
+      font-size: 0.88rem;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .stage__hint {
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.35;
+      min-height: 2.6em;
+    }
+
+    .board-cue {
+      position: relative;
+      width: 11.5rem;
+      height: 11.5rem;
+      border-radius: 14px;
+      background:
+        radial-gradient(ellipse 70% 80% at 50% 50%, rgba(255, 255, 255, 0.35), transparent),
+        #9ecab0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Live-like shrine: figure + outer vertical bar */
+    .shrine {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: var(--shrine-bar-gap);
+      cursor: default;
+    }
+
+    .shrine--right-bar {
+      flex-direction: row;
+    }
+
+    .shrine--left-bar {
+      flex-direction: row-reverse;
+    }
+
+    .shrine__figure {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      width: var(--shrine-figure);
+      height: var(--shrine-figure);
+      filter: drop-shadow(0 6px 10px rgba(42, 90, 60, 0.22));
+    }
+
+    .shrine__icon {
+      position: relative;
+      width: var(--shrine-figure);
+      height: var(--shrine-figure);
+      line-height: 0;
+      display: block;
+    }
+
+    .shrine__layer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      pointer-events: none;
+      user-select: none;
+      display: block;
+    }
+
+    .shrine__layer--pedestal { z-index: 0; }
+    .shrine__layer--figure { z-index: 1; }
+
+    .shrine__plaque {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      align-self: center;
+    }
+
+    .shrine__progress-track {
+      width: var(--shrine-bar-width);
+      height: calc(var(--shrine-figure) * 0.7);
+      border-radius: 999px;
+      background: rgba(30, 40, 34, 0.28);
+      border: 1px solid rgba(90, 110, 96, 0.35);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      box-shadow: inset 0 1px 1px rgba(20, 28, 24, 0.2);
+      transition: outline 0.14s ease;
+    }
+
+    .shrine__progress-track.is-tick {
+      outline: 2px solid rgba(230, 198, 90, 0.85);
+      outline-offset: 2px;
+    }
+
+    .shrine__progress-fill {
+      width: 100%;
+      height: 28%;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #d4b050, #b89030);
+      transition: height 0.35s ease-out;
+    }
+
+    /* Proposed: honey/parchment chip on the progress bar */
+    .offering-progress-chip {
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 1002;
+      pointer-events: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.28rem;
+      padding: 0.22rem 0.5rem;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #fff8e4 0%, #f3e6c0 100%);
+      border: 1.5px solid rgba(212, 168, 64, 0.85);
+      color: var(--ink);
+      font-family: 'Nunito', system-ui, sans-serif;
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+      box-shadow:
+        0 2px 0 rgba(90, 70, 40, 0.12),
+        0 4px 10px rgba(40, 50, 35, 0.14),
+        0 0 0 1px rgba(255, 250, 230, 0.5) inset;
+      opacity: 0;
+    }
+
+    .offering-progress-chip__amt {
+      color: #8a6420;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .offering-progress-chip .game-icon--chip {
+      width: 0.95rem;
+      height: 0.95rem;
+      display: block;
+      object-fit: contain;
+    }
+
+    /* Live Tiger +1 language — keep for contrast */
+    .bonus-crop-plus {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1001;
+      pointer-events: none;
+      font-family: 'Nunito', system-ui, sans-serif;
+      font-weight: 800;
+      font-size: 1.65rem;
+      line-height: 1;
+      color: #fffef6;
+      -webkit-text-stroke: 3px #2a3d30;
+      paint-order: stroke fill;
+      text-shadow: 0 2px 6px rgba(20, 30, 18, 0.55);
+    }
+
+    .bonus-crop-fly {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      filter: drop-shadow(0 2px 4px rgba(180, 120, 20, 0.45));
+    }
+
+    .bonus-crop-spark {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      filter: drop-shadow(0 1px 2px rgba(180, 120, 20, 0.35));
+    }
+
+    .game-icon {
+      width: 1.55em;
+      height: 1.55em;
+      display: block;
+      object-fit: contain;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .game-icon--bonus-fly {
+      width: 100%;
+      height: 100%;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      justify-content: center;
+    }
+
+    button {
+      font: inherit;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border: none;
+      border-radius: 999px;
+      padding: 0.45rem 0.95rem;
+      cursor: pointer;
+      background: var(--moss);
+      color: #fff;
+      box-shadow: 0 2px 0 var(--moss-deep);
+    }
+
+    button:hover { filter: brightness(1.05); }
+    button:disabled { opacity: 0.55; cursor: not-allowed; filter: none; }
+
+    button.secondary {
+      background: #fffef6;
+      color: var(--ink);
+      border: 1.5px solid var(--panel-border);
+      box-shadow: none;
+    }
+
+    .status {
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--muted);
+      min-height: 1.2em;
+      text-align: center;
+    }
+
+    .legend {
+      display: grid;
+      gap: 0.55rem;
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .legend strong { font-weight: 800; }
+
+    .swatch-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      margin-top: 0.35rem;
+    }
+
+    .swatch {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.35rem 0.55rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.45);
+      border: 1px solid rgba(158, 201, 170, 0.6);
+    }
+
+    .swatch__chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.22rem;
+      padding: 0.18rem 0.42rem;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #fff8e4 0%, #f3e6c0 100%);
+      border: 1.5px solid rgba(212, 168, 64, 0.85);
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #8a6420;
+      box-shadow: 0 2px 0 rgba(90, 70, 40, 0.1);
+    }
+
+    .swatch__chip img {
+      width: 0.9rem;
+      height: 0.9rem;
+    }
+
+    .swatch__plus {
+      font-weight: 800;
+      font-size: 1.35rem;
+      line-height: 1;
+      color: #fffef6;
+      -webkit-text-stroke: 2.5px #2a3d30;
+      paint-order: stroke fill;
+      text-shadow: 0 2px 4px rgba(20, 30, 18, 0.45);
+    }
+
+    .callout {
+      font-size: 0.88rem;
+      color: var(--ink);
+      line-height: 1.45;
+      padding: 0.7rem 0.85rem;
+      border-radius: 10px;
+      background: rgba(230, 198, 90, 0.18);
+      border: 1px solid rgba(212, 168, 64, 0.45);
+    }
+  </style>
+</head>
+<body>
+  <div class="mock">
+    <header>
+      <h1>Offering progress chip</h1>
+      <p>
+        Proposed feedback for points gained on an offering: a quiet honey/parchment
+        chip anchored to the <strong>progress bar</strong>. Intentionally different
+        from Tiger fortune’s cream/ink <strong>+1</strong> on the figure.
+      </p>
+    </header>
+
+    <section class="panel">
+      <h2>Side-by-side</h2>
+      <div class="stages">
+        <div class="stage">
+          <div class="stage__title">1. Offer lands — progress chip</div>
+          <p class="stage__hint">
+            Immediate. Honey chip on the <em>farm-inward</em> side of the bar
+            (between track and figure) so it stays on-screen on mobile.
+          </p>
+          <div class="board-cue">
+            <div class="shrine shrine--right-bar" id="shrine-offer">
+              <div class="shrine__figure">
+                <div class="shrine__icon" id="icon-offer"></div>
+              </div>
+              <div class="shrine__plaque">
+                <div class="shrine__progress-track" id="track-offer">
+                  <div class="shrine__progress-fill" id="fill-offer"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="controls">
+            <button type="button" id="btn-offer">Play offer (+7)</button>
+            <button type="button" class="secondary" id="btn-offer-x2">Play ×2 (+14)</button>
+          </div>
+        </div>
+
+        <div class="stage">
+          <div class="stage__title">2. Same offer + Tiger bonus</div>
+          <p class="stage__hint">
+            Chip on bar first; ~1.4s later ghost hop + cream/ink +1 on the
+            <em>figure</em>. Two languages, two places.
+          </p>
+          <div class="board-cue">
+            <div class="shrine shrine--right-bar" id="shrine-bonus">
+              <div class="shrine__figure">
+                <div class="shrine__icon" id="icon-bonus"></div>
+              </div>
+              <div class="shrine__plaque">
+                <div class="shrine__progress-track" id="track-bonus">
+                  <div class="shrine__progress-fill" id="fill-bonus"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="controls">
+            <button type="button" id="btn-combo">Play offer + Tiger</button>
+          </div>
+        </div>
+      </div>
+      <p class="status" id="status" aria-live="polite"></p>
+    </section>
+
+    <section class="panel">
+      <h2>Visual vocabulary</h2>
+      <div class="legend">
+        <div class="swatch-row">
+          <div class="swatch">
+            <span class="swatch__chip">
+              <img src="assets/icons/log_tiger.png" alt="" />
+              <span>+7</span>
+            </span>
+            <span>Progress (proposed)</span>
+          </div>
+          <div class="swatch">
+            <span class="swatch__plus">+1</span>
+            <span>Tiger fortune (live)</span>
+          </div>
+        </div>
+        <p class="callout">
+          Chip anchors to the progress track but floats <strong>inward</strong>
+          (toward the farm), never past the outer screen edge — mobile side-pad
+          only covers the bar itself (~4px slack). Tiger +1 stays over the
+          figure after the ghost-crop hop. Same +N family, different material,
+          size, and anchor.
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <script type="module">
+    import { playHarvestCropFly } from '../src/ui/bonusCropFly.js?v=offerchip1';
+
+    const CHIP_MS = 780;
+    const CHIP_RISE_PX = 22;
+    const BAR_TICK_MS = 420;
+    const CROP_ID = 'wheat';
+
+    const statusEl = document.getElementById('status');
+    const btnOffer = document.getElementById('btn-offer');
+    const btnOfferX2 = document.getElementById('btn-offer-x2');
+    const btnCombo = document.getElementById('btn-combo');
+
+    let busy = false;
+
+    function setBusy(on) {
+      busy = on;
+      btnOffer.disabled = on;
+      btnOfferX2.disabled = on;
+      btnCombo.disabled = on;
+    }
+
+    function mountShrine(iconEl, shrineId) {
+      iconEl.innerHTML = `
+        <img class="shrine__layer shrine__layer--pedestal" alt=""
+          src="assets/icons/shrine_${shrineId}_pedestal.png" />
+        <img class="shrine__layer shrine__layer--figure" alt=""
+          src="assets/icons/shrine_${shrineId}_figure.png" />
+      `;
+    }
+
+    mountShrine(document.getElementById('icon-offer'), 'tiger');
+    mountShrine(document.getElementById('icon-bonus'), 'tiger');
+
+    function bumpFill(fillEl, addPct) {
+      const current = parseFloat(fillEl.style.height) || 28;
+      const next = Math.min(96, current + addPct);
+      fillEl.style.height = `${next}%`;
+    }
+
+    function tickTrack(trackEl) {
+      trackEl.classList.add('is-tick');
+      window.setTimeout(() => trackEl.classList.remove('is-tick'), BAR_TICK_MS);
+    }
+
+    /**
+     * Honey chip anchored to the progress track, floating farm-inward
+     * (between bar and figure) — never outward past the screen edge.
+     * @param {{
+     *   trackEl: HTMLElement,
+     *   iconEl: HTMLElement,
+     *   amount: number,
+     *   shrineId: string,
+     * }} opts
+     */
+    function playProgressChip({ trackEl, iconEl, amount, shrineId }) {
+      const rect = trackEl.getBoundingClientRect();
+      const iconRect = iconEl.getBoundingClientRect();
+      const el = document.createElement('div');
+      el.className = 'offering-progress-chip';
+      el.setAttribute('aria-hidden', 'true');
+
+      const face = document.createElement('img');
+      face.className = 'game-icon--chip';
+      face.src = `assets/icons/log_${shrineId}.png`;
+      face.alt = '';
+
+      const amt = document.createElement('span');
+      amt.className = 'offering-progress-chip__amt';
+      amt.textContent = `+${amount}`;
+
+      el.append(face, amt);
+      document.body.appendChild(el);
+
+      // Farm-inward: chip sits in the gap between track and figure.
+      const barCenterX = rect.left + rect.width / 2;
+      const figureCenterX = iconRect.left + iconRect.width / 2;
+      const inwardSign = figureCenterX >= barCenterX ? 1 : -1;
+      const gapMidX =
+        inwardSign > 0
+          ? (rect.right + iconRect.left) / 2
+          : (iconRect.right + rect.left) / 2;
+      const x = gapMidX;
+      const y = rect.top + rect.height * 0.35;
+
+      el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
+
+      const flight = el.animate(
+        [
+          {
+            transform: `translate(${x}px, ${y}px) translate(-50%, -50%) scale(0.88)`,
+            opacity: 0,
+          },
+          {
+            transform: `translate(${x}px, ${y - CHIP_RISE_PX * 0.4}px) translate(-50%, -50%) scale(1.04)`,
+            opacity: 1,
+            offset: 0.22,
+          },
+          {
+            transform: `translate(${x}px, ${y - CHIP_RISE_PX}px) translate(-50%, -50%) scale(1)`,
+            opacity: 0,
+          },
+        ],
+        { duration: CHIP_MS, easing: 'ease-out', fill: 'forwards' },
+      );
+      flight.onfinish = () => el.remove();
+    }
+
+    function playOffer({ fillEl, trackEl, iconEl, amount, label }) {
+      playProgressChip({ trackEl, iconEl, amount, shrineId: 'tiger' });
+      tickTrack(trackEl);
+      bumpFill(fillEl, amount >= 14 ? 18 : 10);
+      statusEl.textContent = label;
+    }
+
+    btnOffer.addEventListener('click', () => {
+      if (busy) return;
+      playOffer({
+        fillEl: document.getElementById('fill-offer'),
+        trackEl: document.getElementById('track-offer'),
+        iconEl: document.getElementById('icon-offer'),
+        amount: 7,
+        label: 'Offer: honey chip +7 farm-inward of the bar',
+      });
+    });
+
+    btnOfferX2.addEventListener('click', () => {
+      if (busy) return;
+      playOffer({
+        fillEl: document.getElementById('fill-offer'),
+        trackEl: document.getElementById('track-offer'),
+        iconEl: document.getElementById('icon-offer'),
+        amount: 14,
+        label: 'Dragon buff: chip shows applied +14 (base ×2)',
+      });
+    });
+
+    btnCombo.addEventListener('click', async () => {
+      if (busy) return;
+      setBusy(true);
+
+      const fillEl = document.getElementById('fill-bonus');
+      const trackEl = document.getElementById('track-bonus');
+      const iconEl = document.getElementById('icon-bonus');
+
+      playOffer({
+        fillEl,
+        trackEl,
+        iconEl,
+        amount: 7,
+        label: 'Offer chip now… Tiger hop next',
+      });
+
+      await new Promise((r) => setTimeout(r, 280));
+
+      await new Promise((resolve) => {
+        playHarvestCropFly({
+          shrineId: 'tiger',
+          targetRect: iconEl.getBoundingClientRect(),
+          cropId: CROP_ID,
+          icon: '🌾',
+          withSparks: true,
+          onComplete: () => {
+            playProgressChip({
+              trackEl,
+              iconEl,
+              amount: 7,
+              shrineId: 'tiger',
+            });
+            tickTrack(trackEl);
+            bumpFill(fillEl, 10);
+            statusEl.textContent =
+              'Tiger land: second +7 chip inward · cream/ink +1 on figure';
+            resolve();
+          },
+        });
+      });
+
+      setBusy(false);
+    });
+  </script>
+</body>
+</html>

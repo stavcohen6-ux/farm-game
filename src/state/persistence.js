@@ -11,6 +11,7 @@ import {
   markCropDiscovered,
   markReadyCropsDiscovered,
   maybeShowShrineEpilogue,
+  maybeArmDragonBlessingTipFromUses,
   collectHeldCropIds,
   reconcilePlotNapper,
   applyPendingTigerBonus,
@@ -513,6 +514,31 @@ export function load() {
       parsed.shrineEpilogueDueAt = null;
     }
 
+    if (parsed.dragonBlessingTipSeen !== true) {
+      if (parsed.dragonBlessingTipSeen !== false) {
+        dirty = true;
+      }
+      parsed.dragonBlessingTipSeen = false;
+    }
+
+    if (
+      typeof parsed.dragonBlessingTipShrineId !== 'string' ||
+      !getShrine(parsed.dragonBlessingTipShrineId)
+    ) {
+      if (parsed.dragonBlessingTipShrineId != null) {
+        dirty = true;
+      }
+      parsed.dragonBlessingTipShrineId = null;
+    }
+
+    if (
+      parsed.dragonBlessingTipSeen &&
+      parsed.dragonBlessingTipShrineId != null
+    ) {
+      parsed.dragonBlessingTipShrineId = null;
+      dirty = true;
+    }
+
     if (stripLegacyTutorialSeen(parsed)) {
       dirty = true;
     }
@@ -549,6 +575,9 @@ export function load() {
     }
     if (parsed.dragonTemple?.pendingReward) {
       claimTempleWinReward(parsed);
+      dirty = true;
+    }
+    if (maybeArmDragonBlessingTipFromUses(parsed)) {
       dirty = true;
     }
     // Mid-fly Tiger bonus: apply immediately on load (no orphaned VFX).

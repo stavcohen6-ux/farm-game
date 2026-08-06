@@ -135,6 +135,47 @@ export function getDragonBonusOfferings(state, shrineId) {
   return typeof remaining === 'number' && remaining > 0 ? remaining : 0;
 }
 
+/** Soft tip bubble armed for a blessed shrine (dismiss sets seen). */
+export function isDragonBlessingTipActive(state) {
+  const id = state?.dragonBlessingTipShrineId;
+  return typeof id === 'string' && Boolean(getShrine(id));
+}
+
+/**
+ * Arm the one-shot Dragon blessing tip for a shrine.
+ * No-op if already seen, already armed, or shrine id is invalid.
+ */
+export function armDragonBlessingTip(state, shrineId) {
+  if (!state || state.dragonBlessingTipSeen) return false;
+  if (isDragonBlessingTipActive(state)) return false;
+  if (!getShrine(shrineId)) return false;
+  state.dragonBlessingTipShrineId = shrineId;
+  return true;
+}
+
+/**
+ * If a blessing tip was never seen but uses remain (e.g. load snap-claim),
+ * arm the tip on the first shrine that still has bonus offerings.
+ */
+export function maybeArmDragonBlessingTipFromUses(state) {
+  if (!state || state.dragonBlessingTipSeen) return false;
+  if (isDragonBlessingTipActive(state)) return false;
+  for (const shrine of SHRINES) {
+    if (getDragonBonusOfferings(state, shrine.id) > 0) {
+      return armDragonBlessingTip(state, shrine.id);
+    }
+  }
+  return false;
+}
+
+/** Dismiss the tip and mark it seen (sticky until Reset). */
+export function dismissDragonBlessingTip(state) {
+  if (!isDragonBlessingTipActive(state)) return false;
+  state.dragonBlessingTipShrineId = null;
+  state.dragonBlessingTipSeen = true;
+  return true;
+}
+
 export function createInitialAlchemy() {
   return {
     slotA: null,
@@ -198,6 +239,10 @@ export function createInitialState() {
     shrineEpilogueShown: false,
     // Epoch ms when the epilogue may fire; null when not armed
     shrineEpilogueDueAt: null,
+    // First-time Dragon win-blessing tip (soft bubble); sticky until Reset
+    dragonBlessingTipSeen: false,
+    // Shrine id while the tip bubble is armed; null when idle
+    dragonBlessingTipShrineId: null,
     // Tiger fortune: second offering waits until bonus fly arrives
     // null | { shrineId, cropId }
     pendingTigerBonus: null,
@@ -226,6 +271,8 @@ export function resetState(state) {
   state.tutorialFoxWheatOffered = fresh.tutorialFoxWheatOffered;
   state.shrineEpilogueShown = fresh.shrineEpilogueShown;
   state.shrineEpilogueDueAt = fresh.shrineEpilogueDueAt;
+  state.dragonBlessingTipSeen = fresh.dragonBlessingTipSeen;
+  state.dragonBlessingTipShrineId = fresh.dragonBlessingTipShrineId;
   state.pendingTigerBonus = fresh.pendingTigerBonus;
 }
 
@@ -334,10 +381,6 @@ export function isShrineFeedable(state, shrineId) {
   return (tier.acceptedCropIds ?? []).some((cropId) =>
     isCropDemandable(state, cropId),
   );
-}
-
-function shrineShortName(shrine) {
-  return shrine.name.replace(/\s+Shrine$/, '');
 }
 
 // Active blessing for a completed tier (tier 1 → tiers[0]). Null at tier 0.
@@ -1492,15 +1535,6 @@ export function offerCrop(state, shrineId, cropId, sourcePlotId = null) {
   }
 
   if (!canOfferCropToShrine(state, shrineId, cropId)) {
-    if (shrine && crop && !isShrineMaxed(state, shrineId)) {
-      const activeTier = getActiveShrineTier(state, shrineId);
-      if (!activeTier || !tierAcceptsCrop(activeTier, cropId)) {
-        setGameText(
-          state,
-          `The ${shrineShortName(shrine)} shrine wants a different offering now.`,
-        );
-      }
-    }
     return false;
   }
 
@@ -1537,14 +1571,17 @@ export function offerCrop(state, shrineId, cropId, sourcePlotId = null) {
         shrineId: pendingShrineId,
         unlockedPlotIds: flushed.unlockedPlotIds,
         tiersGained: flushed.tiersGained ?? 0,
+        progressAmount: flushed.progressAmount ?? 0,
       };
     }
   }
 
   const first = applyOfferingProgress(state, shrineId, cropId, baseAmount);
+  let progressAmount = 0;
   if (first) {
     unlockedPlotIds.push(...first.unlockedPlotIds);
     tiersGained += first.tiersGained ?? 0;
+    progressAmount = first.progressAmount ?? 0;
   }
 
   let bonus = false;
@@ -1570,6 +1607,7 @@ export function offerCrop(state, shrineId, cropId, sourcePlotId = null) {
     bonus,
     cropId,
     plotId: sourcePlotId,
+    progressAmount,
   };
   if (flushedTigerBonus) {
     result.flushedTigerBonus = flushedTigerBonus;
@@ -1614,7 +1652,9 @@ function applyOfferingProgress(state, shrineId, cropId, baseAmount) {
     progress.dragonBonusOfferings = bonusUses - 1;
   }
 
-  return addShrineProgress(state, shrineId, amount);
+  const result = addShrineProgress(state, shrineId, amount);
+  if (!result) return false;
+  return { ...result, progressAmount: amount };
 }
 
 function maybeTriggerDragonTempleFromOffering(state, shrineId, cropId) {
