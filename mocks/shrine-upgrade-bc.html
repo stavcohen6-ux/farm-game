@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Resolve assets/ relative to project root (not /mocks/). -->
+  <base href="../" />
+  <title>Shrine upgrade — concepts B &amp; C</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --moss: #5f9a72;
+      --moss-deep: #3d7a52;
+      --honey: #e6c65a;
+      --honey-glow: #f0d878;
+      --parchment: #f4faf4;
+      --ink: #2a3d30;
+      --muted: #5f7466;
+      --panel-border: #9ec9aa;
+      --shrine-figure: 5.5rem;
+      --shrine-bar-width: 10px;
+      --shrine-bar-gap: 0.45rem;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100dvh;
+      font-family: 'Nunito', system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 90% 70% at 50% 0%, #e8fff0 0%, transparent 55%),
+        linear-gradient(180deg, #d8f0e0 0%, #b8dcc8 50%, #9ecab0 100%);
+      padding: 1.25rem 1.25rem 2.5rem;
+    }
+
+    .mock {
+      max-width: 52rem;
+      margin: 0 auto;
+      display: grid;
+      gap: 1rem;
+    }
+
+    header h1 {
+      font-size: 1.35rem;
+      font-weight: 800;
+    }
+
+    header p {
+      margin-top: 0.4rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      max-width: 42rem;
+    }
+
+    .panel {
+      background: rgba(244, 250, 244, 0.78);
+      border: 1.5px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 1.1rem 1.25rem 1.25rem;
+    }
+
+    .panel h2 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.85rem;
+    }
+
+    .stages {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 720px) {
+      .stages { grid-template-columns: 1fr; }
+    }
+
+    .stage {
+      display: grid;
+      gap: 0.75rem;
+      justify-items: center;
+      padding: 0.85rem 0.75rem 1rem;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.35);
+      border: 1px solid rgba(158, 201, 170, 0.55);
+      overflow: visible;
+    }
+
+    .stage__title {
+      font-size: 0.92rem;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .stage__hint {
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.4;
+      min-height: 3.4em;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      padding: 0.15rem 0.45rem;
+      border-radius: 6px;
+      margin-bottom: 0.15rem;
+    }
+
+    .badge--b {
+      background: rgba(230, 198, 90, 0.4);
+      color: #6a5210;
+    }
+
+    .badge--c {
+      background: rgba(95, 154, 114, 0.22);
+      color: var(--moss-deep);
+    }
+
+    .board-cue {
+      position: relative;
+      width: 12.5rem;
+      height: 13rem;
+      border-radius: 14px;
+      background-color: #7a9e86;
+      background-image:
+        radial-gradient(ellipse 70% 80% at 50% 50%, rgba(255, 255, 255, 0.28), transparent),
+        url('assets/icons/farm_frame.png');
+      background-size: cover, 100% 100%;
+      background-position: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: visible;
+    }
+
+    .shrine {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: var(--shrine-bar-gap);
+    }
+
+    .shrine__figure {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      width: var(--shrine-figure);
+      height: var(--shrine-figure);
+      filter: drop-shadow(0 6px 10px rgba(42, 90, 60, 0.22));
+      position: relative;
+    }
+
+    .shrine__icon {
+      position: relative;
+      width: var(--shrine-figure);
+      height: var(--shrine-figure);
+      line-height: 0;
+      display: block;
+    }
+
+    .shrine__layer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      pointer-events: none;
+      user-select: none;
+      display: block;
+    }
+
+    .shrine__layer--pedestal { z-index: 0; }
+    .shrine__layer--figure { z-index: 1; }
+
+    .shrine__plaque {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      align-self: center;
+    }
+
+    .shrine__progress-track {
+      width: var(--shrine-bar-width);
+      height: calc(var(--shrine-figure) * 0.7);
+      border-radius: 999px;
+      background: rgba(30, 40, 34, 0.28);
+      border: 1px solid rgba(90, 110, 96, 0.35);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      box-shadow: inset 0 1px 1px rgba(20, 28, 24, 0.2);
+      transition: outline 0.14s ease;
+    }
+
+    .shrine__progress-track.is-tick {
+      outline: 2px solid rgba(230, 198, 90, 0.85);
+      outline-offset: 2px;
+    }
+
+    .shrine__progress-fill {
+      width: 100%;
+      height: 72%;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #d4b050, #b89030);
+    }
+
+    .shrine__pedestal-warm .shrine__layer--pedestal {
+      filter:
+        sepia(0.35) saturate(1.35) brightness(1.08)
+        hue-rotate(-4deg);
+      transition: filter 0.35s ease;
+    }
+
+    /* Honey ring (concept B) */
+    .upgrade-ring {
+      position: absolute;
+      left: 50%;
+      top: 52%;
+      width: 2.4rem;
+      height: 2.4rem;
+      margin-left: -1.2rem;
+      margin-top: -1.2rem;
+      border-radius: 50%;
+      border: 2.5px solid rgba(240, 216, 120, 0.95);
+      box-shadow:
+        0 0 0 1px rgba(255, 250, 230, 0.55) inset,
+        0 0 14px rgba(230, 198, 90, 0.45);
+      pointer-events: none;
+      z-index: 4;
+      opacity: 0;
+    }
+
+    /* Blessed / celebration chips — absolute inside board so they stay in-frame */
+    .upgrade-chip {
+      position: absolute;
+      z-index: 20;
+      pointer-events: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.28rem;
+      padding: 0.28rem 0.58rem;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #fff8e4 0%, #f3e6c0 100%);
+      border: 1.5px solid rgba(212, 168, 64, 0.85);
+      color: #8a6420;
+      font-family: 'Nunito', system-ui, sans-serif;
+      font-size: 0.86rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+      box-shadow:
+        0 2px 0 rgba(90, 70, 40, 0.12),
+        0 4px 10px rgba(40, 50, 35, 0.14),
+        0 0 0 1px rgba(255, 250, 230, 0.5) inset;
+      opacity: 0;
+    }
+
+    .upgrade-chip img {
+      width: 0.95rem;
+      height: 0.95rem;
+      display: block;
+      object-fit: contain;
+    }
+
+    .shrine-tier-spark {
+      position: absolute;
+      z-index: 15;
+      pointer-events: none;
+      display: grid;
+      place-items: center;
+      filter: drop-shadow(0 1px 2px rgba(80, 60, 20, 0.25));
+    }
+
+    .shrine-tier-spark img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .notes {
+      width: 100%;
+      max-width: 11.5rem;
+      margin: 0 auto;
+      padding: 0.45rem 0.65rem;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #f0e4c8 0%, #e4d4b0 100%);
+      border: 1.5px solid rgba(160, 130, 80, 0.45);
+      box-shadow: inset 0 1px 0 rgba(255, 250, 235, 0.55);
+      text-align: center;
+    }
+
+    .notes__label {
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #8a7450;
+      margin-bottom: 0.15rem;
+    }
+
+    .notes__msg {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      justify-content: center;
+    }
+
+    button {
+      font: inherit;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border: none;
+      border-radius: 999px;
+      padding: 0.45rem 0.95rem;
+      cursor: pointer;
+      background: var(--moss);
+      color: #fff;
+      box-shadow: 0 2px 0 var(--moss-deep);
+    }
+
+    button:hover { filter: brightness(1.05); }
+    button:disabled { opacity: 0.55; cursor: not-allowed; filter: none; }
+
+    button.secondary {
+      background: #fffef6;
+      color: var(--ink);
+      border: 1.5px solid var(--panel-border);
+      box-shadow: none;
+    }
+
+    .legend {
+      display: grid;
+      gap: 0.55rem;
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .legend strong { font-weight: 800; }
+
+    .callout {
+      font-size: 0.88rem;
+      color: var(--ink);
+      line-height: 1.45;
+      padding: 0.7rem 0.85rem;
+      border-radius: 10px;
+      background: rgba(230, 198, 90, 0.18);
+      border: 1px solid rgba(212, 168, 64, 0.45);
+    }
+  </style>
+</head>
+<body>
+  <div class="mock">
+    <header>
+      <h1>Shrine upgrade — B &amp; C</h1>
+      <p>
+        Interactive mockups. Field Notes stays quiet (no “upgraded” line).
+        Shrine art stays still — juice is overlays, bar, and chips.
+        Play each side to compare.
+      </p>
+    </header>
+
+    <section class="panel">
+      <h2>Side-by-side</h2>
+      <div class="stages">
+        <!-- Concept B -->
+        <div class="stage">
+          <span class="badge badge--b">Concept B</span>
+          <div class="stage__title">Honey ring + Blessed chip</div>
+          <p class="stage__hint">
+            Expanding cream-honey ring from the figure, denser rising sparks,
+            small Blessed chip above the shrine. Ceremonial / magical.
+          </p>
+          <div class="board-cue" id="board-b">
+            <div class="shrine" id="shrine-b">
+              <div class="shrine__figure" id="figure-b">
+                <div class="shrine__icon" id="icon-b">
+                  <img class="shrine__layer shrine__layer--pedestal" src="assets/icons/shrine_frog_pedestal.png" alt="" />
+                  <img class="shrine__layer shrine__layer--figure" src="assets/icons/shrine_frog_figure.png" alt="" />
+                </div>
+                <div class="upgrade-ring" id="ring-b" aria-hidden="true"></div>
+              </div>
+              <div class="shrine__plaque">
+                <div class="shrine__progress-track" id="track-b">
+                  <div class="shrine__progress-fill" id="fill-b"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="notes">
+            <div class="notes__label">Field Notes</div>
+            <div class="notes__msg" id="notes-b">It's a cozy day for farming.</div>
+          </div>
+          <div class="controls">
+            <button type="button" id="btn-b">Play B</button>
+            <button type="button" class="secondary" id="btn-b-reset">Reset</button>
+          </div>
+        </div>
+
+        <!-- Concept C -->
+        <div class="stage">
+          <span class="badge badge--c">Concept C</span>
+          <div class="stage__title">Bar surge → sparks into shrine</div>
+          <p class="stage__hint">
+            Bar fills to the top with a honey tick, sparks stream from the bar
+            into the figure, then a short celebration chip. Progress payoff.
+          </p>
+          <div class="board-cue" id="board-c">
+            <div class="shrine" id="shrine-c">
+              <div class="shrine__figure" id="figure-c">
+                <div class="shrine__icon" id="icon-c">
+                  <img class="shrine__layer shrine__layer--pedestal" src="assets/icons/shrine_frog_pedestal.png" alt="" />
+                  <img class="shrine__layer shrine__layer--figure" src="assets/icons/shrine_frog_figure.png" alt="" />
+                </div>
+              </div>
+              <div class="shrine__plaque">
+                <div class="shrine__progress-track" id="track-c">
+                  <div class="shrine__progress-fill" id="fill-c"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="notes">
+            <div class="notes__label">Field Notes</div>
+            <div class="notes__msg" id="notes-c">It's a cozy day for farming.</div>
+          </div>
+          <div class="controls">
+            <button type="button" id="btn-c">Play C</button>
+            <button type="button" class="secondary" id="btn-c-reset">Reset</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>What to look for</h2>
+      <div class="legend">
+        <p><strong>B</strong> — ring expands from the frog, Blessed chip floats above, sparks climb the figure. Feels like a blessing landed.</p>
+        <p><strong>C</strong> — your eye follows the bar filling, then energy dumps into the shrine. Feels like progress paid off.</p>
+        <p>Both leave Field Notes on the cozy default line — upgrade signal lives on the shrine.</p>
+      </div>
+      <p class="callout" style="margin-top: 0.85rem;">
+        Open this file in a browser (or via local server) and hit Play on each side.
+        Path: <code>mocks/shrine-upgrade-bc.html</code>
+      </p>
+    </section>
+  </div>
+
+  <script>
+    const SPARK_SRC = 'assets/icons/spark.png';
+    const LOG_SRC = 'assets/icons/log_frog.png';
+    const COZY = "It's a cozy day for farming.";
+
+    function clearFx(boardEl) {
+      const root = boardEl || document;
+      root.querySelectorAll('.shrine-tier-spark, .upgrade-chip').forEach((el) => el.remove());
+    }
+
+    /** x/y are coords relative to boardEl */
+    function spawnSpark(boardEl, { x, y, size, dx, dy, duration, delay = 0 }) {
+      const el = document.createElement('div');
+      el.className = 'shrine-tier-spark';
+      el.setAttribute('aria-hidden', 'true');
+      el.style.width = `${size}px`;
+      el.style.height = `${size}px`;
+      el.style.left = `${x - size / 2}px`;
+      el.style.top = `${y - size / 2}px`;
+      const img = document.createElement('img');
+      img.src = SPARK_SRC;
+      img.alt = '';
+      el.appendChild(img);
+      boardEl.appendChild(el);
+
+      const anim = el.animate(
+        [
+          { transform: 'translate(0, 0) scale(0.7)', opacity: 0 },
+          {
+            transform: `translate(${dx * 0.35}px, ${dy * 0.4}px) scale(1.05)`,
+            opacity: 1,
+            offset: 0.28,
+          },
+          {
+            transform: `translate(${dx}px, ${dy}px) scale(0.5)`,
+            opacity: 0,
+          },
+        ],
+        {
+          duration,
+          delay,
+          easing: 'ease-out',
+          fill: 'forwards',
+        },
+      );
+      anim.onfinish = () => el.remove();
+      return anim;
+    }
+
+    /** x/y relative to boardEl */
+    function spawnChip(boardEl, { x, y, label, rise = 28, duration = 1400 }) {
+      const chip = document.createElement('div');
+      chip.className = 'upgrade-chip';
+      chip.innerHTML = `<img src="${LOG_SRC}" alt="" /><span>${label}</span>`;
+      boardEl.appendChild(chip);
+
+      const w = chip.offsetWidth;
+      chip.style.left = `${x - w / 2}px`;
+      chip.style.top = `${y}px`;
+
+      const anim = chip.animate(
+        [
+          { transform: 'translateY(0) scale(0.88)', opacity: 0 },
+          {
+            transform: 'translateY(-8px) scale(1.06)',
+            opacity: 1,
+            offset: 0.18,
+          },
+          {
+            transform: `translateY(-${rise * 0.55}px) scale(1)`,
+            opacity: 1,
+            offset: 0.55,
+          },
+          {
+            transform: `translateY(-${rise}px) scale(1)`,
+            opacity: 0,
+          },
+        ],
+        { duration, easing: 'ease-out', fill: 'forwards' },
+      );
+      anim.onfinish = () => chip.remove();
+      return anim;
+    }
+
+    function setBar(fillEl, pct, animate = true) {
+      if (!animate) {
+        fillEl.style.transition = 'none';
+        fillEl.style.height = `${pct}%`;
+        // force reflow
+        void fillEl.offsetHeight;
+        fillEl.style.transition = '';
+        return;
+      }
+      fillEl.style.transition = 'height 0.45s ease-out';
+      fillEl.style.height = `${pct}%`;
+    }
+
+    function tickBar(trackEl, ms = 420) {
+      trackEl.classList.add('is-tick');
+      window.setTimeout(() => trackEl.classList.remove('is-tick'), ms);
+    }
+
+    function resetB() {
+      const board = document.getElementById('board-b');
+      clearFx(board);
+      const fill = document.getElementById('fill-b');
+      const ring = document.getElementById('ring-b');
+      setBar(fill, 72, false);
+      ring.style.opacity = '0';
+      ring.style.transform = 'scale(1)';
+      document.getElementById('notes-b').textContent = COZY;
+      document.getElementById('btn-b').disabled = false;
+    }
+
+    function resetC() {
+      const board = document.getElementById('board-c');
+      clearFx(board);
+      const fill = document.getElementById('fill-c');
+      const figure = document.getElementById('figure-c');
+      setBar(fill, 72, false);
+      figure.classList.remove('shrine__pedestal-warm');
+      document.getElementById('notes-c').textContent = COZY;
+      document.getElementById('btn-c').disabled = false;
+    }
+
+    function localRect(boardEl, el) {
+      const b = boardEl.getBoundingClientRect();
+      const r = el.getBoundingClientRect();
+      return {
+        left: r.left - b.left,
+        top: r.top - b.top,
+        width: r.width,
+        height: r.height,
+        right: r.right - b.left,
+        bottom: r.bottom - b.top,
+      };
+    }
+
+    /* ——— Concept B: ring + Blessed chip + rising sparks ——— */
+    async function playB() {
+      const btn = document.getElementById('btn-b');
+      btn.disabled = true;
+      const board = document.getElementById('board-b');
+      clearFx(board);
+
+      const icon = document.getElementById('icon-b');
+      const fill = document.getElementById('fill-b');
+      const track = document.getElementById('track-b');
+      const ring = document.getElementById('ring-b');
+      const rect = localRect(board, icon);
+      const cx = rect.left + rect.width / 2;
+      const bottom = rect.bottom - 10;
+
+      // Bar completes + tick
+      setBar(fill, 100);
+      tickBar(track, 520);
+      await wait(380);
+
+      // Expanding honey ring (CSS element, shrine art still)
+      ring.style.opacity = '0.95';
+      ring.animate(
+        [
+          { transform: 'scale(0.55)', opacity: 0.95 },
+          { transform: 'scale(2.6)', opacity: 0 },
+        ],
+        { duration: 900, easing: 'ease-out', fill: 'forwards' },
+      );
+
+      // Blessed chip above shrine
+      spawnChip(board, {
+        x: cx,
+        y: Math.max(4, rect.top - 18),
+        label: 'Blessed',
+        rise: 36,
+        duration: 1500,
+      });
+
+      // Denser rising sparks over figure
+      const count = 16;
+      for (let i = 0; i < count; i++) {
+        const jitter = (i - (count - 1) / 2) * 5 + (Math.random() * 2 - 1) * 4;
+        spawnSpark(board, {
+          x: cx + jitter * 0.15,
+          y: bottom,
+          size: 16 + (i % 3) * 3,
+          dx: jitter,
+          dy: -(rect.height + 40),
+          duration: 2400,
+          delay: i * 90,
+        });
+      }
+
+      // Reset bar for next tier after beat
+      await wait(800);
+      setBar(fill, 0);
+      await wait(1700);
+      setBar(fill, 18);
+      btn.disabled = false;
+    }
+
+    /* ——— Concept C: bar surge → sparks stream into shrine ——— */
+    async function playC() {
+      const btn = document.getElementById('btn-c');
+      btn.disabled = true;
+      const board = document.getElementById('board-c');
+      clearFx(board);
+
+      const icon = document.getElementById('icon-c');
+      const fill = document.getElementById('fill-c');
+      const track = document.getElementById('track-c');
+      const figure = document.getElementById('figure-c');
+      const iconRect = localRect(board, icon);
+      const trackRect = localRect(board, track);
+
+      const barX = trackRect.left + trackRect.width / 2;
+      const barTop = trackRect.top + 4;
+      const barBottom = trackRect.bottom - 4;
+      const shrineCx = iconRect.left + iconRect.width / 2;
+      const shrineCy = iconRect.top + iconRect.height * 0.42;
+
+      // 1) Bar surges to full
+      setBar(fill, 100);
+      tickBar(track, 600);
+      await wait(420);
+
+      // 2) Sparks erupt from bar → stream into shrine figure
+      const stream = 14;
+      for (let i = 0; i < stream; i++) {
+        const t = i / (stream - 1);
+        const startY = barBottom - (barBottom - barTop) * (0.55 + t * 0.45);
+        const dx = shrineCx - barX + (Math.random() * 2 - 1) * 10;
+        const dy = shrineCy - startY + (Math.random() * 2 - 1) * 8;
+        spawnSpark(board, {
+          x: barX,
+          y: startY,
+          size: 14 + (i % 4) * 2,
+          dx,
+          dy,
+          duration: 780 + i * 35,
+          delay: i * 55,
+        });
+      }
+
+      // Arrival bloom: sparks rise from shrine after stream lands
+      await wait(520);
+      figure.classList.add('shrine__pedestal-warm');
+      for (let i = 0; i < 8; i++) {
+        const jitter = (i - 3.5) * 7;
+        spawnSpark(board, {
+          x: shrineCx,
+          y: iconRect.bottom - 12,
+          size: 18,
+          dx: jitter,
+          dy: -(iconRect.height * 0.9),
+          duration: 1500,
+          delay: i * 70,
+        });
+      }
+
+      // Celebration chip near bar (farm-inward of track)
+      const chipX = (barX + shrineCx) / 2;
+      spawnChip(board, {
+        x: chipX,
+        y: Math.max(4, trackRect.top - 14),
+        label: 'Tier up!',
+        rise: 30,
+        duration: 1400,
+      });
+
+      await wait(1000);
+      setBar(fill, 0);
+      await wait(550);
+      figure.classList.remove('shrine__pedestal-warm');
+      setBar(fill, 12);
+      btn.disabled = false;
+    }
+
+    function wait(ms) {
+      return new Promise((r) => window.setTimeout(r, ms));
+    }
+
+    document.getElementById('btn-b').addEventListener('click', playB);
+    document.getElementById('btn-c').addEventListener('click', playC);
+    document.getElementById('btn-b-reset').addEventListener('click', resetB);
+    document.getElementById('btn-c-reset').addEventListener('click', resetC);
+  </script>
+</body>
+</html>

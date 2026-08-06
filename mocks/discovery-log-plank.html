@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Discovery Log plank mockup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&family=Quicksand:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --ink: #2a3d30;
+      --plank: url('../assets/scene/game_text_plank.png');
+      --depth:
+        drop-shadow(0 2px 0 rgba(90, 70, 40, 0.18))
+        drop-shadow(0 6px 14px rgba(42, 90, 60, 0.12));
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 2.5rem 1.5rem 3rem;
+      font-family: 'Nunito', system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 80% 50% at 50% 0%, rgba(180, 210, 160, 0.35), transparent 60%),
+        linear-gradient(180deg, #d8e8c8 0%, #b8d0a0 45%, #9ab888 100%);
+    }
+
+    h1 {
+      margin: 0 0 0.35rem;
+      font-family: 'Quicksand', 'Nunito', system-ui, sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .lede {
+      margin: 0 auto 2rem;
+      max-width: 36rem;
+      text-align: center;
+      font-size: 0.95rem;
+      opacity: 0.8;
+    }
+
+    .compare {
+      display: grid;
+      gap: 2rem;
+      max-width: 28rem;
+      margin: 0 auto;
+    }
+
+    @media (min-width: 720px) {
+      .compare {
+        max-width: 56rem;
+        grid-template-columns: 1fr 1fr;
+        align-items: end;
+      }
+    }
+
+    .panel {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .label {
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0.65;
+    }
+
+    .plank {
+      position: relative;
+      width: 100%;
+      margin: 0;
+      padding: 0.55rem 0.85rem;
+      border: none;
+      border-radius: 0;
+      background-color: transparent;
+      background-image: var(--plank);
+      background-size: 100% 100%;
+      background-position: center;
+      background-repeat: no-repeat;
+      color: var(--ink);
+      text-shadow: 0 1px 0 rgba(247, 252, 247, 0.45);
+      filter: var(--depth);
+      font-family: 'Quicksand', 'Nunito', system-ui, sans-serif;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      cursor: default;
+    }
+
+    .plank::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background-image: linear-gradient(
+        180deg,
+        rgba(247, 252, 247, 0.3) 0%,
+        rgba(232, 240, 224, 0.16) 100%
+      );
+      -webkit-mask-image: var(--plank);
+      mask-image: var(--plank);
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      -webkit-mask-position: center;
+      mask-position: center;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+    }
+
+    .plank > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* —— Before (current live) —— */
+    .plank--before {
+      --font-size: 0.875rem;
+      --line-height: 1.4;
+      --title-size: 0.75rem;
+      height: calc(
+        var(--font-size) * var(--line-height) +
+          var(--title-size) * var(--line-height) + 2 * 0.55rem + 2px
+      );
+      font-size: var(--font-size);
+      font-weight: 600;
+      line-height: var(--line-height);
+    }
+
+    .plank--before .msg {
+      display: block;
+      width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .plank--before .title {
+      display: block;
+      width: 100%;
+      font-size: var(--title-size);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: rgba(42, 58, 44, 0.72);
+      text-shadow: 0 1px 0 rgba(247, 252, 247, 0.35);
+    }
+
+    /* —— After (proposed) —— */
+    .plank--after {
+      --font-size: 0.95rem;
+      --line-height: 1.3;
+      height: calc(var(--font-size) * var(--line-height) + 2 * 0.55rem + 2px);
+      font-size: var(--font-size);
+      font-weight: 700;
+      line-height: var(--line-height);
+      letter-spacing: 0.03em;
+    }
+
+    .plank--after .label-only {
+      display: block;
+      width: 100%;
+    }
+
+    .note {
+      margin: 2rem auto 0;
+      max-width: 36rem;
+      font-size: 0.85rem;
+      line-height: 1.45;
+      opacity: 0.75;
+      text-align: center;
+    }
+
+    code {
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <h1>Game-text plank</h1>
+  <p class="lede">Before (two lines) vs after (single centered Discovery Log).</p>
+
+  <div class="compare">
+    <div class="panel">
+      <div class="label">Before — current</div>
+      <button type="button" class="plank plank--before" aria-label="Field Notes">
+        <span class="msg">It's a cozy day for farming.</span>
+        <span class="title">Field Notes</span>
+      </button>
+    </div>
+
+    <div class="panel">
+      <div class="label">After — proposed</div>
+      <button type="button" class="plank plank--after" aria-label="Discovery Log">
+        <span class="label-only">Discovery Log</span>
+      </button>
+    </div>
+  </div>
+
+  <p class="note">
+    After uses one line at ~<code>0.95rem</code> (was message <code>0.875rem</code> /
+    title <code>0.75rem</code>), still Quicksand, centered on the same plank art.
+    Open this file in a browser for the real asset.
+  </p>
+</body>
+</html>

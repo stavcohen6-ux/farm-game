@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Resolve assets/ relative to project root (not /mocks/). -->
+  <base href="../" />
+  <title>Shrine epilogue popup — mock</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --linen: #f7fcf7;
+      --frame: #6a7a68;
+      --frame-deep: #3d4a42;
+      --ink: #2a3d30;
+      --muted: #5f7466;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100dvh;
+      font-family: 'Nunito', system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 90% 70% at 50% 0%, #e8fff0 0%, transparent 55%),
+        radial-gradient(ellipse 80% 60% at 15% 100%, #b8e0c4 0%, transparent 50%),
+        linear-gradient(180deg, #d8f0e0 0%, #b8dcc8 50%, #9ecab0 100%);
+      display: grid;
+      place-items: center;
+      padding: 1.5rem;
+    }
+
+    .stage {
+      position: relative;
+      width: min(920px, 100%);
+      aspect-ratio: 16 / 10;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 3px solid var(--frame);
+      box-shadow: 0 18px 40px rgba(42, 90, 60, 0.24);
+      background:
+        radial-gradient(ellipse at 50% 40%, rgba(255, 255, 255, 0.35), transparent 55%),
+        linear-gradient(180deg, #c8e8d4, #8fbf9a);
+    }
+
+    .stage__hint {
+      position: absolute;
+      left: 50%;
+      bottom: 1rem;
+      transform: translateX(-50%);
+      z-index: 5;
+      font-size: 0.85rem;
+      color: var(--muted);
+      background: rgba(247, 252, 247, 0.88);
+      border: 2px solid var(--frame);
+      border-radius: 999px;
+      padding: 0.35rem 0.9rem;
+      white-space: nowrap;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(47, 59, 42, 0.38);
+      backdrop-filter: blur(2px);
+      display: grid;
+      place-items: center;
+      z-index: 2;
+    }
+
+    .card {
+      position: relative;
+      width: min(360px, 86%);
+      min-height: 9.5rem;
+      background: var(--linen);
+      border: 3px solid var(--frame);
+      border-radius: 16px;
+      box-shadow:
+        0 2px 0 var(--frame-deep),
+        0 18px 40px rgba(42, 90, 60, 0.24);
+      padding: 2.4rem 2.6rem;
+      display: grid;
+      place-items: center;
+      text-align: center;
+    }
+
+    .card__text {
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.45;
+      max-width: 16rem;
+    }
+
+    .face {
+      position: absolute;
+      width: 2.75rem;
+      height: 2.75rem;
+      object-fit: contain;
+      filter: drop-shadow(0 1px 2px rgba(42, 61, 48, 0.2));
+      pointer-events: none;
+    }
+
+    .face--tl { top: 0.55rem; left: 0.55rem; }
+    .face--tr { top: 0.55rem; right: 0.55rem; }
+    .face--bl { bottom: 0.55rem; left: 0.55rem; }
+    .face--br { bottom: 0.55rem; right: 0.55rem; }
+
+    .spark {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 22px;
+      height: 22px;
+      z-index: 4;
+      pointer-events: none;
+      display: grid;
+      place-items: center;
+      filter: drop-shadow(0 1px 2px rgba(80, 60, 20, 0.25));
+      will-change: transform, opacity;
+    }
+
+    .spark img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .toolbar {
+      position: absolute;
+      top: 0.85rem;
+      right: 0.85rem;
+      z-index: 6;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    button {
+      font: inherit;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--ink);
+      background: var(--linen);
+      border: 2px solid var(--frame);
+      border-radius: 10px;
+      padding: 0.4rem 0.75rem;
+      cursor: pointer;
+      box-shadow: 0 2px 0 var(--frame-deep);
+    }
+
+    button:active {
+      transform: translateY(1px);
+      box-shadow: none;
+    }
+
+    .label {
+      position: absolute;
+      top: 0.9rem;
+      left: 0.9rem;
+      z-index: 6;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+      background: rgba(247, 252, 247, 0.9);
+      border: 2px solid var(--frame);
+      border-radius: 10px;
+      padding: 0.3rem 0.65rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <div class="label">Mock — open burst</div>
+    <div class="toolbar">
+      <button type="button" id="replay">Replay sparks</button>
+    </div>
+    <div class="overlay">
+      <div class="card" id="card">
+        <img class="face face--tl" src="assets/icons/log_frog.png" alt="" />
+        <img class="face face--tr" src="assets/icons/log_monkey.png" alt="" />
+        <img class="face face--bl" src="assets/icons/log_fox.png" alt="" />
+        <img class="face face--br" src="assets/icons/log_tiger.png" alt="" />
+        <p class="card__text">Every shrine stands complete. The forest rests.</p>
+      </div>
+    </div>
+    <p class="stage__hint">Sparks burst outward on open · Replay to watch again</p>
+  </div>
+
+  <script>
+    const SPARK_COUNT = 34;
+    const SPARK_MS = 2200;
+    const SPARK_SIZE = 22;
+    const DIST_MIN = 110;
+    const DIST_MAX = 210;
+    const SPARK_SRC = 'assets/icons/spark.png';
+
+    const stage = document.getElementById('stage');
+    const card = document.getElementById('card');
+    const replayBtn = document.getElementById('replay');
+
+    function clearSparks() {
+      stage.querySelectorAll('.spark').forEach((el) => el.remove());
+    }
+
+    function burst() {
+      clearSparks();
+      const stageRect = stage.getBoundingClientRect();
+      const cardRect = card.getBoundingClientRect();
+      const originX = cardRect.left + cardRect.width / 2 - stageRect.left;
+      const originY = cardRect.top + cardRect.height / 2 - stageRect.top;
+      const half = SPARK_SIZE / 2;
+
+      for (let i = 0; i < SPARK_COUNT; i++) {
+        const angle =
+          (i / SPARK_COUNT) * Math.PI * 2 +
+          (Math.random() - 0.5) * 0.22;
+        const dist =
+          DIST_MIN + Math.random() * (DIST_MAX - DIST_MIN);
+        const dx = Math.cos(angle) * dist;
+        const dy = Math.sin(angle) * dist;
+        const duration = SPARK_MS * (0.85 + Math.random() * 0.3);
+        const delay = Math.random() * 90;
+
+        const spark = document.createElement('div');
+        spark.className = 'spark';
+        spark.setAttribute('aria-hidden', 'true');
+        spark.style.width = `${SPARK_SIZE}px`;
+        spark.style.height = `${SPARK_SIZE}px`;
+        spark.style.left = `${originX - half}px`;
+        spark.style.top = `${originY - half}px`;
+
+        const img = document.createElement('img');
+        img.src = SPARK_SRC;
+        img.alt = '';
+        spark.appendChild(img);
+        stage.appendChild(spark);
+
+        const flight = spark.animate(
+          [
+            {
+              transform: 'translate(0, 0) scale(0.55)',
+              opacity: 0,
+            },
+            {
+              transform: `translate(${dx * 0.35}px, ${dy * 0.35}px) scale(1.05)`,
+              opacity: 1,
+              offset: 0.18,
+            },
+            {
+              transform: `translate(${dx}px, ${dy}px) scale(0.45)`,
+              opacity: 0,
+            },
+          ],
+          {
+            duration,
+            delay,
+            easing: 'ease-out',
+            fill: 'forwards',
+          },
+        );
+
+        flight.onfinish = () => spark.remove();
+      }
+    }
+
+    replayBtn.addEventListener('click', burst);
+    // Auto-play once the card has layout.
+    requestAnimationFrame(() => requestAnimationFrame(burst));
+  </script>
+</body>
+</html>

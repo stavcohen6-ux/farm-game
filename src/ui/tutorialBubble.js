@@ -172,7 +172,7 @@ export function renderTutorialBubble(state, ctx) {
   el.classList.add('is-on');
 
   const boardRect = ctx.boardEl?.getBoundingClientRect();
-  // Field Notes invite sits on the info band — clamp to the viewport plank,
+  // Discovery Log invite sits on the info band — clamp to the viewport plank,
   // not the farm board (board clamp would push the bubble off-target).
   const clampRect =
     state.tutorialStep === TUTORIAL_STEP_FIELD_NOTES

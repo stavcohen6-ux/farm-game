@@ -303,14 +303,14 @@ export function completeTutorial(state) {
   return unlockedPlotIds;
 }
 
-/** Dismiss the post-unlock explore bubble → Field Notes suggestion. */
+/** Dismiss the post-unlock explore bubble → Discovery Log suggestion. */
 export function dismissTutorialExploreInvite(state) {
   if (!isTutorialExploreInvite(state)) return false;
   setTutorialStep(state, TUTORIAL_STEP_FIELD_NOTES);
   return true;
 }
 
-/** Dismiss the Field Notes suggestion into done (any tap; opening log optional). */
+/** Dismiss the Discovery Log suggestion into done (any tap; opening log optional). */
 export function dismissTutorialFieldNotesInvite(state) {
   if (!isTutorialFieldNotesInvite(state)) return false;
   setTutorialStep(state, TUTORIAL_STEP_DONE);

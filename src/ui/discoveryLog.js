@@ -3,7 +3,7 @@ import { getAlchemyRecipeByResultId } from '../data/alchemyRecipes.js';
 import { SHRINES, shrineAcceptsCrop } from '../data/shrines.js';
 import { isMusicMuted, setMusicMuted } from '../audio/backgroundMusic.js';
 import { bindCropTip, hideCropTip } from './cropTip.js';
-import { FIELD_NOTES_TITLE } from './gameTextPanel.js';
+import { DISCOVERY_LOG_TITLE } from './gameTextPanel.js';
 import { renderHowToPlay } from './howToPlay.js';
 import { logShrineIconSrc, setCropIcon, setIcon, UI_ICONS } from './icon.js';
 
@@ -35,14 +35,14 @@ export function openDiscoveryLog(state, onReset = null) {
   setIcon(figure, {
     src: UI_ICONS.discoveryLog,
     emoji: '📖',
-    alt: FIELD_NOTES_TITLE,
+    alt: DISCOVERY_LOG_TITLE,
     imgClass: 'game-icon game-icon--discovery-log',
   });
   header.appendChild(figure);
 
   const title = document.createElement('h2');
   title.className = 'discovery-log__title';
-  title.textContent = FIELD_NOTES_TITLE;
+  title.textContent = DISCOVERY_LOG_TITLE;
   header.appendChild(title);
 
   const discoveredCrops = new Set(

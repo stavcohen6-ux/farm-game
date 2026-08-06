@@ -66,16 +66,16 @@ artwork — live, mood, mocks, parked desk, backups, or archives.
 
 ### Materials and chrome
 - Stage bands — scenic grove stage (top), then an **info band** (clickable
-  Field Notes game-text plank), then a slim bottom dock with Reset only.
+  Discovery Log game-text plank), then a slim bottom dock with Reset only.
   Soften the outer app shell so the grove reads as the place.
 - Info band (`#info-band`): below `#grove-stage`, same outer width as the
   grove stage (full app column; `width` / `max-width: 100%`). Holds only
   the game text plank (full width of the band).
 - Game text (`#game-text`): Soft B light wood plank
   (`assets/scene/game_text_plank.png`, no moss); faint linen readability wash
-  over the plank; warm worn-wood rim (not mint panel chrome). Fixed **two-line**
-  height — line 1 is the dynamic message (single-line ellipsis); line 2 is the
-  permanent title **Field Notes**. Whole plank is a button that opens Field Notes.
+  over the plank; warm worn-wood rim (not mint panel chrome). Fixed **single-line**
+  height with centered label **Discovery Log** (`0.95rem`, bold). Whole plank
+  is a button that opens Discovery Log.
 - Grove stage (`#grove-stage`): in-game scenic backdrop
   (`assets/scene/grove_clearing.png`) — Soft B misty canopy, empty clearing,
   moss foreground; no baked shrine alcoves (icons sit on top). Farm board with
@@ -96,10 +96,10 @@ artwork — live, mood, mocks, parked desk, backups, or archives.
   Desk art (`assets/scene/player_desk.png`) and desk firefly / flowering art
   are **parked** for a later redesign — do not delete. Crops stay on ready
   plots until the player drags them (shrine / temple / adjacent mix).
-- Field Notes: opened by clicking the game-text plank (`#game-text`); modal
+- Discovery Log: opened by clicking the game-text plank (`#game-text`); modal
   still uses `discovery_log.png` book art in the header. No standalone book
   button on the main screen.
-- Modals: cream linen inside sage / frame borders (Field Notes, shrine
+- Modals: cream linen inside sage / frame borders (Discovery Log, shrine
   detail, Dragon Temple explainer, reset confirm)
 - Shrines: Soft B layered guardian cutouts (pedestal + figure) on corner
   footings. Each corner cell of the 4×4 board is a shrine **footing** (no
@@ -158,7 +158,8 @@ distinct at small size (prepared or enchanted form, not a recolored parent):
 Keep existing fly / pulse / urgency feedback. Prefer soft tactile hover
 (slight lift or scale) over new flashy effects (except shrines: no hover
 lift; shrine art does not pulse or move on tier-up or dragon burn — rising
-overlay sparks / fire only). Farm stays primary; chrome stays quiet.
+overlay sparks / fire only, plus a Tier up! parchment chip on tier-up).
+Farm stays primary; chrome stays quiet.
 
 ## Core loop
 Choose a crop → Plant it → Wait (optional water if the plant asks;
@@ -338,10 +339,10 @@ welcome clears with no shrine progress.
 - Click a waiting-critter plot → butterfly flies to the neediest shrine
   at a constant gentle speed (nearer plots arrive sooner). When it lands,
   apply and save `critterShrineProgress`, set `critterWelcomed: true`, and
-  update the shrine progress bar (no shrine pulse). No game-text message unless a
-  tier-up occurs (then the normal shrine upgrade text applies, and rising
-  overlay sparks play on that shrine when the butterfly lands — shrine art
-  stays still). If all shrines are already maxed, welcome clears the visit
+  update the shrine progress bar (no shrine pulse). No game-text message.
+  If a tier-up occurs, rising overlay sparks and a honey/parchment
+  **Tier up!** chip play on that shrine when the butterfly lands — shrine art
+  stays still. If all shrines are already maxed, welcome clears the visit
   with no progress and no message. Mid-flight reload leaves the visit waiting
   (points are only awarded on land).
 - Ignore water or critter → full normal growth / no shrine gift. Offline: if
@@ -406,22 +407,21 @@ Players can clear an unwanted crop from the farm without offering it.
 still carry an empty `inventory` object for migration. Ready crops stay on
 plots until the player drags them (shrine / temple / adjacent mix).
 
-## Field Notes
+## Discovery Log
 Opened by clicking the game-text plank in the info band (`#game-text` /
-`src/ui/discoveryLog.js`). Permanent second line on the plank is titled
-**Field Notes** (`aria-label` matches). Opens a centered modal (click outside
-to close). Footer at the bottom of this modal (vertical stack): **How to Play**
-above **Reset Game**. Reset opens the Yes/No confirm, then a swipe-to-reset
-  slider.
+`src/ui/discoveryLog.js`). Plank label **Discovery Log** (`aria-label`
+matches). Opens a centered modal (click outside to close). Footer at the
+bottom of this modal (vertical stack): **How to Play** above **Reset Game**.
+Reset opens the Yes/No confirm, then a swipe-to-reset slider.
 
 - **How to Play** swaps the modal to a short illustrated help view
   (`src/ui/howToPlay.js`) inside the same overlay. **Back** returns to the
-  Field Notes list (no reopen SFX). Click outside the modal closes the overlay
+  Discovery Log list (no reopen SFX). Click outside the modal closes the overlay
   entirely and returns to the farm whether help or the log was showing.
-  Steps (icon + title + one short body): Plant, Water, Offer, Mix, Field Notes,
+  Steps (icon + title + one short body): Plant, Water, Offer, Mix, Discovery Log,
   Dragon Temple, Uproot (hold then swipe; harvest icon).
 - Modal header: book cutout (`discovery_log.png`) above the title
-  **Field Notes** (closed leather-bound journal/tome with a leather strap,
+  **Discovery Log** (closed leather-bound journal/tome with a leather strap,
   soft moss accents; simplified shapes for small size; same art language as
   shrines / Dragon Temple), then a progress line **Discoveries N / M**.
   `M` is every crop entry in `CROPS` (plantables + alchemy products);
@@ -544,7 +544,7 @@ Corner cards show icon, name, next/max tier name, and active-tier progress.
 ### Offerings and progression
 - Drag one inventory crop onto a shrine. Only crops on the **active tier’s
   allowlist** (`acceptedCropIds`) are accepted; others are rejected for now
-  (not value 0 — locked until a later tier lists them) with no Field Notes
+  (not value 0 — locked until a later tier lists them) with no Discovery Log
   message (shrine detail Accepts line shows what is wanted).
 - An accepted offering adds that crop’s `shrineValues[shrineId]` to progress;
   `progressRequired` per tier is data-driven (escalating; see Tiers).
@@ -557,8 +557,9 @@ Corner cards show icon, name, next/max tier name, and active-tier progress.
 - Starts at tier 0 (no blessing). Completing a bar unlocks the next tier and
   applies that blessing immediately. Same-shrine tiers replace earlier ones;
   different shrines stack. On tier-up, rising overlay sparks climb the shrine
-  icon (shrine art does not pulse or move); multi-tier overflow in one grant
-  plays the VFX once.
+  icon (shrine art does not pulse or move) and a quiet honey/parchment
+  **Tier up!** chip (same look as the offering `+N` chip; ~1560ms) floats
+  above the figure; multi-tier overflow in one grant plays the VFX once.
 - Maxed shrines reject offerings. On the farm board they hide the progress
   track and tint only the pedestal gold (figure unchanged).
 - Mid/late Frog / Fox / Tiger tiers demand researched crops, so Monkey is a
@@ -653,7 +654,7 @@ does not weight the tribute). Total burn animation ≈
 
 ### Layout
 - Lives inside `#grove-stage` directly above `#farm-board` with a small
-  gap between the temple tribute row and the farm board. Info band (Field Notes
+  gap between the temple tribute row and the farm board. Info band (Discovery Log
   game-text plank) sits below the grove stage.
 - Object width matches a 4-plot farm row including frame padding (shrines not
   counted). Soft drop-shadow on the roof figure like corner shrines.
@@ -678,14 +679,10 @@ does not weight the tribute). Total burn animation ≈
   top-left, body wraps beside then under). Awake body copy notes that
   placed crops are locked in and that leftover tribute is lost if wrath peaks
   (see `AWAKE_BODY` in `src/ui/dragonTempleDetail.js`).
-- After a win: game text panel shows
-  `The Dragon blesses your {Frog|Monkey|Fox|Tiger} Shrine.`
-- After a loss: game text panel shows
-  `The Dragon burnt your {Frog|Monkey|Fox|Tiger} Shrine.`
-  If no shrine has progress to burn:
-  `The Dragon's wrath fades - you got lucky.`
-- `lastResult` is still stored (`null` | `'success'` | `'failed'`) but no
-  longer drives tile copy.
+- Win / lose do **not** set game text; the temple UI, reward sparks, burn
+  fire overlays, and first-time blessing tip carry the outcome.
+- `lastResult` is still stored (`null` | `'success'` | `'failed'`) but does
+  not drive Discovery Log copy.
 
 ### Trigger (shrine offerings)
 The dragon grows angry when players give offerings to the shrines. Chance is
@@ -697,10 +694,9 @@ hidden (`triggerChance`, never shown in UI) and persists across refresh/reload.
     wake roll and no chance increase.
   - Else roll `Math.random() < triggerChance`.
   - Hit → start the event immediately with a **demand** of `slotCount` crop
-    ids, reset `triggerChance` to `defaultTriggerChance`, and set the game
-    text panel to:
-    `Dragon awakens! Offer crops or face its wrath.`
-    (overwrites a same-offering shrine upgrade message if both occur).
+    ids, reset `triggerChance` to `defaultTriggerChance`, and play
+    `doorClose_3.ogg` when the demand ghosts appear (does **not** set game
+    text).
   - Miss → add that shrine’s `shrineTriggerChanceIncrease` value, capped at 100%.
 - Temple win blessing does **not** roll or increase the chance.
 - Chance caps at 100% (`1.0`).
@@ -788,7 +784,7 @@ While active and not burning / pending close:
   and temple slotting add **no** wrath. AFK adds none. Crops already growing
   when the dragon wakes do not add wrath until the player plants anew.
 - When `wrath >= wrathMax` → lose immediately: apply shrine-burn penalty,
-  close temple to rest, set lose game text.
+  close temple to rest (no lose game text).
 - Wrath meter uses the same ember fill colors as the former timer bar; fill
   grows with wrath (does not deplete with time).
 
@@ -799,7 +795,7 @@ current progress bar (`progress = 0`). Also clear that shrine’s remaining
 `dragonBonusOfferings` (if any). If already at tier 0 with bar progress
 only, stay at tier 0 and clear the bar. The player can offer again from
 the new tier’s bar. Maxed shrines are immune (complete). If none are
-burnable, skip the burn (message line 1 only).
+burnable, skip the burn (no message).
 UI: when a shrine is burned from plant or offer wrath, rising fire overlays
 climb that shrine icon once (same timing as tier-up sparks; shrine art stays
 still). Lucky lose (nothing to burn) and load/tick catch-up skip the VFX.
@@ -873,16 +869,16 @@ the opening out and reveals the already-warmed grove. Reset clears progress then
 re-shows the opening (no full page reload).
 Ambient BGM (`assets/audio/farm_background_music.mp3`) starts on the opening
 screen (autoplay when the browser allows; otherwise on the first tap). Native
-loop. Mute toggle in Field Notes footer (Music: On / Music: Off); preference
+loop. Mute toggle in Discovery Log footer (Music: On / Music: Off); preference
 persists in localStorage across refresh and Reset. Music keeps playing after
 Play and across Reset when not muted. Pauses while the page is hidden
 (minimized window, backgrounded tab/app) and resumes when the page becomes
 visible again (unless muted).
 
-Main farm in a scenic grove stage + info band (Field Notes game-text plank) +
+Main farm in a scenic grove stage + info band (Discovery Log game-text plank) +
 Dragon Temple. Overlays: radial crop picker (anchored to the clicked plot),
-uproot confirm (anchored to the held plot), shrine detail, Field Notes modal,
-reset confirm (Yes/No then swipe-to-reset). No separate menus. Field Notes
+uproot confirm (anchored to the held plot), shrine detail, Discovery Log modal,
+reset confirm (Yes/No then swipe-to-reset). No separate menus. Discovery Log
 footer: How to Play, Music mute, then Reset.
 
 ### Layout (current)
@@ -904,8 +900,8 @@ footer: How to Play, Music mute, then Reset.
   shrine footings with oversized figures overflowing the frame and slim
   vertical outer progress tracks (left of frog/fox, right of monkey/tiger);
   board width drives nearly full phone width);
-  info band below (`#info-band`: two-line
-  game-text plank with permanent **Field Notes** title; click opens the
+  info band below (`#info-band`: single-line
+  game-text plank labeled **Discovery Log**; click opens the
   modal). No bottom Reset dock.
 - Farm stays primary inside the grove. Dragon Temple height is reserved for
   the active dock even while resting so the clearing does not jump.
@@ -913,58 +909,53 @@ footer: How to Play, Music mute, then Reset.
   **pointer events** (mouse + touch) to shrines / temple / adjacent ready
   crops to mix. Long-press (mouse + touch) opens Uproot confirm on occupied
   plots.
-- **How to Play** and **Reset** live at the bottom of the Field Notes modal
+- **How to Play** and **Reset** live at the bottom of the Discovery Log modal
   (How to Play above Reset). Reset uses Yes/No then a swipe-to-reset slider;
   only a completed swipe returns the player to the opening screen.
 
 ## Game text panel
-HUD message area for explaining what is going on.
+Clickable Discovery Log button in the info band (not a dynamic message HUD).
 
 - Location: fills the info band below the scenic grove stage. Chrome is
-  always visible. Whole plank is clickable and opens Field Notes.
+  always visible. Whole plank is clickable and opens Discovery Log.
 - Painted plank backdrop (`assets/scene/game_text_plank.png`) with a faint
   linen readability wash and warm wood rim; ink text with a soft light
-  shadow for legibility. Fixed **two-line** height.
-- Line 1: dynamic message (single-line ellipsis). Line 2: permanent title
-  **Field Notes** (slightly quieter than the message). Never grows or
-  shrinks. No scroller. Text is centered in the tile. Font size `0.875rem`
-  (title `0.75rem`).
-- Default when `gameText` is `null` (startup, reset, or after clear):
-  `It's a cozy day for farming.`
-  (UI fallback in `gameTextPanel.js`; state stays `null`). New text replaces
-  current text. Code can clear it (`clearGameText`) to restore the default.
-  No player dismiss control yet.
-- Plain text only (no HTML) in the message line.
-- Persists with save/load.
+  shadow for legibility. Fixed **single-line** height.
+- Centered label **Discovery Log** (`0.95rem`, bold Quicksand). Never grows
+  or shrinks. No scroller. No dynamic event messages on the plank.
+- Legacy `gameText` may still exist on saves (`null` | string) and is
+  persisted, but the plank UI ignores it. `setGameText` / `clearGameText`
+  remain for migration; legacy epilogue line still clears on load.
 
-Triggers:
+Triggers (outcomes use their own UI — not plank copy):
 - Shrine tier-up (any path through `addShrineProgress`, including offerings
-  and critter welcome gifts):
-  `{shrine name} upgraded`. If one grant jumps multiple
-  tiers, only the highest tier reached is shown. UI also plays rising
-  overlay sparks on that shrine (once per grant; shrine art stays still).
-  Critter path: sparks when the butterfly lands.
+  and critter welcome gifts) does **not** set plank text. UI plays rising
+  overlay sparks on that shrine plus a honey/parchment **Tier up!** chip
+  above the figure (once per grant; shrine art stays still; chip ~1560ms).
+  Critter path: sparks + chip when the butterfly lands.
 - Shrine completion epilogue: when a tier-up leaves all four shrines maxed
   and the epilogue has not yet been successfully displayed this playthrough,
-  arm `shrineEpilogueDueAt` (`now + SHRINE_EPILOGUE_DELAY_MS`, currently
-  6000). The upgrade line above still shows first. When due (1s tick or
-  load catch-up): if all shrines are still maxed, set
-  `Every shrine stands complete. The forest rests.` and set
-  `shrineEpilogueShown`. If shrines are no longer all maxed at due time
-  (e.g. Dragon burn in the wait), clear `dueAt` only — do not set
-  `shown`; a later all-maxed can arm again. `shown` is set only when the
-  epilogue text is actually written. Dragon burn clears a pending `dueAt`
-  immediately when shrines drop below all-maxed.
-- Dragon Temple wake: `Dragon awakens! Offer crops or face its wrath.`
-- Dragon Temple win: `The Dragon blesses your {Frog|Monkey|Fox|Tiger} Shrine.`
-- Dragon Temple lose with burn:
-  `The Dragon burnt your {Frog|Monkey|Fox|Tiger} Shrine.`
-  UI also plays rising fire overlays on that shrine (once; shrine art stays
-  still). Plant and offer wrath paths only — load/tick catch-up skips VFX.
-- Dragon Temple lose with nothing to burn:
-  `The Dragon's wrath fades - you got lucky.`
-- Critter welcome and desk firefly welcome do not set game text (except when
-  a critter gift causes a shrine tier-up, via `addShrineProgress` above).
+  wait until **all in-flight shrine upgrade spark VFX finish**, then arm
+  `shrineEpilogueDueAt` (`now + SHRINE_EPILOGUE_DELAY_MS`, currently 3000).
+  The epilogue itself is **not** written to the plank. When due (1s tick or load catch-up): if all shrines
+  are still maxed, set `shrineEpilogueShown` and `shrineEpiloguePendingUi` and
+  open a centered popup (`src/ui/shrineEpilogue.js`) with
+  `Every shrine stands complete. The forest rests.` and log faces in board
+  corners (frog TL, monkey TR, fox BL, tiger BR). On open, a radial burst of
+  `spark.png` (~34 sparks, ~2.2s) flies outward from the card. Popup is not
+  dismissible for `SHRINE_EPILOGUE_DISMISS_LOCK_MS` (5000); then tap anywhere
+  closes it and clears `shrineEpiloguePendingUi`. If shrines are no longer all
+  maxed at due time (e.g. Dragon burn in the wait), clear `dueAt` only — do
+  not set `shown`; a later all-maxed can arm again. `shown` is set when the
+  popup is armed for display. Load repair: if all maxed, `!shown`, and no
+  `dueAt` / pending UI (e.g. quit mid-sparks), re-arm `dueAt`. Dragon burn
+  clears a pending `dueAt` immediately when shrines drop below all-maxed.
+  Legacy saves with the old Field Notes epilogue line clear that `gameText`.
+- Dragon Temple wake / win / lose do **not** set game text (temple UI and
+  shrine VFX carry those outcomes). Wake plays `doorClose_3.ogg` when demand
+  ghosts appear. Lose with burn still plays rising fire overlays on that
+  shrine (plant and offer wrath paths only — load/tick catch-up skips VFX).
+- Critter welcome and desk firefly welcome do not set game text.
 - Tanuki nap arrival, sleep, and departure do not set game text.
 - Start tutorial — **hard step-lock FTUE** (speech bubbles + action gates;
   no full-screen dim). State: `tutorialStep`, `tutorialFoxWheatOffered`.
@@ -983,7 +974,7 @@ Triggers:
   optional water) → mix → offer Root Loaf to Fox (`5/5`) → Fox upgrade
   VFX + unlock plots `0`/`1` → `exploreBoard` speech bubble → next tap →
   `fieldNotesInvite` bubble above the game-text plank → next tap
-  (anywhere; opening Field Notes is optional) → `done`.
+  (anywhere; opening Discovery Log is optional) → `done`.
   Water never blocks: ignore dry soil until ready and the step still
   advances. At most one water ask per plant (turnip / second wheat only
   in FTUE). Uproot, shrine/temple detail popups, Tiger/Frog/Monkey
@@ -997,15 +988,15 @@ Triggers:
   Bubble: one at a time, above the target (flip below if clipped); no
   player dismiss — advances when the step completes. Exception: soft
   invites `exploreBoard` and `fieldNotesInvite` dismiss on tap after a
-  3s arming cooldown (suggestion only; Field Notes is not required to
+  3s arming cooldown (suggestion only; Discovery Log is not required to
   finish FTUE).
 
 API (`src/state/gameState.js` / `tutorialFlow.js`): `tickTutorial`,
 `repairTutorialState`, `getTutorialFoxProgress`, gates
 (`canTutorialOpenPicker`, `canTutorialOffer`, …).
 UI: `src/ui/tutorialBubble.js`, crop picker mask, shrine inactive/target
-classes. Delay / line constants for epilogue unchanged in
-`src/data/shrines.js`.
+classes. Epilogue delay / lock / line constants in `src/data/shrines.js`;
+popup UI in `src/ui/shrineEpilogue.js`.
 
 ## Flowered plots (land care)
 **Parked** (no inventory to spend). Flowered soil art
@@ -1092,10 +1083,11 @@ status: 'approaching' | 'sleeping' | 'waking', plotId?, wakeAt? }`.
 - Dragon Temple: `{ active, demand, wrath, slots, lastResult, burning,
   pendingClose, pendingReward, triggerChance }` — `demand` is `cropId[]`;
   `slots` are `{ cropId, expiresAt }` or null
-- Game text: `gameText` (`null` | string) — top panel message
+- Game text: `gameText` (`null` | string) — legacy; plank UI ignores it
 - Shrine epilogue: `shrineEpilogueShown` (boolean, sticky until Reset; true
-  only after the epilogue line was displayed), `shrineEpilogueDueAt`
-  (`null` | epoch ms while a wait is armed)
+  once the epilogue popup has been armed for display), `shrineEpilogueDueAt`
+  (`null` | epoch ms while a wait is armed), `shrineEpiloguePendingUi`
+  (boolean; true until the popup is dismissed; survives reload)
 - Dragon blessing tip: `dragonBlessingTipSeen` (boolean, sticky until Reset;
   true after the first-time tip was dismissed), `dragonBlessingTipShrineId`
   (`null` | shrine id while the soft bubble is armed)
@@ -1109,7 +1101,8 @@ status: 'approaching' | 'sleeping' | 'waking', plotId?, wakeAt? }`.
   `plotNapper`,
   `discoveredCropIds`,
   `discoveredAlchemyResultIds`, `gameText`,
-  `shrineEpilogueShown`, `shrineEpilogueDueAt`, `dragonBlessingTipSeen`,
+  `shrineEpilogueShown`, `shrineEpilogueDueAt`, `shrineEpiloguePendingUi`,
+  `dragonBlessingTipSeen`,
   `dragonBlessingTipShrineId`, `tutorialStep`,
   `tutorialFoxWheatOffered`
 - Shrine def: `{ id, name, icon, theme, corner, tiers[] }`
@@ -1143,8 +1136,11 @@ Then run the usual normalizers. Ready crops on plots are marked discovered
 currently on plots / held slots; missing `discoveredAlchemyResultIds`
 backfilled to `[]`. Missing or invalid `gameText` backfilled to `null`.
 Missing or invalid `shrineEpilogueShown` → `false`; invalid
-`shrineEpilogueDueAt` → `null`. On load, `maybeShowShrineEpilogue` runs so
-a due wait past its time can fire (or cancel) immediately.
+`shrineEpilogueDueAt` → `null`; invalid `shrineEpiloguePendingUi` → `false`.
+Legacy `gameText` equal to the epilogue line is cleared. On load,
+`maybeRepairShrineEpilogueArm` then `maybeShowShrineEpilogue` run so a due
+wait past its time can fire (or cancel) immediately, and a maxed-but-never-
+armed save can re-arm.
 Missing or invalid `dragonBlessingTipSeen` → `false`; invalid
 `dragonBlessingTipShrineId` → `null` (also cleared if already seen). On load,
 after claiming any `pendingReward`, `maybeArmDragonBlessingTipFromUses` arms
@@ -1155,7 +1151,7 @@ No server. Player can wipe progress via Reset (two-step confirm required).
 Yes on the first overlay opens a second swipe-to-reset slider (label
 **Reset**, same right→left gesture as Uproot). Only a completed swipe
 replaces state with a fresh `createInitialState()` (including an empty
-Field Notes log) and saves. Confirm overlays do not pause timers or
+Discovery Log) and saves. Confirm overlays do not pause timers or
 animations; No, incomplete swipe, or click/tap outside either overlay
 dismisses and play continues.
 

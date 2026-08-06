@@ -28,7 +28,7 @@ const HOW_TO_PLAY_STEPS = [
   {
     src: UI_ICONS.discoveryLog,
     emoji: '📖',
-    title: 'Field Notes',
+    title: 'Discovery Log',
     body: 'Your discoveries live here.',
   },
   {

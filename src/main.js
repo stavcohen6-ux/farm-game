@@ -22,6 +22,8 @@ import {
   getDragonBonusOfferings,
   markReadyCropsDiscovered,
   maybeShowShrineEpilogue,
+  maybeArmShrineEpilogue,
+  clearShrineEpiloguePendingUi,
   resetState,
   uprootCrop,
   isTutorialActive,
@@ -61,6 +63,10 @@ import {
 } from './ui/templeRewardFly.js';
 import { playCritterFly } from './ui/critterFly.js';
 import { playShrineTierUp } from './ui/shrineTierUp.js';
+import {
+  closeShrineEpilogue,
+  tryOpenShrineEpilogue,
+} from './ui/shrineEpilogue.js';
 import { playShrineBurn } from './ui/shrineBurn.js';
 import { playTanukiArrive, playTanukiLeave } from './ui/tanukiNap.js';
 import { resolvePlotCropDrop } from './ui/plotPointerDrag.js';
@@ -75,6 +81,7 @@ import {
   playMixSfx,
   playShrineUpgradeSfx,
   playDragonSlotSfx,
+  playDragonEventStartSfx,
   playDragonEventEndSfx,
   playDiscoveryOpenSfx,
   unlockSfx,
@@ -96,6 +103,8 @@ const mixShinePlotIds = new Set();
 const mixDiscoveryShinePlotIds = new Set();
 // Shrine ids whose Dragon-bonus glow is deferred until sparks land.
 const pendingBlessingVisualShrineIds = new Set();
+// In-flight shrine upgrade spark bursts (arm epilogue after the last one).
+let shrineTierUpVfxPending = 0;
 
 const appEl = document.getElementById('app');
 const boardEl = document.getElementById('farm-board');
@@ -137,7 +146,7 @@ function renderFarm() {
 function render() {
   const now = Date.now();
   renderFarm();
-  renderGameTextPanel(gameTextEl, state);
+  renderGameTextPanel(gameTextEl);
   renderDragonTemple(dragonTempleEl, state, dragonTempleHandlers);
   renderShrines(
     boardEl,
@@ -191,6 +200,31 @@ function dragonBlessingTipCtx() {
     boardEl,
     onDismiss: handleDragonBlessingTipDismiss,
   };
+}
+
+function playTrackedShrineTierUp({ shrineEl, showTierChip = true }) {
+  shrineTierUpVfxPending += 1;
+  playShrineTierUp({
+    shrineEl,
+    showTierChip,
+    onComplete: () => {
+      shrineTierUpVfxPending = Math.max(0, shrineTierUpVfxPending - 1);
+      if (shrineTierUpVfxPending > 0) return;
+      maybeArmShrineEpilogue(state);
+      if (state.shrineEpilogueDueAt != null) {
+        save(state);
+      }
+    },
+  });
+}
+
+function handleShrineEpilogueClose() {
+  if (!clearShrineEpiloguePendingUi(state)) return;
+  save(state);
+}
+
+function tryShowShrineEpiloguePopup() {
+  tryOpenShrineEpilogue(state, { onClose: handleShrineEpilogueClose });
 }
 
 function handlePlotClick(plotId) {
@@ -285,7 +319,7 @@ function handlePlotClick(plotId) {
             const shrineEl = boardEl.querySelector(
               `#shrine-${result.shrineId}`,
             );
-            playShrineTierUp({ shrineEl });
+            playTrackedShrineTierUp({ shrineEl });
           }
         }
         render();
@@ -386,7 +420,7 @@ function handleOffer(shrineId, cropId, plotId = null) {
     // only — skip shrine/temple remounts (progress and temple unchanged).
     save(state);
     renderFarm();
-    renderGameTextPanel(gameTextEl, state);
+    renderGameTextPanel(gameTextEl);
     return;
   }
 
@@ -415,15 +449,17 @@ function handleOffer(shrineId, cropId, plotId = null) {
     const flushedEl = boardEl.querySelector(
       `#shrine-${result.flushedTigerBonus.shrineId}`,
     );
-    playShrineTierUp({ shrineEl: flushedEl });
+    playTrackedShrineTierUp({ shrineEl: flushedEl });
   }
 
-  if (result.tutorialCompleted || (result.tiersGained ?? 0) > 0) {
-    if ((result.tiersGained ?? 0) > 0) {
-      playShrineUpgradeSfx();
-    }
+  if ((result.tiersGained ?? 0) > 0) {
+    playShrineUpgradeSfx();
     const shrineEl = boardEl.querySelector(`#shrine-${shrineId}`);
-    playShrineTierUp({ shrineEl });
+    playTrackedShrineTierUp({ shrineEl });
+  } else if (result.tutorialCompleted) {
+    // FTUE Fox demo finish: sparks only (no Tier up chip / upgrade SFX).
+    const shrineEl = boardEl.querySelector(`#shrine-${shrineId}`);
+    playTrackedShrineTierUp({ shrineEl, showTierChip: false });
   }
 
   if (result.burnedShrineId) {
@@ -432,6 +468,10 @@ function handleOffer(shrineId, cropId, plotId = null) {
       `#shrine-${result.burnedShrineId}`,
     );
     playShrineBurn({ shrineEl: burnedEl });
+  }
+
+  if (result.dragonWoke) {
+    playDragonEventStartSfx();
   }
 
   if (result.bonus) {
@@ -475,7 +515,7 @@ function handleOffer(shrineId, cropId, plotId = null) {
         if ((bonusResult.tiersGained ?? 0) > 0) {
           playShrineUpgradeSfx();
           const shrineEl = boardEl.querySelector(`#shrine-${shrineId}`);
-          playShrineTierUp({ shrineEl });
+          playTrackedShrineTierUp({ shrineEl });
         }
       },
     });
@@ -654,9 +694,11 @@ function tick() {
     dirty = true;
   }
 
+  tryShowShrineEpiloguePopup();
+
   if (dirty) {
     save(state);
-    renderGameTextPanel(gameTextEl, state);
+    renderGameTextPanel(gameTextEl);
   }
 
   if (napperResult.arrivedPlotId != null) {
@@ -698,6 +740,7 @@ function tick() {
 
 function handleResetGame() {
   openResetConfirm(() => {
+    closeShrineEpilogue({ skipOnClose: true });
     resetState(state);
     unlockingPlotIds.clear();
     wateringPlotIds.clear();
@@ -708,6 +751,7 @@ function handleResetGame() {
     mixShinePlotIds.clear();
     mixDiscoveryShinePlotIds.clear();
     pendingBlessingVisualShrineIds.clear();
+    shrineTierUpVfxPending = 0;
     save(state);
     groveWarmed = false;
     opening.show();
@@ -716,7 +760,7 @@ function handleResetGame() {
 }
 
 // :active ends on pointerup (before click), so a class + short delay makes
-// the plank press readable before Field Notes covers it.
+// the plank press readable before Discovery Log covers it.
 const GAME_TEXT_PRESS_MS = 140;
 
 function handleDiscoveryLog() {
@@ -771,5 +815,6 @@ const opening = installOpeningScreen({
       gameStarted = true;
       setInterval(tick, RENDER_INTERVAL_MS);
     }
+    tryShowShrineEpiloguePopup();
   },
 });

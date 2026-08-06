@@ -34,7 +34,7 @@ every `src/**/*.js` file).
 1. Delete any Home Screen icon for the game.
 2. iOS **Settings → Safari → Advanced → Website Data** → remove `github.io`.
 3. Open https://stavcohen6-ux.github.io/farm-game/?v=crafted1
-4. Confirm Field Notes shows **Crafted crops** (not Alchemy mixes).
+4. Confirm Discovery Log shows **Crafted crops** (not Alchemy mixes).
 
 ### Keep cache bust automatic on commit
 

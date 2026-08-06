@@ -239,6 +239,8 @@ export function createInitialState() {
     shrineEpilogueShown: false,
     // Epoch ms when the epilogue may fire; null when not armed
     shrineEpilogueDueAt: null,
+    // True until the epilogue popup is dismissed (survives reload)
+    shrineEpiloguePendingUi: false,
     // First-time Dragon win-blessing tip (soft bubble); sticky until Reset
     dragonBlessingTipSeen: false,
     // Shrine id while the tip bubble is armed; null when idle
@@ -271,6 +273,7 @@ export function resetState(state) {
   state.tutorialFoxWheatOffered = fresh.tutorialFoxWheatOffered;
   state.shrineEpilogueShown = fresh.shrineEpilogueShown;
   state.shrineEpilogueDueAt = fresh.shrineEpilogueDueAt;
+  state.shrineEpiloguePendingUi = fresh.shrineEpiloguePendingUi;
   state.dragonBlessingTipSeen = fresh.dragonBlessingTipSeen;
   state.dragonBlessingTipShrineId = fresh.dragonBlessingTipShrineId;
   state.pendingTigerBonus = fresh.pendingTigerBonus;
@@ -320,8 +323,11 @@ export function areAllShrinesMaxed(state) {
   return SHRINES.every((shrine) => isShrineMaxed(state, shrine.id));
 }
 
-/** Arm delayed epilogue when all shrines just became maxed (once until shown). */
-function maybeArmShrineEpilogue(state, now = Date.now()) {
+/**
+ * Arm delayed epilogue when all shrines are maxed (once until shown).
+ * Called after the last in-flight shrine upgrade spark VFX completes.
+ */
+export function maybeArmShrineEpilogue(state, now = Date.now()) {
   if (state.shrineEpilogueShown) return;
   if (state.shrineEpilogueDueAt != null) return;
   if (!areAllShrinesMaxed(state)) return;
@@ -329,8 +335,22 @@ function maybeArmShrineEpilogue(state, now = Date.now()) {
 }
 
 /**
+ * If all shrines are maxed but the epilogue was never armed (e.g. quit mid
+ * upgrade VFX), arm a delayed due so the popup is not lost forever.
+ * Returns true if state changed.
+ */
+export function maybeRepairShrineEpilogueArm(state, now = Date.now()) {
+  if (state.shrineEpilogueShown) return false;
+  if (state.shrineEpilogueDueAt != null) return false;
+  if (state.shrineEpiloguePendingUi) return false;
+  if (!areAllShrinesMaxed(state)) return false;
+  state.shrineEpilogueDueAt = now + SHRINE_EPILOGUE_DELAY_MS;
+  return true;
+}
+
+/**
  * Fire or cancel a pending shrine epilogue when due.
- * Returns true if state changed (caller should save / refresh game text).
+ * Returns true if state changed (caller should save / open popup UI).
  */
 export function maybeShowShrineEpilogue(state, now = Date.now()) {
   const dueAt = state.shrineEpilogueDueAt;
@@ -353,8 +373,19 @@ export function maybeShowShrineEpilogue(state, now = Date.now()) {
     return true;
   }
 
-  setGameText(state, SHRINE_EPILOGUE_LINE);
+  // Legacy: epilogue used to write Field Notes; clear if still present.
+  if (state.gameText === SHRINE_EPILOGUE_LINE) {
+    state.gameText = null;
+  }
   state.shrineEpilogueShown = true;
+  state.shrineEpiloguePendingUi = true;
+  return true;
+}
+
+/** Clear pending popup flag after the epilogue overlay is dismissed. */
+export function clearShrineEpiloguePendingUi(state) {
+  if (!state.shrineEpiloguePendingUi) return false;
+  state.shrineEpiloguePendingUi = false;
   return true;
 }
 
@@ -1313,11 +1344,6 @@ export function addShrineProgress(state, shrineId, amount) {
 
   const tiersGained = progress.tier - tierBefore;
 
-  if (tiersGained > 0) {
-    setGameText(state, `${shrine.name} upgraded`);
-    maybeArmShrineEpilogue(state);
-  }
-
   return { unlockedPlotIds, tiersGained };
 }
 
@@ -1387,23 +1413,13 @@ export function burnShrine(state, shrineId) {
   return true;
 }
 
-const TEMPLE_LOSE_NO_BURN_LINE =
-  "The Dragon's wrath fades - you got lucky.";
-
-// Pick and burn one shrine with progress; set lose game text.
+// Pick and burn one shrine with progress.
 // Returns burnt shrineId, or null if none had progress.
 export function applyDragonTempleLosePenalty(state) {
   const shrineId = pickBurnableShrine(state);
-  if (!shrineId) {
-    setGameText(state, TEMPLE_LOSE_NO_BURN_LINE);
-    return null;
-  }
+  if (!shrineId) return null;
 
   burnShrine(state, shrineId);
-  setGameText(
-    state,
-    `The Dragon burnt your ${getShrine(shrineId)?.name ?? 'shrine'}.`,
-  );
   return shrineId;
 }
 
@@ -1591,6 +1607,7 @@ export function offerCrop(state, shrineId, cropId, sourcePlotId = null) {
   }
 
   let burnedShrineId;
+  let dragonWoke = false;
   if (templeWasActive) {
     const lose = addDragonTempleWrath(
       state,
@@ -1599,6 +1616,7 @@ export function offerCrop(state, shrineId, cropId, sourcePlotId = null) {
     if (lose) burnedShrineId = lose.burnedShrineId;
   } else {
     maybeTriggerDragonTempleFromOffering(state, shrineId, cropId);
+    dragonWoke = Boolean(state.dragonTemple?.active);
   }
   maybeScheduleDeskVisitorFromOffering(state);
   const result = {
@@ -1614,6 +1632,9 @@ export function offerCrop(state, shrineId, cropId, sourcePlotId = null) {
   }
   if (burnedShrineId !== undefined) {
     result.burnedShrineId = burnedShrineId;
+  }
+  if (dragonWoke) {
+    result.dragonWoke = true;
   }
   return result;
 }
@@ -1670,12 +1691,7 @@ function maybeTriggerDragonTempleFromOffering(state, shrineId, cropId) {
   }
 
   if (Math.random() < temple.triggerChance) {
-    if (startDragonTempleEvent(state, cropId)) {
-      setGameText(
-        state,
-        'Dragon awakens! Offer crops or face its wrath.',
-      );
-    }
+    startDragonTempleEvent(state, cropId);
     return;
   }
 
@@ -1908,11 +1924,6 @@ export function claimTempleWinReward(state) {
   temple.pendingReward = false;
   const shrineId = pickTempleRewardShrine(state);
   if (!shrineId) return false;
-
-  setGameText(
-    state,
-    `The Dragon blesses your ${getShrine(shrineId)?.name ?? 'shrine'}.`,
-  );
 
   if (isShrineMaxed(state, shrineId)) {
     return { shrineId, unlockedPlotIds: [], maxed: true };

@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="../" />
+  <title>Shrine upgrade — live sparks + Tier up chip</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --moss: #5f9a72;
+      --moss-deep: #3d7a52;
+      --ink: #2a3d30;
+      --muted: #5f7466;
+      --panel-border: #9ec9aa;
+      --shrine-figure: 5.5rem;
+      --shrine-bar-width: 10px;
+      --shrine-bar-gap: 0.45rem;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100dvh;
+      font-family: 'Nunito', system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 90% 70% at 50% 0%, #e8fff0 0%, transparent 55%),
+        linear-gradient(180deg, #d8f0e0 0%, #b8dcc8 50%, #9ecab0 100%);
+      padding: 1.25rem 1.25rem 2.5rem;
+    }
+
+    .mock {
+      max-width: 38rem;
+      margin: 0 auto;
+      display: grid;
+      gap: 1rem;
+    }
+
+    header h1 { font-size: 1.35rem; font-weight: 800; }
+
+    header p {
+      margin-top: 0.4rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .panel {
+      background: rgba(244, 250, 244, 0.78);
+      border: 1.5px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 1.1rem 1.25rem 1.25rem;
+    }
+
+    .panel h2 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.85rem;
+    }
+
+    .stage {
+      display: grid;
+      gap: 0.85rem;
+      justify-items: center;
+      padding: 1rem 0.75rem 1.1rem;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.35);
+      border: 1px solid rgba(158, 201, 170, 0.55);
+      overflow: visible;
+    }
+
+    .board-cue {
+      position: relative;
+      width: 15rem;
+      height: 15rem;
+      border-radius: 14px;
+      background-color: #7a9e86;
+      background-image:
+        radial-gradient(ellipse 70% 80% at 50% 50%, rgba(255, 255, 255, 0.28), transparent),
+        url('assets/icons/farm_frame.png');
+      background-size: cover, 100% 100%;
+      background-position: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: visible;
+    }
+
+    .shrine {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: var(--shrine-bar-gap);
+    }
+
+    .shrine__figure {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      width: var(--shrine-figure);
+      height: var(--shrine-figure);
+      filter: drop-shadow(0 6px 10px rgba(42, 90, 60, 0.22));
+    }
+
+    .shrine__icon {
+      position: relative;
+      width: var(--shrine-figure);
+      height: var(--shrine-figure);
+      line-height: 0;
+      display: block;
+    }
+
+    .shrine__layer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      pointer-events: none;
+      user-select: none;
+      display: block;
+    }
+
+    .shrine__layer--pedestal { z-index: 0; }
+    .shrine__layer--figure { z-index: 1; }
+
+    .shrine__plaque {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      align-self: center;
+    }
+
+    .shrine__progress-track {
+      width: var(--shrine-bar-width);
+      height: calc(var(--shrine-figure) * 0.7);
+      border-radius: 999px;
+      background: rgba(30, 40, 34, 0.28);
+      border: 1px solid rgba(90, 110, 96, 0.35);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      box-shadow: inset 0 1px 1px rgba(20, 28, 24, 0.2);
+    }
+
+    .shrine__progress-fill {
+      width: 100%;
+      height: 72%;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #d4b050, #b89030);
+    }
+
+    /* Live .offering-progress-chip */
+    .offering-progress-chip {
+      position: absolute;
+      z-index: 28;
+      pointer-events: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.28rem;
+      padding: 0.22rem 0.5rem;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #fff8e4 0%, #f3e6c0 100%);
+      border: 1.5px solid rgba(212, 168, 64, 0.85);
+      color: var(--ink);
+      font-family: 'Nunito', system-ui, sans-serif;
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+      box-shadow:
+        0 2px 0 rgba(90, 70, 40, 0.12),
+        0 4px 10px rgba(40, 50, 35, 0.14),
+        0 0 0 1px rgba(255, 250, 230, 0.5) inset;
+      opacity: 0;
+    }
+
+    .offering-progress-chip__face {
+      width: 0.95rem;
+      height: 0.95rem;
+      display: block;
+      object-fit: contain;
+    }
+
+    .offering-progress-chip__amt {
+      color: #8a6420;
+    }
+
+    /* Live .shrine-tier-spark */
+    .shrine-tier-spark {
+      position: absolute;
+      z-index: 16;
+      pointer-events: none;
+      display: grid;
+      place-items: center;
+      filter: drop-shadow(0 1px 2px rgba(80, 60, 20, 0.25));
+    }
+
+    .shrine-tier-spark img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .notes {
+      width: 100%;
+      max-width: 13rem;
+      padding: 0.45rem 0.65rem;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #f0e4c8 0%, #e4d4b0 100%);
+      border: 1.5px solid rgba(160, 130, 80, 0.45);
+      box-shadow: inset 0 1px 0 rgba(255, 250, 235, 0.55);
+      text-align: center;
+    }
+
+    .notes__label {
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #8a7450;
+      margin-bottom: 0.15rem;
+    }
+
+    .notes__msg {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    button {
+      font: inherit;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border: none;
+      border-radius: 999px;
+      padding: 0.45rem 0.95rem;
+      cursor: pointer;
+      background: var(--moss);
+      color: #fff;
+      box-shadow: 0 2px 0 var(--moss-deep);
+    }
+
+    button:hover { filter: brightness(1.05); }
+    button:disabled { opacity: 0.55; cursor: not-allowed; filter: none; }
+
+    button.secondary {
+      background: #fffef6;
+      color: var(--ink);
+      border: 1.5px solid var(--panel-border);
+      box-shadow: none;
+    }
+
+    .legend {
+      display: grid;
+      gap: 0.45rem;
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .legend strong { font-weight: 800; }
+
+    .callout {
+      margin-top: 0.85rem;
+      font-size: 0.88rem;
+      line-height: 1.45;
+      padding: 0.7rem 0.85rem;
+      border-radius: 10px;
+      background: rgba(230, 198, 90, 0.18);
+      border: 1px solid rgba(212, 168, 64, 0.45);
+    }
+  </style>
+</head>
+<body>
+  <div class="mock">
+    <header>
+      <h1>Shrine upgrade — live + Tier up chip</h1>
+      <p>
+        Exactly today’s rising sparks (<code>playShrineTierUp</code>). Only addition:
+        offering-style <strong>Tier up!</strong> chip, at <strong>2×</strong> the
+        previous mock chip duration (780ms → 1560ms). No Field Notes upgrade line.
+      </p>
+    </header>
+
+    <section class="panel">
+      <h2>Proposed</h2>
+      <div class="stage">
+        <div class="board-cue" id="board">
+          <div class="shrine">
+            <div class="shrine__figure">
+              <div class="shrine__icon" id="icon">
+                <img class="shrine__layer shrine__layer--pedestal" src="assets/icons/shrine_frog_pedestal.png" alt="" />
+                <img class="shrine__layer shrine__layer--figure" src="assets/icons/shrine_frog_figure.png" alt="" />
+              </div>
+            </div>
+            <div class="shrine__plaque">
+              <div class="shrine__progress-track">
+                <div class="shrine__progress-fill" id="fill"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notes">
+          <div class="notes__label">Field Notes</div>
+          <div class="notes__msg">It's a cozy day for farming.</div>
+        </div>
+        <div class="controls">
+          <button type="button" id="btn-play">Play upgrade</button>
+          <button type="button" class="secondary" id="btn-reset">Reset</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>What’s in this mock</h2>
+      <div class="legend">
+        <p><strong>Sparks</strong> — live values from <code>shrineTierUp.js</code> (12 sparks, 2480ms, 200ms stagger, jitter).</p>
+        <p><strong>Tier up! chip</strong> — same look/motion as offering chip; duration 1560ms (2× prior mock’s 780ms), rise 44px (2× 22px).</p>
+        <p><strong>Not included</strong> — beams, rings, pedestal glow, denser/custom sparks, Field Notes “upgraded” text.</p>
+      </div>
+      <p class="callout">File: <code>mocks/shrine-upgrade-burst.html?v=5</code></p>
+    </section>
+  </div>
+
+  <script>
+    // —— Live shrineTierUp.js constants ——
+    const SPARK_SRC = 'assets/icons/spark.png';
+    const SPARK_COUNT = 12;
+    const SPARK_MS = 2480;
+    const STAGGER_MS = 200;
+    const SPARK_SIZE_PX = 20;
+    const RISE_EXTRA_PX = 28;
+    const JITTER_PX = 14;
+
+    // —— Offering chip look; 2× slower than prior mock (780 → 1560) ——
+    const LOG_SRC = 'assets/icons/log_frog.png';
+    const CHIP_MS = 780 * 2;
+    const CHIP_RISE_PX = 22 * 2;
+
+    function wait(ms) {
+      return new Promise((r) => window.setTimeout(r, ms));
+    }
+
+    function clearFx(board) {
+      board.querySelectorAll('.shrine-tier-spark, .offering-progress-chip')
+        .forEach((el) => el.remove());
+    }
+
+    function localRect(board, el) {
+      const b = board.getBoundingClientRect();
+      const r = el.getBoundingClientRect();
+      return {
+        left: r.left - b.left,
+        top: r.top - b.top,
+        width: r.width,
+        height: r.height,
+        bottom: r.bottom - b.top,
+        cx: r.left - b.left + r.width / 2,
+      };
+    }
+
+    function setBar(fillEl, pct, animate = true) {
+      if (!animate) {
+        fillEl.style.transition = 'none';
+        fillEl.style.height = `${pct}%`;
+        void fillEl.offsetHeight;
+        fillEl.style.transition = '';
+        return;
+      }
+      fillEl.style.transition = 'height 0.35s ease-out';
+      fillEl.style.height = `${pct}%`;
+    }
+
+    /** Mirrors src/ui/shrineTierUp.js playShrineTierUp (board-local coords). */
+    function playShrineTierUpLive(board, iconEl) {
+      const rect = localRect(board, iconEl);
+      const originX = rect.cx;
+      const originY = rect.bottom - SPARK_SIZE_PX / 2;
+      const risePx = rect.height + RISE_EXTRA_PX;
+      const half = SPARK_SIZE_PX / 2;
+
+      for (let i = 0; i < SPARK_COUNT; i++) {
+        window.setTimeout(() => {
+          const spark = document.createElement('div');
+          spark.className = 'shrine-tier-spark';
+          spark.setAttribute('aria-hidden', 'true');
+          spark.style.width = `${SPARK_SIZE_PX}px`;
+          spark.style.height = `${SPARK_SIZE_PX}px`;
+          spark.style.left = `${originX - half}px`;
+          spark.style.top = `${originY - half}px`;
+          const img = document.createElement('img');
+          img.src = SPARK_SRC;
+          img.alt = '';
+          spark.appendChild(img);
+          board.appendChild(spark);
+
+          const jitter =
+            (i - (SPARK_COUNT - 1) / 2) * (JITTER_PX / 2) +
+            (Math.random() * 2 - 1) * 4;
+
+          const flight = spark.animate(
+            [
+              { transform: 'translate(0, 0) scale(0.85)', opacity: 0.95 },
+              {
+                transform: `translate(${jitter * 0.4}px, ${-risePx * 0.45}px) scale(1)`,
+                opacity: 1,
+                offset: 0.35,
+              },
+              {
+                transform: `translate(${jitter}px, ${-risePx}px) scale(0.55)`,
+                opacity: 0,
+              },
+            ],
+            { duration: SPARK_MS, easing: 'ease-out', fill: 'forwards' },
+          );
+          flight.onfinish = () => spark.remove();
+        }, i * STAGGER_MS);
+      }
+    }
+
+    /** Offering chip motion; duration/rise 2× prior mock. */
+    function spawnTierUpChip(board, cx, y) {
+      const el = document.createElement('div');
+      el.className = 'offering-progress-chip';
+      el.setAttribute('aria-hidden', 'true');
+      el.innerHTML =
+        `<img class="offering-progress-chip__face" src="${LOG_SRC}" alt="" />` +
+        `<span class="offering-progress-chip__amt">Tier up!</span>`;
+      board.appendChild(el);
+      const w = el.offsetWidth;
+      el.style.left = `${cx - w / 2}px`;
+      el.style.top = `${y}px`;
+
+      const a = el.animate(
+        [
+          { transform: 'translateY(0) scale(0.88)', opacity: 0 },
+          {
+            transform: `translateY(-${CHIP_RISE_PX * 0.4}px) scale(1.04)`,
+            opacity: 1,
+            offset: 0.22,
+          },
+          {
+            transform: `translateY(-${CHIP_RISE_PX}px) scale(1)`,
+            opacity: 0,
+          },
+        ],
+        { duration: CHIP_MS, easing: 'ease-out', fill: 'forwards' },
+      );
+      a.onfinish = () => el.remove();
+    }
+
+    function reset() {
+      clearFx(document.getElementById('board'));
+      setBar(document.getElementById('fill'), 72, false);
+      document.getElementById('btn-play').disabled = false;
+    }
+
+    async function play() {
+      const btn = document.getElementById('btn-play');
+      btn.disabled = true;
+      const board = document.getElementById('board');
+      const icon = document.getElementById('icon');
+      const fill = document.getElementById('fill');
+      clearFx(board);
+
+      // Bar resets for next tier (live UI re-render); no extra VFX
+      setBar(fill, 100, false);
+      await wait(80);
+      setBar(fill, 0);
+
+      const r = localRect(board, icon);
+      playShrineTierUpLive(board, icon);
+      spawnTierUpChip(board, r.cx, Math.max(8, r.top - 6));
+
+      await wait(Math.max(SPARK_MS + SPARK_COUNT * STAGGER_MS, CHIP_MS) + 200);
+      setBar(fill, 18);
+      btn.disabled = false;
+    }
+
+    document.getElementById('btn-play').addEventListener('click', play);
+    document.getElementById('btn-reset').addEventListener('click', reset);
+  </script>
+</body>
+</html>

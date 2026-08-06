@@ -151,10 +151,13 @@ export const SHRINES = [
   },
 ];
 
-/** Delay after first all-maxed before the epilogue game-text line. */
-export const SHRINE_EPILOGUE_DELAY_MS = 6000;
+/** Delay after last upgrade spark VFX completes before the epilogue popup. */
+export const SHRINE_EPILOGUE_DELAY_MS = 3000;
 
-/** Game-text line when all shrines are maxed (once per successful display). */
+/** How long the epilogue popup ignores dismiss taps. */
+export const SHRINE_EPILOGUE_DISMISS_LOCK_MS = 5000;
+
+/** Epilogue popup copy when all shrines are maxed (once per successful display). */
 export const SHRINE_EPILOGUE_LINE =
   'Every shrine stands complete. The forest rests.';
 

@@ -18,6 +18,7 @@ const IMPACT_MINING = [
 
 const BOOK_FLIP_OPEN = `${AUDIO_DIR}/bookFlip2.ogg`;
 const THRUSTER_FIRE = `${AUDIO_DIR}/thrusterFire_000.ogg`;
+const DOOR_CLOSE = `${AUDIO_DIR}/doorClose_3.ogg`;
 
 const ALL_CLIPS = [
   FOOTSTEP_CARPET,
@@ -26,6 +27,7 @@ const ALL_CLIPS = [
   ...IMPACT_MINING,
   BOOK_FLIP_OPEN,
   THRUSTER_FIRE,
+  DOOR_CLOSE,
 ];
 
 /** @type {AudioContext | null} */
@@ -202,6 +204,11 @@ export function playShrineUpgradeSfx() {
 /** Crop placed into a dragon temple slot — random mining impact. */
 export function playDragonSlotSfx() {
   playSfx(pickRandom(IMPACT_MINING));
+}
+
+/** Dragon temple wakes — demand ghosts appear. */
+export function playDragonEventStartSfx() {
+  playSfx(DOOR_CLOSE);
 }
 
 /** Discovery log opened. */

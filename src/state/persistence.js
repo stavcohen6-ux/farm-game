@@ -11,6 +11,7 @@ import {
   markCropDiscovered,
   markReadyCropsDiscovered,
   maybeShowShrineEpilogue,
+  maybeRepairShrineEpilogueArm,
   maybeArmDragonBlessingTipFromUses,
   collectHeldCropIds,
   reconcilePlotNapper,
@@ -22,7 +23,7 @@ import {
 } from './gameState.js';
 import { getCrop, getExpiresAt } from '../data/crops.js';
 import { isAlchemyResultId } from '../data/alchemyRecipes.js';
-import { getShrine } from '../data/shrines.js';
+import { getShrine, SHRINE_EPILOGUE_LINE } from '../data/shrines.js';
 import { DRAGON_TEMPLE } from '../data/dragonTemple.js';
 import { TUTORIAL_STEP_DONE, isTutorialStep } from '../data/tutorial.js';
 import { repairTutorialState } from './tutorialFlow.js';
@@ -514,6 +515,19 @@ export function load() {
       parsed.shrineEpilogueDueAt = null;
     }
 
+    if (parsed.shrineEpiloguePendingUi !== true) {
+      if (parsed.shrineEpiloguePendingUi !== false) {
+        dirty = true;
+      }
+      parsed.shrineEpiloguePendingUi = false;
+    }
+
+    // Legacy Field Notes epilogue line → popup UX.
+    if (parsed.gameText === SHRINE_EPILOGUE_LINE) {
+      parsed.gameText = null;
+      dirty = true;
+    }
+
     if (parsed.dragonBlessingTipSeen !== true) {
       if (parsed.dragonBlessingTipSeen !== false) {
         dirty = true;
@@ -589,6 +603,9 @@ export function load() {
       dirty = true;
     }
     if (markReadyCropsDiscovered(parsed, Date.now())) {
+      dirty = true;
+    }
+    if (maybeRepairShrineEpilogueArm(parsed, Date.now())) {
       dirty = true;
     }
     if (maybeShowShrineEpilogue(parsed, Date.now())) {

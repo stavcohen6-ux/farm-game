@@ -77,7 +77,7 @@ export function isTutorialExploreInvite(state) {
   return state?.tutorialStep === TUTORIAL_STEP_EXPLORE;
 }
 
-/** Soft invite pointing at Field Notes — bubble only; no action gates. */
+/** Soft invite pointing at Discovery Log — bubble only; no action gates. */
 export function isTutorialFieldNotesInvite(state) {
   return state?.tutorialStep === TUTORIAL_STEP_FIELD_NOTES;
 }
