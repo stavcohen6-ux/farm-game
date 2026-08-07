@@ -14,7 +14,10 @@ import {
   isTutorialActive,
 } from '../state/gameState.js';
 import { CROP_DRAG_TYPE, parseCropDragData } from './shrinesPanel.js';
-import { wireReadyCropPointerDrag } from './plotPointerDrag.js';
+import {
+  isPlotPointerDragActive,
+  wireReadyCropPointerDrag,
+} from './plotPointerDrag.js';
 import { wireGrowingPlotUprootHold } from './plotUprootHold.js';
 import { setCropIcon, setIcon, UI_ICONS } from './icon.js';
 import { setTanukiIcon } from './tanukiNap.js';
@@ -103,14 +106,17 @@ export function renderGrid(
       wateringPlotIds,
     );
     const existing = existingById.get(plot.id);
-    if (existing && existing.dataset.plotKey === key) {
+    // Mid-drag: never replaceChild the source plot — that drops pointer
+    // capture and used to orphan the floating crop ghost on body.
+    const keepForDrag = existing && isPlotPointerDragActive(plot.id);
+    if (existing && (existing.dataset.plotKey === key || keepForDrag)) {
       applyPlotPlacement(existing, plot.id);
       if (key.startsWith('growing:')) {
         updateProgress(existing, plot, now);
       }
       // Shine is not part of plotKey so clearing it does not remount and
       // cut ready-pulse mid-cycle; sync the class on the reused node.
-      if (key.startsWith('ready:')) {
+      if (key.startsWith('ready:') || keepForDrag) {
         existing.classList.toggle('plot--mix-shine', mixShine);
         existing.classList.toggle('plot--mix-shine-discovery', mixDiscoveryShine);
       }

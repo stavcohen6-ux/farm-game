@@ -19,6 +19,11 @@ export const DRAG_THRESHOLD_PX = UPROOT_MOVE_THRESHOLD_PX;
 
 let session = null;
 
+/** True while this plot is the in-flight pointer-drag source. */
+export function isPlotPointerDragActive(plotId) {
+  return session?.drag?.plotId === plotId;
+}
+
 /**
  * Pointer drag for ready crops (mouse + touch). Replaces HTML5 DnD for plots.
  * `onDrop` receives `{ cropId, fromPlotId, clientX, clientY }`.
@@ -44,6 +49,11 @@ export function wireReadyCropPointerDrag(
     // Keep the in-flight drag plot intact across the 1s farm tick so we
     // don't strip plot--dragging or drop its pointer handlers mid-gesture.
     const isActiveDrag = session?.drag?.plotId === plotId;
+    if (isActiveDrag) {
+      session.state = state;
+      session.now = now;
+      session.container = container;
+    }
 
     el.classList.remove('plot--drag-over');
     if (!isActiveDrag) {
@@ -115,6 +125,8 @@ function beginDrag(
   sourceEl.addEventListener('pointermove', onPointerMove);
   sourceEl.addEventListener('pointerup', onPointerUp);
   sourceEl.addEventListener('pointercancel', onPointerCancel);
+  // Remount/detach releases capture without pointerup — clear the ghost.
+  sourceEl.addEventListener('lostpointercapture', onLostPointerCapture);
   event.preventDefault();
 
   if (onLongPress) {
@@ -174,6 +186,12 @@ function onPointerCancel(event) {
   endDrag(true);
 }
 
+function onLostPointerCapture(event) {
+  if (!session || event.pointerId !== session.pointerId) return;
+  // Capture already gone (often because the plot node was remounted).
+  endDrag(false);
+}
+
 function endDrag(release) {
   if (!session) return;
   const { sourceEl, pointerId, ghost, highlighted, container } = session;
@@ -182,6 +200,9 @@ function endDrag(release) {
   sourceEl.removeEventListener('pointermove', onPointerMove);
   sourceEl.removeEventListener('pointerup', onPointerUp);
   sourceEl.removeEventListener('pointercancel', onPointerCancel);
+  sourceEl.removeEventListener('lostpointercapture', onLostPointerCapture);
+  // Null before releasePointerCapture so a synthetic lostpointercapture is a no-op.
+  session = null;
   if (release) {
     try {
       sourceEl.releasePointerCapture(pointerId);
@@ -192,7 +213,6 @@ function endDrag(release) {
   sourceEl.classList.remove('plot--dragging');
   ghost?.remove();
   clearHighlight(highlighted, container);
-  session = null;
 }
 
 function createGhost(cropId, sourceEl) {
